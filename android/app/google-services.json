@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "204547887344",
+    "project_id": "arise-f494a",
+    "storage_bucket": "arise-f494a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:204547887344:android:cc961ca3670adb110cb235",
+        "android_client_info": {
+          "package_name": "com.example.arise_test"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "204547887344-d6ase2nplvcocdf7tiinhgh28qml51hg.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.arise_test",
+            "certificate_hash": "713864bd68200685244893a192abbfd13a3874df"
+          }
+        },
+        {
+          "client_id": "204547887344-7pm708j98jiqm9liimkngih0qjmbe5ug.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCTeLoaghFjnkIVeTDiV_rOi4f1aPrkwXo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "204547887344-7pm708j98jiqm9liimkngih0qjmbe5ug.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "204547887344-njppbbagma5e75497rr19qtifutg82gr.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.ariseTest"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

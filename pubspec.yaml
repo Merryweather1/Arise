@@ -1,0 +1,63 @@
+name: arise
+description: "Arise - Your personal productivity companion"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+  # Navigation
+  go_router: ^15.1.2
+
+  # State Management
+  flutter_riverpod: ^2.6.1
+
+  # Firebase
+  firebase_core: ^3.13.0
+  firebase_auth: ^5.5.2
+  cloud_firestore: ^5.6.6
+  firebase_storage: ^12.4.4
+  google_sign_in: ^6.2.1
+
+  # Local storage
+  shared_preferences: ^2.5.3
+
+  # UI & Animations
+  flutter_animate: ^4.5.0
+  shimmer: ^3.0.0
+
+  # Charts
+  fl_chart: ^0.70.2
+
+  # Notifications
+  flutter_local_notifications: ^18.0.1
+
+  # Image
+  image_picker: ^1.1.2
+  cached_network_image: ^3.4.1
+
+  # Calendar & Swipe
+  table_calendar: ^3.2.0
+  flutter_slidable: ^3.1.1
+
+  # Utils
+  uuid: ^4.5.1
+  intl: ^0.20.2
+  percent_indicator: ^4.2.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/icons/
