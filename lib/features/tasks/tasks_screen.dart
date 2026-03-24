@@ -116,6 +116,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
   }
 
   Future<void> _openTask({TaskModel? existing}) async {
+    final uid = ref.read(currentUidProvider) ?? '';
     final result = await showModalBottomSheet<TaskModel>(
       context: context,
       isScrollControlled: true,
@@ -123,6 +124,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
       builder: (_) => _TaskEditorSheet(
         existing: existing,
         categories: _categories,
+        uid: uid,
       ),
     );
 
@@ -1183,10 +1185,12 @@ class _SettingChip extends StatelessWidget {
 class _TaskEditorSheet extends StatefulWidget {
   final TaskModel? existing;
   final List<String> categories;
+  final String uid;
 
   const _TaskEditorSheet({
     this.existing,
     required this.categories,
+    required this.uid,
   });
 
   @override
@@ -1326,7 +1330,9 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
       context,
       TaskModel(
         id: widget.existing?.id ?? '',
-        uid: widget.existing?.uid ?? '',
+        uid: widget.existing?.uid.isNotEmpty == true
+            ? widget.existing!.uid
+            : widget.uid,
         title: title,
         note: note.isEmpty ? null : note,
         done: widget.existing?.done ?? false,

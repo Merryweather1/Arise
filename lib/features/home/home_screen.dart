@@ -354,13 +354,27 @@ class _Header extends StatelessWidget {
 }
 
 // ─── XP CARD ──────────────────────────────────────────────────────────────
-class _XpCard extends StatelessWidget {
+class _XpCard extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
-    const level = 7;
-    const xp = 340;
-    const xpToNext = 500;
-    const progress = xp / xpToNext;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final profile = ref.watch(userProfileProvider).valueOrNull;
+
+    // Combined XP across all 3 spheres
+    final totalXp = (profile?.willpowerXp ?? 0)
+        + (profile?.intellectXp ?? 0)
+        + (profile?.healthXp ?? 0);
+
+    // Overall level based on combined XP
+    final level = _combinedLevel(totalXp);
+    final xpForThisLevel = _levelStartXp(level);
+    final xpForNextLevel = _levelStartXp(level + 1);
+    final xpIntoLevel = totalXp - xpForThisLevel;
+    final xpNeeded = xpForNextLevel - xpForThisLevel;
+    final progress = xpNeeded > 0
+        ? (xpIntoLevel / xpNeeded).clamp(0.0, 1.0)
+        : 0.0;
+
+    final rankTitle = _rankTitle(level);
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -381,15 +395,14 @@ class _XpCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: ARadius.full,
                 ),
-                child: const Text(
-                  'Level 7',
-                  style: TextStyle(
+                child: Text(
+                  'Level $level',
+                  style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
@@ -397,9 +410,9 @@ class _XpCard extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              const Text(
-                '$xp / $xpToNext XP',
-                style: TextStyle(
+              Text(
+                '$xpIntoLevel / $xpNeeded XP',
+                style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: Colors.white70,
@@ -408,33 +421,108 @@ class _XpCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          const Text(
-            'Productivity Warrior',
-            style: TextStyle(
+          Text(
+            rankTitle,
+            style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w800,
               color: Colors.white,
             ),
           ),
           const SizedBox(height: 4),
-          const Text(
-            '${xpToNext - xp} XP to level 8',
-            style: TextStyle(fontSize: 12, color: Colors.white70),
+          Text(
+            '${xpNeeded - xpIntoLevel} XP to level ${level + 1}',
+            style: const TextStyle(fontSize: 12, color: Colors.white70),
           ),
           const SizedBox(height: 14),
           ClipRRect(
             borderRadius: ARadius.full,
-            child: const LinearProgressIndicator(
-              value: progress,
-              backgroundColor: Colors.white24,
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              minHeight: 8,
+            child: TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0, end: progress),
+              duration: const Duration(milliseconds: 800),
+              curve: Curves.easeOutCubic,
+              builder: (_, val, __) => LinearProgressIndicator(
+                value: val,
+                backgroundColor: Colors.white24,
+                valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                minHeight: 8,
+              ),
             ),
           ),
+          const SizedBox(height: 14),
+          // 3-sphere mini row
+          Row(children: [
+            _SpherePip(emoji: '🔥', label: 'Will', xp: profile?.willpowerXp ?? 0,
+                level: profile?.willpowerLevel ?? 1),
+            const SizedBox(width: 8),
+            _SpherePip(emoji: '🧠', label: 'Intel', xp: profile?.intellectXp ?? 0,
+                level: profile?.intellectLevel ?? 1),
+            const SizedBox(width: 8),
+            _SpherePip(emoji: '❤️', label: 'Health', xp: profile?.healthXp ?? 0,
+                level: profile?.healthLevel ?? 1),
+          ]),
         ],
       ),
     );
   }
+
+  // Combined level from total XP (same curve as individual spheres)
+  static int _combinedLevel(int xp) {
+    int level = 1;
+    int required = 300; // higher threshold for combined
+    int total = 0;
+    while (total + required <= xp) {
+      total += required;
+      level++;
+      required = (required * 1.25).round();
+    }
+    return level;
+  }
+
+  static int _levelStartXp(int level) {
+    int total = 0;
+    int required = 300;
+    for (int i = 1; i < level; i++) {
+      total += required;
+      required = (required * 1.25).round();
+    }
+    return total;
+  }
+
+  static String _rankTitle(int level) {
+    if (level >= 20) return 'Legendary Achiever 🏆';
+    if (level >= 15) return 'Elite Performer ⚡';
+    if (level >= 10) return 'Productivity Master 🎯';
+    if (level >= 7)  return 'Discipline Warrior 🛡️';
+    if (level >= 4)  return 'Rising Champion 🌟';
+    return 'Productivity Rookie 🌱';
+  }
+}
+
+class _SpherePip extends StatelessWidget {
+  final String emoji, label;
+  final int xp, level;
+  const _SpherePip({required this.emoji, required this.label,
+    required this.xp, required this.level});
+
+  @override
+  Widget build(BuildContext context) => Expanded(child: Container(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+    decoration: BoxDecoration(
+      color: Colors.white.withValues(alpha: 0.12),
+      borderRadius: ARadius.md,
+    ),
+    child: Row(children: [
+      Text(emoji, style: const TextStyle(fontSize: 13)),
+      const SizedBox(width: 5),
+      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(label, style: const TextStyle(fontSize: 9,
+            fontWeight: FontWeight.w600, color: Colors.white70)),
+        Text('L$level · ${xp}xp', style: const TextStyle(fontSize: 9,
+            fontWeight: FontWeight.w700, color: Colors.white)),
+      ])),
+    ]),
+  ));
 }
 
 // ─── FEATURE CARD ─────────────────────────────────────────────────────────
