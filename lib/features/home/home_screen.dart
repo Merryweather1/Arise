@@ -264,6 +264,11 @@ class HomeScreen extends ConsumerWidget {
                           task: task,
                           priorityColor: _taskPriorityColor(task.priority),
                           onTap: () => context.go(ARoutes.tasks),
+                          onToggle: () async {
+                            final notifier = ref.read(taskActionsProvider.notifier);
+                            await notifier.setDone(task, !task.done);
+                            HapticFeedback.lightImpact();
+                          },
                         ),
                       );
                     },
@@ -781,11 +786,13 @@ class _TaskDashboardCard extends StatelessWidget {
   final TaskModel task;
   final Color priorityColor;
   final VoidCallback onTap;
+  final VoidCallback onToggle;
 
   const _TaskDashboardCard({
     required this.task,
     required this.priorityColor,
     required this.onTap,
+    required this.onToggle,
   });
 
   @override
@@ -850,20 +857,26 @@ class _TaskDashboardCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 10),
-            Container(
-              width: 26,
-              height: 26,
-              decoration: BoxDecoration(
-                color: task.done ? AColors.primary : Colors.transparent,
-                borderRadius: ARadius.sm,
-                border: Border.all(
-                  color: task.done ? AColors.primary : AColors.border,
-                  width: 1.5,
+            GestureDetector(
+              onTap: () {
+                HapticFeedback.selectionClick();
+                onToggle();
+              },
+              child: Container(
+                width: 26,
+                height: 26,
+                decoration: BoxDecoration(
+                  color: task.done ? AColors.primary : Colors.transparent,
+                  borderRadius: ARadius.sm,
+                  border: Border.all(
+                    color: task.done ? AColors.primary : AColors.border,
+                    width: 1.5,
+                  ),
                 ),
+                child: task.done
+                    ? const Icon(Icons.check_rounded, color: Colors.white, size: 16)
+                    : null,
               ),
-              child: task.done
-                  ? const Icon(Icons.check_rounded, color: Colors.white, size: 16)
-                  : null,
             ),
           ],
         ),

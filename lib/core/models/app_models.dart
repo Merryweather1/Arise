@@ -13,6 +13,7 @@ class UserProfile {
   final int intellectXp;
   final int healthXp;
 
+  final List<String> customCategories;
   final DateTime createdAt;
 
   const UserProfile({
@@ -23,6 +24,7 @@ class UserProfile {
     this.willpowerXp = 0,
     this.intellectXp = 0,
     this.healthXp = 0,
+    this.customCategories = const [],
     required this.createdAt,
   });
 
@@ -94,6 +96,7 @@ class UserProfile {
       willpowerXp: d['willpowerXp'] ?? 0,
       intellectXp: d['intellectXp'] ?? 0,
       healthXp: d['healthXp'] ?? 0,
+      customCategories: List<String>.from(d['customCategories'] ?? []),
       createdAt: (d['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
@@ -105,12 +108,14 @@ class UserProfile {
     'willpowerXp': willpowerXp,
     'intellectXp': intellectXp,
     'healthXp': healthXp,
+    'customCategories': customCategories,
     'createdAt': Timestamp.fromDate(createdAt),
   };
 
   UserProfile copyWith({
     String? name, String? photoUrl,
     int? willpowerXp, int? intellectXp, int? healthXp,
+    List<String>? customCategories,
   }) => UserProfile(
     uid: uid, email: email, createdAt: createdAt,
     name: name ?? this.name,
@@ -118,6 +123,7 @@ class UserProfile {
     willpowerXp: willpowerXp ?? this.willpowerXp,
     intellectXp: intellectXp ?? this.intellectXp,
     healthXp: healthXp ?? this.healthXp,
+    customCategories: customCategories ?? this.customCategories,
   );
 }
 

@@ -28,7 +28,6 @@ class UserRepository {
       _db.collection('users').doc(uid).snapshots().map(
               (doc) => doc.exists ? UserProfile.fromFirestore(doc) : null);
 
-  /// Add XP to a sphere
   static Future<void> addXp(String uid, XpSphere sphere, int xp) {
     final field = switch (sphere) {
       XpSphere.willpower => 'willpowerXp',
@@ -39,6 +38,11 @@ class UserRepository {
       field: FieldValue.increment(xp),
     });
   }
+
+  static Future<void> addCustomCategory(String uid, String category) =>
+      _db.collection('users').doc(uid).set({
+        'customCategories': FieldValue.arrayUnion([category])
+      }, SetOptions(merge: true));
 }
 
 // ─── TASKS ────────────────────────────────────────────────────────────────

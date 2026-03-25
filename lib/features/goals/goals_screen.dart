@@ -21,15 +21,6 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen>
   late TabController _tabCtrl;
   String _filterCategory = 'All';
 
-  final List<String> _categories = [
-    'Personal',
-    'Work',
-    'Health',
-    'Learning',
-    'Finance',
-    'Family',
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -42,15 +33,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen>
     super.dispose();
   }
 
-  List<String> _allCategories(List<GoalModel> goals) {
-    final fromGoals = goals
-        .map((g) => g.category.trim())
-        .where((c) => c.isNotEmpty)
-        .toSet();
 
-    final all = {..._categories, ...fromGoals}.toList()..sort();
-    return all;
-  }
 
   List<GoalModel> _filter(List<GoalModel> src) {
     if (_filterCategory == 'All') return src;
@@ -140,7 +123,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen>
       builder: (_) => _GoalEditorSheet(
         uid: uid,
         existing: existing,
-        categories: _categories,
+        categories: ref.read(allCategoriesProvider),
       ),
     );
 
@@ -235,45 +218,42 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen>
 
     showDialog(
       context: context,
-      builder: (dCtx) => AnimatedPadding(
-        duration: const Duration(milliseconds: 150),
-        curve: Curves.easeOutCubic,
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(dCtx).viewInsets.bottom,
+      builder: (dCtx) => AlertDialog(
+        backgroundColor: AColors.bgElevated,
+        shape: const RoundedRectangleBorder(borderRadius: ARadius.xl),
+        title: const Text('New Category', style: AText.titleMedium),
+        content: TextField(
+          controller: ctrl,
+          autofocus: true,
+          style: AText.bodyLarge,
+          decoration: const InputDecoration(hintText: 'Category name'),
         ),
-        child: AlertDialog(
-          backgroundColor: AColors.bgElevated,
-          shape: const RoundedRectangleBorder(borderRadius: ARadius.xl),
-          title: const Text('New Category', style: AText.titleMedium),
-          content: TextField(
-            controller: ctrl,
-            autofocus: true,
-            style: AText.bodyLarge,
-            decoration: const InputDecoration(hintText: 'Category name'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dCtx).pop(),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: AColors.textMuted),
+            ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dCtx).pop(),
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: AColors.textMuted),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                final value = ctrl.text.trim();
-                if (value.isNotEmpty && !_categories.contains(value)) {
-                  setState(() => _categories.add(value));
-                  Navigator.of(dCtx).pop();
+          TextButton(
+            onPressed: () async {
+              final value = ctrl.text.trim();
+              if (value.isNotEmpty) {
+                try {
+                  await ref.read(userActionsProvider.notifier).addCustomCategory(value);
+                } catch (e) {
+                  debugPrint('Error saving category in Goals: $e');
                 }
-              },
-              child: const Text(
-                'Add',
-                style: TextStyle(color: AColors.primary),
-              ),
+                if (mounted) Navigator.of(dCtx).pop();
+              }
+            },
+            child: const Text(
+              'Add',
+              style: TextStyle(color: AColors.primary),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -320,7 +300,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen>
             }
 
             final goals = snapshot.data ?? [];
-            final categories = _allCategories(goals);
+            final categories = ref.watch(allCategoriesProvider);
             final active = _active(goals);
             final complete = _complete(goals);
             final all = _all(goals);
@@ -1042,10 +1022,7 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
   late String _emoji;
   String? _category;
   late Color _color;
-
   DateTime? _deadline;
-  int? _xpReward;
-  bool _useCustomReward = false;
   bool _useMeasure = false;
 
   final List<GoalStepModel> _steps = [];
@@ -1079,8 +1056,6 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
     const Color(0xFFFFD700),
   ];
 
-  final _xpOptions = [50, 100, 150, 200, 300, 500];
-
   @override
   void initState() {
     super.initState();
@@ -1101,8 +1076,6 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
         ? e.category
         : null;
     _deadline = e?.deadline;
-    _xpReward = e?.xpReward;
-    _useCustomReward = e?.customReward != null && e!.customReward!.trim().isNotEmpty;
     _useMeasure = e?.measureTarget != null;
     _steps.addAll(
       (e?.steps ?? []).map((s) => GoalStepModel(id: s.id, title: s.title, done: s.done)),
@@ -1173,8 +1146,8 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
       deadline: _deadline,
       steps: List<GoalStepModel>.from(_steps),
       xpSphere: widget.existing?.xpSphere ?? XpSphere.willpower,
-      xpReward: !_useCustomReward ? (_xpReward ?? 50) : 0,
-      customReward: _useCustomReward && _customRewardCtrl.text.trim().isNotEmpty
+      xpReward: 0,
+      customReward: _customRewardCtrl.text.trim().isNotEmpty
           ? _customRewardCtrl.text.trim()
           : null,
       measureTarget: _useMeasure ? measure : null,
@@ -1570,139 +1543,9 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
                     _Sec(
                       label: 'Reward on Completion',
                       icon: Icons.card_giftcard_rounded,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: () {
-                                    setState(() => _useCustomReward = false);
-                                    HapticFeedback.selectionClick();
-                                  },
-                                  child: AnimatedContainer(
-                                    duration: const Duration(milliseconds: 150),
-                                    padding: const EdgeInsets.symmetric(vertical: 10),
-                                    decoration: BoxDecoration(
-                                      color: !_useCustomReward
-                                          ? AColors.primaryGlow
-                                          : AColors.bgCard,
-                                      borderRadius: const BorderRadius.horizontal(
-                                        left: Radius.circular(10),
-                                      ),
-                                      border: Border.all(
-                                        color: !_useCustomReward
-                                            ? AColors.primary
-                                            : AColors.border,
-                                        width: !_useCustomReward ? 1.5 : 1,
-                                      ),
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                        '⭐ XP Points',
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w700,
-                                          color: !_useCustomReward
-                                              ? AColors.primary
-                                              : AColors.textMuted,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: () {
-                                    setState(() => _useCustomReward = true);
-                                    HapticFeedback.selectionClick();
-                                  },
-                                  child: AnimatedContainer(
-                                    duration: const Duration(milliseconds: 150),
-                                    padding: const EdgeInsets.symmetric(vertical: 10),
-                                    decoration: BoxDecoration(
-                                      color: _useCustomReward
-                                          ? const Color(0xFFFFD700).withValues(alpha: 0.12)
-                                          : AColors.bgCard,
-                                      borderRadius: const BorderRadius.horizontal(
-                                        right: Radius.circular(10),
-                                      ),
-                                      border: Border.all(
-                                        color: _useCustomReward
-                                            ? const Color(0xFFFFD700)
-                                            : AColors.border,
-                                        width: _useCustomReward ? 1.5 : 1,
-                                      ),
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                        '🎁 Custom',
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w700,
-                                          color: _useCustomReward
-                                              ? const Color(0xFFFFD700)
-                                              : AColors.textMuted,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          if (!_useCustomReward)
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: _xpOptions.map((xp) {
-                                final sel = _xpReward == xp;
-                                return GestureDetector(
-                                  onTap: () {
-                                    setState(() => _xpReward = xp);
-                                    HapticFeedback.selectionClick();
-                                  },
-                                  child: AnimatedContainer(
-                                    duration: const Duration(milliseconds: 150),
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 14,
-                                      vertical: 8,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: sel
-                                          ? const Color(0xFFFFD700).withValues(alpha: 0.12)
-                                          : AColors.bgCard,
-                                      borderRadius: ARadius.full,
-                                      border: Border.all(
-                                        color: sel
-                                            ? const Color(0xFFFFD700)
-                                            : AColors.border,
-                                        width: sel ? 1.5 : 1,
-                                      ),
-                                    ),
-                                    child: Text(
-                                      '⭐ $xp XP',
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                        color: sel
-                                            ? const Color(0xFFFFD700)
-                                            : AColors.textMuted,
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              }).toList(),
-                            )
-                          else
-                            _InputBox(
-                              ctrl: _customRewardCtrl,
-                              hint: 'e.g. Buy snacks 🍕 or Play games 🎮',
-                            ),
-                        ],
+                      child: _InputBox(
+                        ctrl: _customRewardCtrl,
+                        hint: 'e.g. Buy snacks 🍕 or Play games 🎮',
                       ),
                     ),
                     const SizedBox(height: 20),

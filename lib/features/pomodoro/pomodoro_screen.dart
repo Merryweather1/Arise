@@ -10,6 +10,12 @@ import '../../core/models/app_models.dart';
 import '../../core/providers/app_providers.dart';
 import '../../core/services/firestore_service.dart';
 
+// ─── PROVIDERS ────────────────────────────────────────────────────────────
+final pomodoroFocusMinsProvider = StateProvider<int>((ref) => 25);
+final pomodoroShortBreakMinsProvider = StateProvider<int>((ref) => 5);
+final pomodoroLongBreakMinsProvider = StateProvider<int>((ref) => 15);
+final pomodoroSessionsUntilLongProvider = StateProvider<int>((ref) => 4);
+
 // ─── MODELS ───────────────────────────────────────────────────────────────
 enum PomodoroPhase { focus, shortBreak, longBreak }
 
@@ -23,13 +29,7 @@ class PomodoroScreen extends ConsumerStatefulWidget {
 
 class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
     with TickerProviderStateMixin {
-  // Settings
-  int _focusMins = 25;
-  int _shortBreakMins = 5;
-  int _longBreakMins = 15;
-  int _sessionsUntilLong = 4;
-
-  // State
+// ─── STATE ────────────────────────────────────────────────────────────────
   PomodoroPhase _phase = PomodoroPhase.focus;
   bool _running = false;
   bool _handlingCompletion = false;
@@ -46,7 +46,13 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
   @override
   void initState() {
     super.initState();
-    _secondsLeft = _focusMins * 60;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {
+          _secondsLeft = ref.read(pomodoroFocusMinsProvider) * 60;
+        });
+      }
+    });
 
     _pulseCtrl = AnimationController(
       vsync: this,
@@ -69,11 +75,11 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
   int get _totalSeconds {
     switch (_phase) {
       case PomodoroPhase.focus:
-        return _focusMins * 60;
+        return ref.watch(pomodoroFocusMinsProvider) * 60;
       case PomodoroPhase.shortBreak:
-        return _shortBreakMins * 60;
+        return ref.watch(pomodoroShortBreakMinsProvider) * 60;
       case PomodoroPhase.longBreak:
-        return _longBreakMins * 60;
+        return ref.watch(pomodoroLongBreakMinsProvider) * 60;
     }
   }
 
@@ -113,7 +119,8 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
   PomodoroPhase _nextPhaseAfterCompletion(PomodoroPhase current) {
     if (current == PomodoroPhase.focus) {
       final nextCount = _cycleCompleted + 1;
-      return nextCount % _sessionsUntilLong == 0
+      final sessionsUntilLong = ref.read(pomodoroSessionsUntilLongProvider);
+      return nextCount % sessionsUntilLong == 0
           ? PomodoroPhase.longBreak
           : PomodoroPhase.shortBreak;
     }
@@ -212,10 +219,11 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
       }
 
       if (uid != null && uid.isNotEmpty) {
-        debugPrint('Pomodoro complete: phase=$_phase uid=$uid focus=$_focusMins');
+        final focusMins = ref.read(pomodoroFocusMinsProvider);
+        debugPrint('Pomodoro complete: phase=$_phase uid=$uid focus=$focusMins');
         await PomodoroRepository.logSession(
           uid,
-          durationMinutes: _focusMins,
+          durationMinutes: focusMins,
           linkedTaskTitle: _currentTask,
         );
       }
@@ -254,11 +262,11 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
   int _phaseSeconds(PomodoroPhase phase) {
     switch (phase) {
       case PomodoroPhase.focus:
-        return _focusMins * 60;
+        return ref.read(pomodoroFocusMinsProvider) * 60;
       case PomodoroPhase.shortBreak:
-        return _shortBreakMins * 60;
+        return ref.read(pomodoroShortBreakMinsProvider) * 60;
       case PomodoroPhase.longBreak:
-        return _longBreakMins * 60;
+        return ref.read(pomodoroLongBreakMinsProvider) * 60;
     }
   }
 
@@ -362,19 +370,11 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
       context: context,
       backgroundColor: Colors.transparent,
       builder: (_) => _SettingsSheet(
-        focusMins: _focusMins,
-        shortBreakMins: _shortBreakMins,
-        longBreakMins: _longBreakMins,
-        sessionsUntilLong: _sessionsUntilLong,
-        onSave: (f, s, l, n) {
+        onSettingsChanged: () {
+          final sessionsUntilLong = ref.read(pomodoroSessionsUntilLongProvider);
           setState(() {
-            _focusMins = f;
-            _shortBreakMins = s;
-            _longBreakMins = l;
-            _sessionsUntilLong = n;
-
-            if (_cycleCompleted > _sessionsUntilLong) {
-              _cycleCompleted = _cycleCompleted % _sessionsUntilLong;
+            if (_cycleCompleted > sessionsUntilLong) {
+              _cycleCompleted = _cycleCompleted % sessionsUntilLong;
             }
 
             if (!_running) {
@@ -391,47 +391,40 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
     final result = await showDialog<String>(
       context: context,
       builder: (dialogCtx) {
-        return AnimatedPadding(
-          duration: const Duration(milliseconds: 150),
-          curve: Curves.easeOutCubic,
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(dialogCtx).viewInsets.bottom,
+        return AlertDialog(
+          backgroundColor: AColors.bgElevated,
+          shape: const RoundedRectangleBorder(borderRadius: ARadius.xl),
+          title: const Text(
+            'What are you working on?',
+            style: AText.titleMedium,
           ),
-          child: AlertDialog(
-            backgroundColor: AColors.bgElevated,
-            shape: const RoundedRectangleBorder(borderRadius: ARadius.xl),
-            title: const Text(
-              'What are you working on?',
-              style: AText.titleMedium,
+          content: TextField(
+            controller: ctrl,
+            autofocus: true,
+            style: AText.bodyLarge,
+            decoration: const InputDecoration(
+              hintText: 'e.g. Write feature spec...',
             ),
-            content: TextField(
-              controller: ctrl,
-              autofocus: true,
-              style: AText.bodyLarge,
-              decoration: const InputDecoration(
-                hintText: 'e.g. Write feature spec...',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogCtx).pop(),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: AColors.textMuted),
               ),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(dialogCtx).pop(),
-                child: const Text(
-                  'Cancel',
-                  style: TextStyle(color: AColors.textMuted),
+            TextButton(
+              onPressed: () => Navigator.of(dialogCtx).pop(ctrl.text.trim()),
+              child: const Text(
+                'Set',
+                style: TextStyle(
+                  color: AColors.primary,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
-              TextButton(
-                onPressed: () => Navigator.of(dialogCtx).pop(ctrl.text.trim()),
-                child: const Text(
-                  'Set',
-                  style: TextStyle(
-                    color: AColors.primary,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         );
       },
     );
@@ -446,7 +439,7 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
     final uid = ref.watch(currentUidProvider);
 
     return Scaffold(
-      resizeToAvoidBottomInset: true,
+      resizeToAvoidBottomInset: false,
       backgroundColor: AColors.bg,
       body: SafeArea(
         child: uid == null || uid.isEmpty
@@ -678,7 +671,7 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
 
                         _SessionDots(
                           completed: _cycleCompleted,
-                          total: _sessionsUntilLong,
+                          total: ref.watch(pomodoroSessionsUntilLongProvider),
                           color: _phaseColor,
                         ),
                       ],
@@ -690,7 +683,7 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
                   sessionsToday: todaySessions.length,
                   focusMinutes: totalFocusToday,
                   cycleDone: _cycleCompleted,
-                  cycleTotal: _sessionsUntilLong,
+                  cycleTotal: ref.watch(pomodoroSessionsUntilLongProvider),
                 ),
 
                 const SizedBox(height: 16),
@@ -887,42 +880,20 @@ class _Divider extends StatelessWidget {
 }
 
 // ─── SETTINGS SHEET ───────────────────────────────────────────────────────
-class _SettingsSheet extends StatefulWidget {
-  final int focusMins;
-  final int shortBreakMins;
-  final int longBreakMins;
-  final int sessionsUntilLong;
-  final Function(int, int, int, int) onSave;
+class _SettingsSheet extends ConsumerWidget {
+  final VoidCallback onSettingsChanged;
 
   const _SettingsSheet({
-    required this.focusMins,
-    required this.shortBreakMins,
-    required this.longBreakMins,
-    required this.sessionsUntilLong,
-    required this.onSave,
+    required this.onSettingsChanged,
   });
 
   @override
-  State<_SettingsSheet> createState() => _SettingsSheetState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final focus = ref.watch(pomodoroFocusMinsProvider);
+    final short = ref.watch(pomodoroShortBreakMinsProvider);
+    final long = ref.watch(pomodoroLongBreakMinsProvider);
+    final sessions = ref.watch(pomodoroSessionsUntilLongProvider);
 
-class _SettingsSheetState extends State<_SettingsSheet> {
-  late int _focus;
-  late int _short;
-  late int _long;
-  late int _sessions;
-
-  @override
-  void initState() {
-    super.initState();
-    _focus = widget.focusMins;
-    _short = widget.shortBreakMins;
-    _long = widget.longBreakMins;
-    _sessions = widget.sessionsUntilLong;
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
         color: AColors.bgElevated,
@@ -950,51 +921,62 @@ class _SettingsSheetState extends State<_SettingsSheet> {
             label: 'Focus',
             emoji: '🎯',
             color: AColors.primary,
-            value: _focus,
+            value: focus,
             min: 5,
             max: 60,
             step: 5,
-            onChanged: (v) => setState(() => _focus = v),
+            onChanged: (v) {
+              ref.read(pomodoroFocusMinsProvider.notifier).state = v;
+              onSettingsChanged();
+            },
           ),
           const SizedBox(height: 16),
           _TimerRow(
             label: 'Short Break',
             emoji: '☕',
             color: AColors.info,
-            value: _short,
+            value: short,
             min: 1,
             max: 15,
             step: 1,
-            onChanged: (v) => setState(() => _short = v),
+            onChanged: (v) {
+              ref.read(pomodoroShortBreakMinsProvider.notifier).state = v;
+              onSettingsChanged();
+            },
           ),
           const SizedBox(height: 16),
           _TimerRow(
             label: 'Long Break',
             emoji: '🛌',
             color: AColors.warning,
-            value: _long,
+            value: long,
             min: 5,
             max: 30,
             step: 5,
-            onChanged: (v) => setState(() => _long = v),
+            onChanged: (v) {
+              ref.read(pomodoroLongBreakMinsProvider.notifier).state = v;
+              onSettingsChanged();
+            },
           ),
           const SizedBox(height: 16),
           _TimerRow(
             label: 'Sessions until long break',
             emoji: '🔁',
             color: AColors.primary,
-            value: _sessions,
+            value: sessions,
             min: 2,
             max: 6,
             step: 1,
-            onChanged: (v) => setState(() => _sessions = v),
+            onChanged: (v) {
+              ref.read(pomodoroSessionsUntilLongProvider.notifier).state = v;
+              onSettingsChanged();
+            },
           ),
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
             child: GestureDetector(
               onTap: () {
-                widget.onSave(_focus, _short, _long, _sessions);
                 Navigator.of(context).pop();
                 HapticFeedback.mediumImpact();
               },
@@ -1006,7 +988,7 @@ class _SettingsSheetState extends State<_SettingsSheet> {
                 ),
                 child: const Center(
                   child: Text(
-                    'Save Settings',
+                    'Close Settings',
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,

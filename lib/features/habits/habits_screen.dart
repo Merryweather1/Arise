@@ -7,6 +7,9 @@ import '../../core/models/app_models.dart';
 import '../../core/providers/app_providers.dart';
 import '../../core/theme/app_theme.dart';
 
+// ─── SETTINGS ─────────────────────────────────────────────────────────────
+final habitsFilterCategoryProvider = StateProvider<String>((ref) => 'All');
+
 // ─── SCREEN ───────────────────────────────────────────────────────────────
 class HabitsScreen extends ConsumerStatefulWidget {
   const HabitsScreen({super.key});
@@ -19,16 +22,6 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabCtrl;
 
-  String _filterCategory = 'All';
-
-  final List<String> _categories = [
-    'Health',
-    'Learning',
-    'Personal',
-    'Work',
-    'Finance',
-    'Family',
-  ];
 
   @override
   void initState() {
@@ -69,19 +62,12 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
   }
 
   bool _matchesCategory(HabitModel habit) {
-    if (_filterCategory == 'All') return true;
-    return habit.category.trim() == _filterCategory;
+    final filter = ref.watch(habitsFilterCategoryProvider);
+    if (filter == 'All') return true;
+    return habit.category.trim() == filter;
   }
 
-  List<String> _allCategories(List<HabitModel> habits) {
-    final fromHabits = habits
-        .map((h) => h.category.trim())
-        .where((c) => c.isNotEmpty)
-        .toSet();
 
-    final all = {..._categories, ...fromHabits}.toList()..sort();
-    return all;
-  }
 
   void _toggleHabit(HabitModel h) {
     ref.read(habitActionsProvider.notifier).toggleToday(h);
@@ -106,7 +92,7 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
       builder: (_) => _HabitEditorSheet(
         existing: existing,
         uid: uid,
-        categories: _categories,
+        categories: ref.read(allCategoriesProvider),
       ),
     );
 
@@ -141,45 +127,42 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
 
     showDialog(
       context: context,
-      builder: (dCtx) => AnimatedPadding(
-        duration: const Duration(milliseconds: 150),
-        curve: Curves.easeOutCubic,
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(dCtx).viewInsets.bottom,
+      builder: (dCtx) => AlertDialog(
+        backgroundColor: AColors.bgElevated,
+        shape: const RoundedRectangleBorder(borderRadius: ARadius.xl),
+        title: const Text('New Category', style: AText.titleMedium),
+        content: TextField(
+          controller: ctrl,
+          autofocus: true,
+          style: AText.bodyLarge,
+          decoration: const InputDecoration(hintText: 'Category name'),
         ),
-        child: AlertDialog(
-          backgroundColor: AColors.bgElevated,
-          shape: const RoundedRectangleBorder(borderRadius: ARadius.xl),
-          title: const Text('New Category', style: AText.titleMedium),
-          content: TextField(
-            controller: ctrl,
-            autofocus: true,
-            style: AText.bodyLarge,
-            decoration: const InputDecoration(hintText: 'Category name'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dCtx).pop(),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: AColors.textMuted),
+            ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dCtx).pop(),
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: AColors.textMuted),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                final value = ctrl.text.trim();
-                if (value.isNotEmpty && !_categories.contains(value)) {
-                  setState(() => _categories.add(value));
-                  Navigator.of(dCtx).pop();
+          TextButton(
+            onPressed: () async {
+              final value = ctrl.text.trim();
+              if (value.isNotEmpty) {
+                try {
+                  await ref.read(userActionsProvider.notifier).addCustomCategory(value);
+                } catch (e) {
+                  debugPrint('Error saving category in Habits: $e');
                 }
-              },
-              child: const Text(
-                'Add',
-                style: TextStyle(color: AColors.primary),
-              ),
+                if (mounted) Navigator.of(dCtx).pop();
+              }
+            },
+            child: const Text(
+              'Add',
+              style: TextStyle(color: AColors.primary),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -188,7 +171,7 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
   Widget build(BuildContext context) {
     final habits = ref.watch(habitsProvider).valueOrNull ?? [];
     final visibleHabits = habits.where((h) => !h.archived).toList();
-    final categories = _allCategories(visibleHabits);
+    final categories = ref.watch(allCategoriesProvider);
 
     final todayHabits = visibleHabits
         .where((h) => _isHabitVisibleToday(h))
@@ -247,14 +230,14 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
                 children: [
                   _CategoryChip(
                     label: 'All',
-                    selected: _filterCategory == 'All',
-                    onTap: () => setState(() => _filterCategory = 'All'),
+                    selected: ref.watch(habitsFilterCategoryProvider) == 'All',
+                    onTap: () => ref.read(habitsFilterCategoryProvider.notifier).state = 'All',
                   ),
                   ...categories.map(
                         (c) => _CategoryChip(
                       label: c,
-                      selected: _filterCategory == c,
-                      onTap: () => setState(() => _filterCategory = c),
+                      selected: ref.watch(habitsFilterCategoryProvider) == c,
+                      onTap: () => ref.read(habitsFilterCategoryProvider.notifier).state = c,
                     ),
                   ),
                   _CategoryChip(

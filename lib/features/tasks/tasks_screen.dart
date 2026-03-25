@@ -12,6 +12,10 @@ import '../../core/theme/app_theme.dart';
 enum SortMode { date, priority }
 enum DisplayMode { cards, calendar }
 
+final tasksSortModeProvider = StateProvider<SortMode>((ref) => SortMode.date);
+final tasksDisplayModeProvider = StateProvider<DisplayMode>((ref) => DisplayMode.cards);
+final tasksHideCompletedProvider = StateProvider<bool>((ref) => false);
+
 // ─── SCREEN ───────────────────────────────────────────────────────────────
 class TasksScreen extends ConsumerStatefulWidget {
   const TasksScreen({super.key});
@@ -21,33 +25,24 @@ class TasksScreen extends ConsumerStatefulWidget {
 }
 
 class _TasksScreenState extends ConsumerState<TasksScreen> {
-  SortMode _sortMode = SortMode.date;
-  DisplayMode _displayMode = DisplayMode.cards;
-  bool _hideCompleted = false;
   String _filterCategory = 'All';
   DateTime _calendarDate = DateTime.now();
 
-  List<String> _categories = [
-    'Personal',
-    'Work',
-    'Health',
-    'Learning',
-    'Finance',
-    'Family',
-  ];
-
   List<TaskModel> _filtered(List<TaskModel> src) {
+    final hideCompleted = ref.watch(tasksHideCompletedProvider);
+    final sortMode = ref.watch(tasksSortModeProvider);
+
     final list = src.where((t) {
       final category = t.category.trim();
 
-      if (_hideCompleted && t.done) return false;
+      if (hideCompleted && t.done) return false;
       if (_filterCategory != 'All' && category != _filterCategory) return false;
 
       return true;
     }).toList();
 
     list.sort((a, b) {
-      if (_sortMode == SortMode.priority) {
+      if (sortMode == SortMode.priority) {
         return b.priority.compareTo(a.priority);
       }
 
@@ -123,7 +118,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
       backgroundColor: Colors.transparent,
       builder: (_) => _TaskEditorSheet(
         existing: existing,
-        categories: _categories,
+        categories: ref.read(allCategoriesProvider),
         uid: uid,
       ),
     );
@@ -141,14 +136,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (_) => _SettingsSheet(
-        sortMode: _sortMode,
-        displayMode: _displayMode,
-        hideCompleted: _hideCompleted,
-        onSortChanged: (v) => setState(() => _sortMode = v),
-        onDisplayChanged: (v) => setState(() => _displayMode = v),
-        onHideChanged: (v) => setState(() => _hideCompleted = v),
-      ),
+      builder: (_) => const _SettingsSheet(),
     );
   }
 
@@ -157,44 +145,42 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
 
     showDialog(
       context: context,
-      builder: (dCtx) => AnimatedPadding(
-        duration: const Duration(milliseconds: 150),
-        curve: Curves.easeOutCubic,
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(dCtx).viewInsets.bottom,
+      builder: (dCtx) => AlertDialog(
+        backgroundColor: AColors.bgElevated,
+        shape: const RoundedRectangleBorder(borderRadius: ARadius.xl),
+        title: const Text('New Category', style: AText.titleMedium),
+        content: TextField(
+          controller: ctrl,
+          autofocus: true,
+          style: AText.bodyLarge,
+          decoration: const InputDecoration(hintText: 'Category name'),
         ),
-        child: AlertDialog(
-          backgroundColor: AColors.bgElevated,
-          shape: const RoundedRectangleBorder(borderRadius: ARadius.xl),
-          title: const Text('New Category', style: AText.titleMedium),
-          content: TextField(
-            controller: ctrl,
-            autofocus: true,
-            style: AText.bodyLarge,
-            decoration: const InputDecoration(hintText: 'Category name'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dCtx).pop(),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: AColors.textMuted),
+            ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dCtx).pop(),
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: AColors.textMuted),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                if (ctrl.text.trim().isNotEmpty) {
-                  setState(() => _categories.add(ctrl.text.trim()));
-                  Navigator.of(dCtx).pop();
+          TextButton(
+            onPressed: () async {
+              final text = ctrl.text.trim();
+              if (text.isNotEmpty) {
+                try {
+                  await ref.read(userActionsProvider.notifier).addCustomCategory(text);
+                } catch (e) {
+                  debugPrint('Error saving category: $e');
                 }
-              },
-              child: const Text(
-                'Add',
-                style: TextStyle(color: AColors.primary),
-              ),
+                if (mounted) Navigator.of(dCtx).pop();
+              }
+            },
+            child: const Text(
+              'Add',
+              style: TextStyle(color: AColors.primary),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -258,6 +244,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
   @override
   Widget build(BuildContext context) {
     final tasksAsync = ref.watch(tasksProvider);
+    final categories = ref.watch(allCategoriesProvider);
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
@@ -298,7 +285,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
                     selected: _filterCategory == 'All',
                     onTap: () => setState(() => _filterCategory = 'All'),
                   ),
-                  ..._categories.map(
+                  ...categories.map(
                         (c) => _CategoryChip(
                       label: c,
                       selected: _filterCategory == c,
@@ -317,7 +304,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
 
             const SizedBox(height: 16),
 
-            if (_displayMode == DisplayMode.calendar) ...[
+            if (ref.watch(tasksDisplayModeProvider) == DisplayMode.calendar) ...[
               _CalendarStrip(
                 selected: _calendarDate,
                 onSelect: (d) => setState(() => _calendarDate = d),
@@ -341,7 +328,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
                   ),
                 ),
                 data: (_) {
-                  return _displayMode == DisplayMode.cards
+                  return ref.watch(tasksDisplayModeProvider) == DisplayMode.cards
                       ? _TaskList(
                     tasks: _cardsFiltered,
                     onComplete: _complete,
@@ -1099,25 +1086,14 @@ class _SubtaskRow extends StatelessWidget {
 }
 
 // ─── SETTINGS SHEET ───────────────────────────────────────────────────────
-class _SettingsSheet extends StatelessWidget {
-  final SortMode sortMode;
-  final DisplayMode displayMode;
-  final bool hideCompleted;
-  final Function(SortMode) onSortChanged;
-  final Function(DisplayMode) onDisplayChanged;
-  final Function(bool) onHideChanged;
-
-  const _SettingsSheet({
-    required this.sortMode,
-    required this.displayMode,
-    required this.hideCompleted,
-    required this.onSortChanged,
-    required this.onDisplayChanged,
-    required this.onHideChanged,
-  });
+class _SettingsSheet extends ConsumerWidget {
+  const _SettingsSheet();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final sortMode = ref.watch(tasksSortModeProvider);
+    final displayMode = ref.watch(tasksDisplayModeProvider);
+    final hideCompleted = ref.watch(tasksHideCompletedProvider);
     return Container(
       decoration: const BoxDecoration(
         color: AColors.bgElevated,
@@ -1150,7 +1126,7 @@ class _SettingsSheet extends StatelessWidget {
                 label: '⏰  Date',
                 selected: sortMode == SortMode.date,
                 onTap: () {
-                  onSortChanged(SortMode.date);
+                  ref.read(tasksSortModeProvider.notifier).state = SortMode.date;
                   Navigator.pop(context);
                 },
               ),
@@ -1159,7 +1135,7 @@ class _SettingsSheet extends StatelessWidget {
                 label: '🔺  Priority',
                 selected: sortMode == SortMode.priority,
                 onTap: () {
-                  onSortChanged(SortMode.priority);
+                  ref.read(tasksSortModeProvider.notifier).state = SortMode.priority;
                   Navigator.pop(context);
                 },
               ),
@@ -1175,7 +1151,7 @@ class _SettingsSheet extends StatelessWidget {
                 label: '▦  Cards',
                 selected: displayMode == DisplayMode.cards,
                 onTap: () {
-                  onDisplayChanged(DisplayMode.cards);
+                  ref.read(tasksDisplayModeProvider.notifier).state = DisplayMode.cards;
                   Navigator.pop(context);
                 },
               ),
@@ -1184,7 +1160,7 @@ class _SettingsSheet extends StatelessWidget {
                 label: '📅  Calendar',
                 selected: displayMode == DisplayMode.calendar,
                 onTap: () {
-                  onDisplayChanged(DisplayMode.calendar);
+                  ref.read(tasksDisplayModeProvider.notifier).state = DisplayMode.calendar;
                   Navigator.pop(context);
                 },
               ),
@@ -1194,7 +1170,7 @@ class _SettingsSheet extends StatelessWidget {
 
           GestureDetector(
             onTap: () {
-              onHideChanged(!hideCompleted);
+              ref.read(tasksHideCompletedProvider.notifier).state = !hideCompleted;
               HapticFeedback.lightImpact();
             },
             child: Row(

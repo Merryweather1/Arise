@@ -18,6 +18,47 @@ final userProfileProvider = StreamProvider<UserProfile?>((ref) {
   return UserRepository.stream(uid);
 });
 
+class UserNotifier extends AsyncNotifier<void> {
+  @override Future<void> build() async {}
+  
+  Future<void> addCustomCategory(String category) {
+    final uid = ref.read(currentUidProvider);
+    if (uid == null) return Future.value();
+    return UserRepository.addCustomCategory(uid, category);
+  }
+}
+
+final userActionsProvider = AsyncNotifierProvider<UserNotifier, void>(UserNotifier.new);
+
+// ─── GLOBAL CATEGORIES ───────────────────────────────────────────────────
+final allCategoriesProvider = Provider<List<String>>((ref) {
+  final base = {'Personal', 'Work', 'Health', 'Finance', 'Errands', 'Social', 'Mind', 'Fitness', 'Career', 'Learning'};
+  
+  final profile = ref.watch(userProfileProvider).valueOrNull;
+  if (profile != null) {
+    base.addAll(profile.customCategories);
+  }
+  
+  final tasks = ref.watch(tasksProvider).valueOrNull ?? [];
+  for (var t in tasks) {
+    if (t.category.isNotEmpty) base.add(t.category);
+  }
+  
+  final habits = ref.watch(habitsProvider).valueOrNull ?? [];
+  for (var h in habits) {
+    if (h.category.isNotEmpty) base.add(h.category);
+  }
+  
+  final goals = ref.watch(goalsProvider).valueOrNull ?? [];
+  for (var g in goals) {
+    if (g.category.isNotEmpty) base.add(g.category);
+  }
+  
+  final sorted = base.toList();
+  sorted.sort();
+  return sorted;
+});
+
 // ─── TASKS ─────────────────────────────────────────────────────────────────
 final tasksProvider = StreamProvider<List<TaskModel>>((ref) {
   final uid = ref.watch(currentUidProvider);
