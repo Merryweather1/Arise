@@ -481,7 +481,7 @@ class _CalendarStripState extends State<_CalendarStrip> {
   }
 }
 
-// ─── TASK LIST (local removal to satisfy Slidable dismiss lifecycle) ─────
+// ─── TASK LIST ─────────────────────────────────────────────────────────────
 class _TaskList extends StatefulWidget {
   final List<TaskModel> tasks;
   final Future<void> Function(TaskModel) onComplete;
@@ -506,6 +506,10 @@ class _TaskList extends StatefulWidget {
 class _TaskListState extends State<_TaskList> {
   late List<TaskModel> _visible;
 
+  /// Optimistic overrides: taskId → done value shown immediately on swipe.
+  /// Cleared when Firestore streams back and replaces the list.
+  final Map<String, bool> _localDone = {};
+
   @override
   void initState() {
     super.initState();
@@ -515,13 +519,31 @@ class _TaskListState extends State<_TaskList> {
   @override
   void didUpdateWidget(covariant _TaskList oldWidget) {
     super.didUpdateWidget(oldWidget);
+    // Firestore has returned updated data — clear overrides and adopt new list
+    _localDone.clear();
     _visible = List<TaskModel>.from(widget.tasks);
   }
 
   void _removeLocalById(String id) {
     setState(() {
+      _localDone.remove(id);
       _visible.removeWhere((t) => t.id == id);
     });
+  }
+
+  /// Instantly flips done state in the UI, then calls Firestore.
+  Future<void> _toggleDoneInstant(TaskModel task) async {
+    // Read the current effective done value (local override takes priority)
+    final currentDone = _localDone.containsKey(task.id)
+        ? _localDone[task.id]!
+        : task.done;
+    final newDone = !currentDone;
+    setState(() => _localDone[task.id] = newDone);
+    if (newDone) {
+      await widget.onComplete(task);
+    } else {
+      await widget.onUndo(task);
+    }
   }
 
   @override
@@ -547,24 +569,47 @@ class _TaskListState extends State<_TaskList> {
       itemCount: _visible.length,
       itemBuilder: (_, i) {
         final task = _visible[i];
+        // Apply optimistic override if we have one
+        final optimisticDone = _localDone.containsKey(task.id)
+            ? _localDone[task.id]!
+            : task.done;
         return Padding(
           padding: const EdgeInsets.only(bottom: 10),
           child: _SwipeableTaskTile(
-            key: ValueKey(task.id),
+            // Include done state in key so that after a dismiss+re-insert the
+            // toggled card gets a brand-new Slidable (avoiding the
+            // "dismissed widget still in tree" error from flutter_slidable).
+            key: ValueKey('${task.id}_$optimisticDone'),
             task: task,
+            optimisticDone: optimisticDone,
+            // Right swipe full-dismiss: must remove from tree (Slidable contract),
+            // but immediately re-insert a toggled copy so there's no visual gap.
             onDismissComplete: () async {
-              if (!task.done) {
+              final idx = _visible.indexWhere((t) => t.id == task.id);
+              final currentDone = _localDone.containsKey(task.id)
+                  ? _localDone[task.id]!
+                  : task.done;
+              final newDone = !currentDone;
+              final toggled = task.copyWith(done: newDone);
+              setState(() {
+                _localDone[task.id] = newDone;
+                _visible.removeWhere((t) => t.id == task.id);
+                // Re-insert at same position so card reappears instantly
+                _visible.insert(idx.clamp(0, _visible.length), toggled);
+              });
+              if (newDone) {
                 await widget.onComplete(task);
               } else {
                 await widget.onUndo(task);
               }
             },
+            // Left swipe: always delete (remove immediately)
             onDismissDelete: () async {
               _removeLocalById(task.id);
               await widget.onDelete(task);
             },
-            onCompleteTap: () => widget.onComplete(task),
-            onUndoTap: () => widget.onUndo(task),
+            onCompleteTap: () => _toggleDoneInstant(task),
+            onUndoTap: () => _toggleDoneInstant(task),
             onDeleteTap: () async {
               _removeLocalById(task.id);
               await widget.onDelete(task);
@@ -582,6 +627,9 @@ class _TaskListState extends State<_TaskList> {
 class _SwipeableTaskTile extends StatefulWidget {
   final TaskModel task;
 
+  /// Optimistic done override — the value to render right now, regardless of task.done
+  final bool optimisticDone;
+
   final Future<void> Function() onDismissComplete;
   final Future<void> Function() onDismissDelete;
 
@@ -595,6 +643,7 @@ class _SwipeableTaskTile extends StatefulWidget {
   const _SwipeableTaskTile({
     super.key,
     required this.task,
+    required this.optimisticDone,
     required this.onDismissComplete,
     required this.onDismissDelete,
     required this.onCompleteTap,
@@ -631,8 +680,9 @@ class _SwipeableTaskTileState extends State<_SwipeableTaskTile>
   @override
   void didUpdateWidget(covariant _SwipeableTaskTile oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.task.done && !oldWidget.task.done) _strikeCtrl.forward();
-    if (!widget.task.done && oldWidget.task.done) _strikeCtrl.reverse();
+    // Drive the strike animation from optimisticDone so it reacts immediately
+    if (widget.optimisticDone && !oldWidget.optimisticDone) _strikeCtrl.forward();
+    if (!widget.optimisticDone && oldWidget.optimisticDone) _strikeCtrl.reverse();
   }
 
   @override
@@ -652,6 +702,7 @@ class _SwipeableTaskTileState extends State<_SwipeableTaskTile>
   @override
   Widget build(BuildContext context) {
     final task = widget.task;
+    final isDone = widget.optimisticDone; // use optimistic value throughout
     final hasSubs = task.subtasks.isNotEmpty;
     final subDone = task.subtasks.where((s) => s.done).length;
     final subProgress = hasSubs ? subDone / task.subtasks.length : 0.0;
@@ -673,25 +724,25 @@ class _SwipeableTaskTileState extends State<_SwipeableTaskTile>
         children: [
           CustomSlidableAction(
             onPressed: (_) async {
-              if (!task.done) {
+              if (!isDone) {
                 await widget.onCompleteTap();
               } else {
                 await widget.onUndoTap();
               }
             },
-            backgroundColor: task.done ? AColors.info : AColors.primary,
+            backgroundColor: isDone ? AColors.info : AColors.primary,
             borderRadius: ARadius.lg,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  task.done ? Icons.refresh_rounded : Icons.check_rounded,
+                  isDone ? Icons.refresh_rounded : Icons.check_rounded,
                   color: Colors.white,
                   size: 26,
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  task.done ? 'Undo' : 'Done',
+                  isDone ? 'Undo' : 'Done',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 11,
@@ -744,12 +795,12 @@ class _SwipeableTaskTileState extends State<_SwipeableTaskTile>
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOutCubic,
           decoration: BoxDecoration(
-            color: task.done ? AColors.bgElevated : AColors.bgCard,
+            color: isDone ? AColors.bgElevated : AColors.bgCard,
             borderRadius: ARadius.lg,
             border: Border.all(
               color: task.pending
                   ? AColors.warning.withValues(alpha: 0.5)
-                  : (task.done
+                  : (isDone
                   ? AColors.border.withValues(alpha: 0.5)
                   : AColors.border),
               width: task.pending ? 1.5 : 1,
@@ -768,7 +819,7 @@ class _SwipeableTaskTileState extends State<_SwipeableTaskTile>
                       width: 3,
                       height: hasSubs ? 58 : 40,
                       decoration: BoxDecoration(
-                        color: task.done
+                        color: isDone
                             ? AColors.textMuted.withValues(alpha: 0.3)
                             : (task.pending
                             ? AColors.warning
@@ -808,7 +859,7 @@ class _SwipeableTaskTileState extends State<_SwipeableTaskTile>
                                 Text(
                                   task.title,
                                   style: AText.bodyLarge.copyWith(
-                                    color: task.done
+                                    color: isDone
                                         ? AColors.textMuted
                                         : AColors.textPrimary,
                                   ),
