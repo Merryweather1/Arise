@@ -20,7 +20,7 @@ final userProfileProvider = StreamProvider<UserProfile?>((ref) {
 
 class UserNotifier extends AsyncNotifier<void> {
   @override Future<void> build() async {}
-  
+
   Future<void> addCustomCategory(String category) {
     final uid = ref.read(currentUidProvider);
     if (uid == null) return Future.value();
@@ -33,27 +33,27 @@ final userActionsProvider = AsyncNotifierProvider<UserNotifier, void>(UserNotifi
 // ─── GLOBAL CATEGORIES ───────────────────────────────────────────────────
 final allCategoriesProvider = Provider<List<String>>((ref) {
   final base = {'Personal', 'Work', 'Health', 'Finance', 'Errands', 'Social', 'Mind', 'Fitness', 'Career', 'Learning'};
-  
+
   final profile = ref.watch(userProfileProvider).valueOrNull;
   if (profile != null) {
     base.addAll(profile.customCategories);
   }
-  
+
   final tasks = ref.watch(tasksProvider).valueOrNull ?? [];
   for (var t in tasks) {
     if (t.category.isNotEmpty) base.add(t.category);
   }
-  
+
   final habits = ref.watch(habitsProvider).valueOrNull ?? [];
   for (var h in habits) {
     if (h.category.isNotEmpty) base.add(h.category);
   }
-  
+
   final goals = ref.watch(goalsProvider).valueOrNull ?? [];
   for (var g in goals) {
     if (g.category.isNotEmpty) base.add(g.category);
   }
-  
+
   final sorted = base.toList();
   sorted.sort();
   return sorted;
@@ -104,6 +104,7 @@ final todayHabitsProvider = Provider<List<HabitModel>>((ref) {
   final weekday = DateTime.now().weekday; // 1=Mon..7=Sun
   return habits.where((h) {
     if (h.archived) return false;
+    if (h.isExpired) return false; // duration-limited habit has ended
     if (h.scheduleDays.isEmpty) return true; // daily
     return h.scheduleDays.contains(weekday);
   }).toList();
@@ -177,7 +178,9 @@ final lifeBalanceProvider = StreamProvider<List<LifeBalanceSnapshot>>((ref) {
 
 final latestBalanceProvider = Provider<LifeBalanceSnapshot?>((ref) {
   final snaps = ref.watch(lifeBalanceProvider).valueOrNull ?? [];
-  return snaps.isEmpty ? null : snaps.first;
+  if (snaps.isEmpty) return null;
+  // Explicitly pick newest by date — don't rely on stream sort order
+  return snaps.reduce((a, b) => a.date.isAfter(b.date) ? a : b);
 });
 
 // ─── TASK ACTIONS ──────────────────────────────────────────────────────────

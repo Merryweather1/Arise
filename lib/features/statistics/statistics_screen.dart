@@ -226,13 +226,21 @@ _ComputedStats _buildWeekStats(
 
     final scheduled = habits.where((h) {
       if (h.archived) return false;
+      // Habit must have already started by this day
+      final habitStart = DateTime(h.createdAt.year, h.createdAt.month, h.createdAt.day);
+      final dayOnly = DateTime(day.year, day.month, day.day);
+      if (dayOnly.isBefore(habitStart)) return false;
+      // Habit must not have expired by this day
+      if (!h.isUnlimited && h.durationDays != null && h.durationDays! > 0) {
+        final endInclusive = habitStart.add(Duration(days: h.durationDays! - 1));
+        if (dayOnly.isAfter(endInclusive)) return false;
+      }
       if (h.scheduleDays.isEmpty) return true;
       return h.scheduleDays.contains(weekday);
     }).toList();
 
     habitsTotal[i] = scheduled.length;
-    habitsDone[i] =
-        scheduled.where((h) => h.completionDates.contains(dateKey)).length;
+    habitsDone[i] = scheduled.where((h) => h.completionDates.contains(dateKey)).length;
   }
 
   final habitsData = List<double>.generate(7, (i) {
@@ -307,13 +315,19 @@ _ComputedStats _buildMonthStats(
 
     final scheduled = habits.where((h) {
       if (h.archived) return false;
+      final habitStart = DateTime(h.createdAt.year, h.createdAt.month, h.createdAt.day);
+      final dayOnly = DateTime(date.year, date.month, date.day);
+      if (dayOnly.isBefore(habitStart)) return false;
+      if (!h.isUnlimited && h.durationDays != null && h.durationDays! > 0) {
+        final endInclusive = habitStart.add(Duration(days: h.durationDays! - 1));
+        if (dayOnly.isAfter(endInclusive)) return false;
+      }
       if (h.scheduleDays.isEmpty) return true;
       return h.scheduleDays.contains(weekday);
     }).toList();
 
     habitsTotal[idx] += scheduled.length;
-    habitsDone[idx] +=
-        scheduled.where((h) => h.completionDates.contains(dateKey)).length;
+    habitsDone[idx] += scheduled.where((h) => h.completionDates.contains(dateKey)).length;
   }
 
   final habitsData = List<double>.generate(weekCount, (i) {
@@ -375,6 +389,13 @@ _ComputedStats _buildYearStats(
 
     final scheduled = habits.where((h) {
       if (h.archived) return false;
+      final habitStart = DateTime(h.createdAt.year, h.createdAt.month, h.createdAt.day);
+      final dayOnly = DateTime(cursor.year, cursor.month, cursor.day);
+      if (dayOnly.isBefore(habitStart)) return false;
+      if (!h.isUnlimited && h.durationDays != null && h.durationDays! > 0) {
+        final endInclusive = habitStart.add(Duration(days: h.durationDays! - 1));
+        if (dayOnly.isAfter(endInclusive)) return false;
+      }
       if (h.scheduleDays.isEmpty) return true;
       return h.scheduleDays.contains(weekday);
     }).toList();

@@ -274,9 +274,11 @@ class LifeBalanceRepository {
               (s) => s.docs.map((d) => LifeBalanceSnapshot.fromFirestore(d)).toList());
 
   static Future<void> saveSnapshot(String uid, Map<String, double> scores) async {
-    final id = _uuid.v4();
+    final now = DateTime.now();
+    // Use date as document ID so saving today always overwrites — one entry per day max
+    final id = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
     final snap = LifeBalanceSnapshot(
-        id: id, uid: uid, date: DateTime.now(), scores: scores);
+        id: id, uid: uid, date: now, scores: scores);
     await _col(uid).doc(id).set(snap.toFirestore());
   }
 }
