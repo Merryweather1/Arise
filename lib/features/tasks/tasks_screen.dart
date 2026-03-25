@@ -481,12 +481,12 @@ class _CalendarStripState extends State<_CalendarStrip> {
   }
 }
 
-// ─── TASK LIST ────────────────────────────────────────────────────────────
-class _TaskList extends StatelessWidget {
+// ─── TASK LIST (local removal to satisfy Slidable dismiss lifecycle) ─────
+class _TaskList extends StatefulWidget {
   final List<TaskModel> tasks;
-  final Function(TaskModel) onComplete;
-  final Function(TaskModel) onUndo;
-  final Function(TaskModel) onDelete;
+  final Future<void> Function(TaskModel) onComplete;
+  final Future<void> Function(TaskModel) onUndo;
+  final Future<void> Function(TaskModel) onDelete;
   final Function(TaskModel) onTap;
   final Function(TaskModel) onLongPress;
 
@@ -500,8 +500,33 @@ class _TaskList extends StatelessWidget {
   });
 
   @override
+  State<_TaskList> createState() => _TaskListState();
+}
+
+class _TaskListState extends State<_TaskList> {
+  late List<TaskModel> _visible;
+
+  @override
+  void initState() {
+    super.initState();
+    _visible = List<TaskModel>.from(widget.tasks);
+  }
+
+  @override
+  void didUpdateWidget(covariant _TaskList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _visible = List<TaskModel>.from(widget.tasks);
+  }
+
+  void _removeLocalById(String id) {
+    setState(() {
+      _visible.removeWhere((t) => t.id == id);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (tasks.isEmpty) {
+    if (_visible.isEmpty) {
       return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -519,19 +544,36 @@ class _TaskList extends StatelessWidget {
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       physics: const BouncingScrollPhysics(),
-      itemCount: tasks.length,
-      itemBuilder: (_, i) => Padding(
-        padding: const EdgeInsets.only(bottom: 10),
-        child: _SwipeableTaskTile(
-          key: ValueKey(tasks[i].id),
-          task: tasks[i],
-          onComplete: () => onComplete(tasks[i]),
-          onUndo: () => onUndo(tasks[i]),
-          onDelete: () => onDelete(tasks[i]),
-          onTap: () => onTap(tasks[i]),
-          onLongPress: () => onLongPress(tasks[i]),
-        ),
-      ),
+      itemCount: _visible.length,
+      itemBuilder: (_, i) {
+        final task = _visible[i];
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: _SwipeableTaskTile(
+            key: ValueKey(task.id),
+            task: task,
+            onDismissComplete: () async {
+              if (!task.done) {
+                await widget.onComplete(task);
+              } else {
+                await widget.onUndo(task);
+              }
+            },
+            onDismissDelete: () async {
+              _removeLocalById(task.id);
+              await widget.onDelete(task);
+            },
+            onCompleteTap: () => widget.onComplete(task),
+            onUndoTap: () => widget.onUndo(task),
+            onDeleteTap: () async {
+              _removeLocalById(task.id);
+              await widget.onDelete(task);
+            },
+            onTap: () => widget.onTap(task),
+            onLongPress: () => widget.onLongPress(task),
+          ),
+        );
+      },
     );
   }
 }
@@ -539,18 +581,25 @@ class _TaskList extends StatelessWidget {
 // ─── SWIPEABLE TASK TILE ─────────────────────────────────────────────────
 class _SwipeableTaskTile extends StatefulWidget {
   final TaskModel task;
-  final VoidCallback onComplete;
-  final VoidCallback onUndo;
-  final VoidCallback onDelete;
+
+  final Future<void> Function() onDismissComplete;
+  final Future<void> Function() onDismissDelete;
+
+  final Future<void> Function() onCompleteTap;
+  final Future<void> Function() onUndoTap;
+  final Future<void> Function() onDeleteTap;
+
   final VoidCallback onTap;
   final VoidCallback onLongPress;
 
   const _SwipeableTaskTile({
     super.key,
     required this.task,
-    required this.onComplete,
-    required this.onUndo,
-    required this.onDelete,
+    required this.onDismissComplete,
+    required this.onDismissDelete,
+    required this.onCompleteTap,
+    required this.onUndoTap,
+    required this.onDeleteTap,
     required this.onTap,
     required this.onLongPress,
   });
@@ -609,25 +658,25 @@ class _SwipeableTaskTileState extends State<_SwipeableTaskTile>
 
     return Slidable(
       key: ValueKey(task.id),
+      closeOnScroll: true,
       startActionPane: ActionPane(
         motion: const BehindMotion(),
-        extentRatio: 0.25,
+        extentRatio: 0.30,
+        dragDismissible: true,
         dismissible: DismissiblePane(
-          onDismissed: () {
-            if (!task.done) {
-              widget.onComplete();
-            } else {
-              widget.onUndo();
-            }
+          closeOnCancel: true,
+          dismissThreshold: 0.20, // smoother, shorter swipe
+          onDismissed: () async {
+            await widget.onDismissComplete();
           },
         ),
         children: [
           CustomSlidableAction(
-            onPressed: (_) {
+            onPressed: (_) async {
               if (!task.done) {
-                widget.onComplete();
+                await widget.onCompleteTap();
               } else {
-                widget.onUndo();
+                await widget.onUndoTap();
               }
             },
             backgroundColor: task.done ? AColors.info : AColors.primary,
@@ -656,11 +705,18 @@ class _SwipeableTaskTileState extends State<_SwipeableTaskTile>
       ),
       endActionPane: ActionPane(
         motion: const BehindMotion(),
-        extentRatio: 0.25,
-        dismissible: DismissiblePane(onDismissed: widget.onDelete),
+        extentRatio: 0.30,
+        dragDismissible: true,
+        dismissible: DismissiblePane(
+          closeOnCancel: true,
+          dismissThreshold: 0.20, // smoother, shorter swipe
+          onDismissed: () async {
+            await widget.onDismissDelete();
+          },
+        ),
         children: [
           CustomSlidableAction(
-            onPressed: (_) => widget.onDelete(),
+            onPressed: (_) async => widget.onDeleteTap(),
             backgroundColor: AColors.error,
             borderRadius: ARadius.lg,
             child: const Column(
@@ -872,8 +928,10 @@ class _SwipeableTaskTileState extends State<_SwipeableTaskTile>
                         ),
                       ),
                     GestureDetector(
-                      onTap: () {
-                        task.done ? widget.onUndo() : widget.onComplete();
+                      onTap: () async {
+                        task.done
+                            ? await widget.onUndoTap()
+                            : await widget.onCompleteTap();
                       },
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 250),
