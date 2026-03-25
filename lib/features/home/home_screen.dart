@@ -70,8 +70,17 @@ class HomeScreen extends ConsumerWidget {
     final tasksAsync = ref.watch(tasksProvider);
     final habitsAsync = ref.watch(habitsProvider);
 
+    // NEW: real data for focus/statistics/life-balance cards
+    final pomodoroAsync = ref.watch(pomodoroSessionsProvider);
+    final lifeBalanceAsync = ref.watch(lifeBalanceProvider);
+    final latestBalance = ref.watch(latestBalanceProvider);
+
     final tasks = tasksAsync.valueOrNull ?? [];
     final habits = habitsAsync.valueOrNull ?? [];
+
+    // NEW
+    final pomodoroSessions = pomodoroAsync.valueOrNull ?? [];
+    final lifeSnapshots = lifeBalanceAsync.valueOrNull ?? [];
 
     final todayTasks = tasks.where(_isTaskToday).toList()
       ..sort((a, b) {
@@ -97,6 +106,33 @@ class HomeScreen extends ConsumerWidget {
         : habits
         .map((h) => h.bestStreak)
         .reduce((a, b) => a > b ? a : b);
+
+    // NEW: real focus for top stat card
+    final today = DateTime.now();
+    final todayFocusMinutes = pomodoroSessions
+        .where((s) => _isSameDay(s.date, today))
+        .fold<int>(0, (sum, s) => sum + s.durationMinutes);
+
+    // NEW: Life Balance summary
+    final hasLifeData = lifeSnapshots.isNotEmpty && latestBalance != null;
+    final latestLifeAverage = hasLifeData
+        ? (latestBalance!.scores.isEmpty
+        ? 0.0
+        : latestBalance.scores.values.fold<double>(0.0, (a, b) => a + b) /
+        latestBalance.scores.length)
+        : 0.0;
+
+    // NEW: Statistics summary
+    final completedTasksTotal = tasks.where((t) => t.done).length;
+    final totalFocusMinutes = pomodoroSessions.fold<int>(
+      0,
+          (sum, s) => sum + s.durationMinutes,
+    );
+    final totalPomodoroSessions = pomodoroSessions.length;
+
+    final hasStatsData = completedTasksTotal > 0 ||
+        totalFocusMinutes > 0 ||
+        totalPomodoroSessions > 0;
 
     final dashboardTasks = todayTasks.isNotEmpty ? todayTasks : upcomingTasks;
     final dashboardTaskTitle =
@@ -142,7 +178,7 @@ class HomeScreen extends ConsumerWidget {
                   _StatCard(
                     icon: Icons.timer_rounded,
                     label: 'Focus Time',
-                    value: '0m',
+                    value: '${todayFocusMinutes}m',
                     color: AColors.info,
                   ),
                 ],
@@ -166,10 +202,16 @@ class HomeScreen extends ConsumerWidget {
                       accentColor: AColors.primary,
                       icon: Icons.balance_rounded,
                       title: 'Life Balance',
-                      subtitle: 'No snapshots yet',
-                      badge: 'Empty',
-                      badgeColor: AColors.textMuted,
-                      child: const _FeaturePlaceholder(text: 'No data yet'),
+                      subtitle: hasLifeData
+                          ? 'Overall ${latestLifeAverage.toStringAsFixed(1)}/10'
+                          : 'No snapshots yet',
+                      badge: hasLifeData ? 'Live' : 'Empty',
+                      badgeColor: hasLifeData ? AColors.primary : AColors.textMuted,
+                      child: hasLifeData
+                          ? _FeatureLiveStat(
+                        text: '${lifeSnapshots.length} snapshot${lifeSnapshots.length == 1 ? '' : 's'}',
+                      )
+                          : const _FeaturePlaceholder(text: 'No data yet'),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -184,10 +226,16 @@ class HomeScreen extends ConsumerWidget {
                       accentColor: AColors.info,
                       icon: Icons.bar_chart_rounded,
                       title: 'Statistics',
-                      subtitle: 'No data yet',
-                      badge: 'Empty',
-                      badgeColor: AColors.textMuted,
-                      child: const _FeaturePlaceholder(text: 'No stats yet'),
+                      subtitle: hasStatsData
+                          ? '$completedTasksTotal tasks • ${totalFocusMinutes}m focus'
+                          : 'No data yet',
+                      badge: hasStatsData ? 'Live' : 'Empty',
+                      badgeColor: hasStatsData ? AColors.info : AColors.textMuted,
+                      child: hasStatsData
+                          ? _FeatureLiveStat(
+                        text: '$totalPomodoroSessions session${totalPomodoroSessions == 1 ? '' : 's'} logged',
+                      )
+                          : const _FeaturePlaceholder(text: 'No stats yet'),
                     ),
                   ),
                 ],
@@ -631,6 +679,33 @@ class _FeaturePlaceholder extends StatelessWidget {
         child: Text(
           text,
           style: AText.bodySmall.copyWith(color: Colors.white70),
+        ),
+      ),
+    );
+  }
+}
+
+// NEW: live info chip for feature cards
+class _FeatureLiveStat extends StatelessWidget {
+  final String text;
+  const _FeatureLiveStat({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.10),
+          borderRadius: ARadius.full,
+          border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+        ),
+        child: Text(
+          text,
+          style: AText.bodySmall.copyWith(
+            color: Colors.white,
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
     );
