@@ -1709,6 +1709,85 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
                     ),
                     const SizedBox(height: 20),
 
+                    // ── XP Sphere selector ─────────────────────────────
+                    _Sec(
+                      label: 'XP Sphere  •  ${XpSphereExt.xpForPriority(_priority)} XP on completion',
+                      icon: Icons.auto_awesome_rounded,
+                      child: Row(
+                        children: XpSphere.values.map((sphere) {
+                          final isSelected = _effectiveSphere == sphere;
+                          final isAuto = !_sphereManuallyOverridden &&
+                              sphere == XpSphereExt.sphereForCategory(_category ?? '');
+                          return Expanded(
+                            child: Padding(
+                              padding: EdgeInsets.only(
+                                right: sphere != XpSphere.health ? 8 : 0,
+                              ),
+                              child: GestureDetector(
+                                onTap: () {
+                                  HapticFeedback.selectionClick();
+                                  setState(() {
+                                    _xpSphereOverride = sphere;
+                                    _sphereManuallyOverridden = true;
+                                  });
+                                },
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 150),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 10,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? sphere.color.withValues(alpha: 0.15)
+                                        : AColors.bgCard,
+                                    borderRadius: ARadius.md,
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? sphere.color
+                                          : AColors.border,
+                                      width: isSelected ? 1.5 : 1,
+                                    ),
+                                  ),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(sphere.emoji,
+                                          style: const TextStyle(fontSize: 18)),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        sphere.label,
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w700,
+                                          color: isSelected
+                                              ? sphere.color
+                                              : AColors.textMuted,
+                                        ),
+                                      ),
+                                      if (isAuto)
+                                        Padding(
+                                          padding: const EdgeInsets.only(top: 2),
+                                          child: Text(
+                                            'auto',
+                                            style: TextStyle(
+                                              fontSize: 9,
+                                              color: sphere.color
+                                                  .withValues(alpha: 0.7),
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
                     _Sec(
                       label: 'Due Date',
                       icon: Icons.calendar_month_rounded,
