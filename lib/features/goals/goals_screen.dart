@@ -172,7 +172,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen>
 
     final nowComplete = _goalIsComplete(updated);
     if (!wasComplete && nowComplete) {
-      await UserRepository.addXp(uid, goal.xpSphere, goal.xpReward);
+      await ref.read(goalActionsProvider.notifier).markComplete(goal);
       _celebrate();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -190,9 +190,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen>
   Future<void> _markComplete(String uid, GoalModel goal) async {
     if (_goalIsComplete(goal)) return;
 
-    final updated = _copyGoal(goal, manuallyComplete: true);
-    await GoalRepository.update(uid, updated);
-    await UserRepository.addXp(uid, goal.xpSphere, goal.xpReward);
+    await ref.read(goalActionsProvider.notifier).markComplete(goal);
 
     _celebrate();
 
@@ -1024,6 +1022,11 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
   late Color _color;
   DateTime? _deadline;
   bool _useMeasure = false;
+  XpSphere? _xpSphereOverride;
+  bool _sphereManuallyOverridden = false;
+
+  XpSphere get _effectiveSphere =>
+      _xpSphereOverride ?? XpSphereExt.sphereForCategory(_category ?? '');
 
   final List<GoalStepModel> _steps = [];
 
@@ -1080,6 +1083,13 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
     _steps.addAll(
       (e?.steps ?? []).map((s) => GoalStepModel(id: s.id, title: s.title, done: s.done)),
     );
+    if (e != null) {
+      final autoSphere = XpSphereExt.sphereForCategory(e.category);
+      if (e.xpSphere != autoSphere) {
+        _xpSphereOverride = e.xpSphere;
+        _sphereManuallyOverridden = true;
+      }
+    }
   }
 
   @override
@@ -1145,8 +1155,8 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
       note: _noteCtrl.text.trim().isEmpty ? null : _noteCtrl.text.trim(),
       deadline: _deadline,
       steps: List<GoalStepModel>.from(_steps),
-      xpSphere: widget.existing?.xpSphere ?? XpSphere.willpower,
-      xpReward: 0,
+      xpSphere: _effectiveSphere,
+      xpReward: 50,
       customReward: _customRewardCtrl.text.trim().isNotEmpty
           ? _customRewardCtrl.text.trim()
           : null,
@@ -1362,7 +1372,12 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
                             final sel = _category == c;
                             return GestureDetector(
                               onTap: () {
-                                setState(() => _category = c);
+                                setState(() {
+                                  _category = c;
+                                  if (!_sphereManuallyOverridden) {
+                                    _xpSphereOverride = null;
+                                  }
+                                });
                                 HapticFeedback.selectionClick();
                               },
                               onLongPress: () {
@@ -1424,6 +1439,81 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
                               ),
                             ),
                         ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // ── XP Sphere selector ─────────────────────────────
+                    _Sec(
+                      label: 'XP Sphere  •  50 XP on completion',
+                      icon: Icons.auto_awesome_rounded,
+                      child: Row(
+                        children: XpSphere.values.map((sphere) {
+                          final isSelected = _effectiveSphere == sphere;
+                          final isAuto = !_sphereManuallyOverridden &&
+                              sphere == XpSphereExt.sphereForCategory(_category ?? '');
+                          return Expanded(
+                            child: Padding(
+                              padding: EdgeInsets.only(
+                                right: sphere != XpSphere.health ? 8 : 0,
+                              ),
+                              child: GestureDetector(
+                                onTap: () {
+                                  HapticFeedback.selectionClick();
+                                  setState(() {
+                                    _xpSphereOverride = sphere;
+                                    _sphereManuallyOverridden = true;
+                                  });
+                                },
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 150),
+                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? sphere.color.withValues(alpha: 0.15)
+                                        : AColors.bgCard,
+                                    borderRadius: ARadius.md,
+                                    border: Border.all(
+                                      color: isSelected ? sphere.color : AColors.border,
+                                      width: isSelected ? 1.5 : 1,
+                                    ),
+                                  ),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(sphere.emoji,
+                                          style: const TextStyle(fontSize: 18)),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        sphere.label,
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w700,
+                                          color: isSelected
+                                              ? sphere.color
+                                              : AColors.textMuted,
+                                        ),
+                                      ),
+                                      if (isAuto)
+                                        Padding(
+                                          padding: const EdgeInsets.only(top: 2),
+                                          child: Text(
+                                            'auto',
+                                            style: TextStyle(
+                                              fontSize: 9,
+                                              color: sphere.color
+                                                  .withValues(alpha: 0.7),
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
                       ),
                     ),
                     const SizedBox(height: 20),

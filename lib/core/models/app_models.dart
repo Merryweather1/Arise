@@ -86,6 +86,20 @@ class UserProfile {
     return next == 0 ? 0 : ((healthXp - start) / next).clamp(0.0, 1.0);
   }
 
+  // Helper: get the level for any sphere
+  int levelForSphere(XpSphere sphere) => switch (sphere) {
+    XpSphere.willpower => willpowerLevel,
+    XpSphere.intellect => intellectLevel,
+    XpSphere.health    => healthLevel,
+  };
+
+  // Helper: get the XP for any sphere
+  int xpForSphere(XpSphere sphere) => switch (sphere) {
+    XpSphere.willpower => willpowerXp,
+    XpSphere.intellect => intellectXp,
+    XpSphere.health    => healthXp,
+  };
+
   factory UserProfile.fromFirestore(DocumentSnapshot doc) {
     final d = doc.data() as Map<String, dynamic>;
     return UserProfile(
@@ -146,6 +160,34 @@ extension XpSphereExt on XpSphere {
     XpSphere.intellect => const Color(0xFF4D9FFF),
     XpSphere.health    => const Color(0xFF00C97B),
   };
+
+  /// Auto-route a category string to the appropriate sphere.
+  static XpSphere sphereForCategory(String category) {
+    switch (category.toLowerCase().trim()) {
+      case 'learning':
+      case 'mind':
+      case 'career':
+      case 'education':
+      case 'study':
+        return XpSphere.intellect;
+      case 'health':
+      case 'fitness':
+      case 'sport':
+      case 'wellness':
+      case 'medical':
+        return XpSphere.health;
+      default:
+        return XpSphere.willpower;
+    }
+  }
+
+  /// XP reward for a task based on its priority (1–10).
+  static int xpForPriority(int priority) {
+    if (priority >= 9) return 20;
+    if (priority >= 7) return 15;
+    if (priority >= 4) return 10;
+    return 5;
+  }
 }
 
 // ─── TASK ─────────────────────────────────────────────────────────────────

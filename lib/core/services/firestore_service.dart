@@ -60,14 +60,16 @@ class TaskRepository {
     String category = 'Personal',
     DateTime? dueDate,
     List<SubTaskModel> subtasks = const [],
-    XpSphere xpSphere = XpSphere.willpower,
-    int xpReward = 10,
+    XpSphere? xpSphere,      // null = auto-route from category
+    int? xpReward,           // null = auto-compute from priority
   }) async {
     final id = _uuid.v4();
+    final resolvedSphere = xpSphere ?? XpSphereExt.sphereForCategory(category);
+    final resolvedReward = xpReward ?? XpSphereExt.xpForPriority(priority);
     final task = TaskModel(
       id: id, uid: uid, title: title, note: note,
       priority: priority, category: category, dueDate: dueDate,
-      subtasks: subtasks, xpSphere: xpSphere, xpReward: xpReward,
+      subtasks: subtasks, xpSphere: resolvedSphere, xpReward: resolvedReward,
       createdAt: DateTime.now(),
     );
     await _col(uid).doc(id).set(task.toFirestore());
@@ -101,7 +103,7 @@ class HabitRepository {
         String category = 'Personal',
         int colorValue = 0xFF00C97B,
         List<int> scheduleDays = const [],
-        XpSphere xpSphere = XpSphere.willpower,
+        XpSphere? xpSphere,   // null = auto-route from category
         int xpReward = 15,
         String? note,
         TimeOfDay? reminderTime,
@@ -109,6 +111,7 @@ class HabitRepository {
         int? durationDays,
       }) async {
     final id = _uuid.v4();
+    final resolvedSphere = xpSphere ?? XpSphereExt.sphereForCategory(category);
 
     final habit = HabitModel(
       id: id,
@@ -120,7 +123,7 @@ class HabitRepository {
       scheduleDays: scheduleDays,
       reminderTime: reminderTime,
       note: note,
-      xpSphere: xpSphere,
+      xpSphere: resolvedSphere,
       xpReward: xpReward,
       isUnlimited: isUnlimited,
       durationDays: durationDays,
@@ -199,17 +202,18 @@ class GoalRepository {
     String? note,
     DateTime? deadline,
     List<GoalStepModel> steps = const [],
-    XpSphere xpSphere = XpSphere.willpower,
+    XpSphere? xpSphere,   // null = auto-route from category
     int xpReward = 50,
     String? customReward,
     double? measureTarget,
     String? measureUnit,
   }) async {
     final id = _uuid.v4();
+    final resolvedSphere = xpSphere ?? XpSphereExt.sphereForCategory(category);
     final goal = GoalModel(
       id: id, uid: uid, title: title, category: category,
       emoji: emoji, colorValue: colorValue, note: note,
-      deadline: deadline, steps: steps, xpSphere: xpSphere,
+      deadline: deadline, steps: steps, xpSphere: resolvedSphere,
       xpReward: xpReward, customReward: customReward,
       measureTarget: measureTarget, measureUnit: measureUnit,
       createdAt: DateTime.now(),

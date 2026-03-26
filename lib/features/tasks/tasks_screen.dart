@@ -1290,6 +1290,12 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
   late int _priority;
   String? _category;
   late bool _pending;
+  XpSphere? _xpSphereOverride;   // null = auto-route; non-null = user override
+  bool _sphereManuallyOverridden = false;
+
+  // Derived: the sphere currently in effect
+  XpSphere get _effectiveSphere =>
+      _xpSphereOverride ?? XpSphereExt.sphereForCategory(_category ?? '');
 
   DateTime? _dueDate;
   TimeOfDay? _reminderTime;
@@ -1311,6 +1317,15 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
         ? e.category
         : null;
     _pending = e?.pending ?? false;
+    // If editing an existing task, pre-select its sphere only if it differs
+    // from the auto-routed default (i.e. was manually overridden previously)
+    if (e != null) {
+      final autoSphere = XpSphereExt.sphereForCategory(e.category);
+      if (e.xpSphere != autoSphere) {
+        _xpSphereOverride = e.xpSphere;
+        _sphereManuallyOverridden = true;
+      }
+    }
     _dueDate = e?.dueDate ?? DateTime.now();
     _reminderTime = e?.reminderTime;
     _reminderDays = List<int>.from(e?.reminderDays ?? []);
@@ -1428,8 +1443,8 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
         reminderTime: _reminderTime,
         reminderDays: _reminderDays,
         subtasks: List<SubTaskModel>.from(_subtasks),
-        xpSphere: widget.existing?.xpSphere ?? XpSphere.willpower,
-        xpReward: widget.existing?.xpReward ?? 10,
+        xpSphere: _effectiveSphere,
+        xpReward: XpSphereExt.xpForPriority(_priority),
         createdAt: widget.existing?.createdAt ?? DateTime.now(),
       ),
     );
@@ -1615,7 +1630,14 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
                             final sel = _category == c;
                             return GestureDetector(
                               onTap: () {
-                                setState(() => _category = c);
+                                setState(() {
+                                  _category = c;
+                                  // Auto-update sphere when category changes,
+                                  // unless user already manually picked one
+                                  if (!_sphereManuallyOverridden) {
+                                    _xpSphereOverride = null;
+                                  }
+                                });
                                 HapticFeedback.selectionClick();
                               },
                               onLongPress: () {

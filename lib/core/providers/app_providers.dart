@@ -11,6 +11,23 @@ final authStateProvider = StreamProvider<User?>((ref) =>
 final currentUidProvider = Provider<String?>((ref) =>
 ref.watch(authStateProvider).valueOrNull?.uid);
 
+// ─── XP EVENT SYSTEM ───────────────────────────────────────────────────────
+class XpEvent {
+  final XpSphere sphere;
+  final int amount;
+  final bool isLevelUp;
+  final int newLevel;
+
+  const XpEvent({
+    required this.sphere,
+    required this.amount,
+    this.isLevelUp = false,
+    this.newLevel = 0,
+  });
+}
+
+final xpEventProvider = StateProvider<XpEvent?>((ref) => null);
+
 // ─── USER PROFILE ──────────────────────────────────────────────────────────
 final userProfileProvider = StreamProvider<UserProfile?>((ref) {
   final uid = ref.watch(currentUidProvider);
@@ -194,7 +211,9 @@ class TaskNotifier extends AsyncNotifier<void> {
       title: task.title, note: task.note,
       priority: task.priority, category: task.category,
       dueDate: task.dueDate, subtasks: task.subtasks,
-      xpSphere: task.xpSphere, xpReward: task.xpReward,
+      // Pass sphere/reward only if user explicitly overrode; null = auto-route
+      xpSphere: task.xpSphere,
+      xpReward: task.xpReward,
     );
   }
 
@@ -206,8 +225,20 @@ class TaskNotifier extends AsyncNotifier<void> {
 
   Future<void> setDone(TaskModel task, bool done) async {
     await TaskRepository.setDone(_uid, task.id, done);
-    // Award XP on completion
-    if (done) await UserRepository.addXp(_uid, task.xpSphere, task.xpReward);
+    // Guard: only award XP if transitioning from not-done → done
+    if (done && !task.done) {
+      final profileBefore = ref.read(userProfileProvider).valueOrNull;
+      final levelBefore = profileBefore?.levelForSphere(task.xpSphere) ?? 1;
+      await UserRepository.addXp(_uid, task.xpSphere, task.xpReward);
+      final profileAfter = await UserRepository.get(_uid);
+      final levelAfter = profileAfter?.levelForSphere(task.xpSphere) ?? levelBefore;
+      ref.read(xpEventProvider.notifier).state = XpEvent(
+        sphere: task.xpSphere,
+        amount: task.xpReward,
+        isLevelUp: levelAfter > levelBefore,
+        newLevel: levelAfter,
+      );
+    }
   }
 }
 
@@ -259,7 +290,17 @@ class HabitNotifier extends AsyncNotifier<void> {
     final updated = await HabitRepository.toggleToday(_uid, habit);
 
     if (!wasComplete && updated.isCompletedToday) {
+      final profileBefore = ref.read(userProfileProvider).valueOrNull;
+      final levelBefore = profileBefore?.levelForSphere(habit.xpSphere) ?? 1;
       await UserRepository.addXp(_uid, habit.xpSphere, habit.xpReward);
+      final profileAfter = await UserRepository.get(_uid);
+      final levelAfter = profileAfter?.levelForSphere(habit.xpSphere) ?? levelBefore;
+      ref.read(xpEventProvider.notifier).state = XpEvent(
+        sphere: habit.xpSphere,
+        amount: habit.xpReward,
+        isLevelUp: levelAfter > levelBefore,
+        newLevel: levelAfter,
+      );
     }
   }
 }
@@ -289,7 +330,17 @@ class GoalNotifier extends AsyncNotifier<void> {
   Future<void> markComplete(GoalModel goal) async {
     final updated = goal.copyWith(manuallyComplete: true);
     await GoalRepository.update(_uid, updated);
+    final profileBefore = ref.read(userProfileProvider).valueOrNull;
+    final levelBefore = profileBefore?.levelForSphere(goal.xpSphere) ?? 1;
     await UserRepository.addXp(_uid, goal.xpSphere, goal.xpReward);
+    final profileAfter = await UserRepository.get(_uid);
+    final levelAfter = profileAfter?.levelForSphere(goal.xpSphere) ?? levelBefore;
+    ref.read(xpEventProvider.notifier).state = XpEvent(
+      sphere: goal.xpSphere,
+      amount: goal.xpReward,
+      isLevelUp: levelAfter > levelBefore,
+      newLevel: levelAfter,
+    );
   }
 }
 
@@ -310,8 +361,19 @@ class PomodoroNotifier extends AsyncNotifier<void> {
         durationMinutes: durationMinutes,
         linkedTaskId: linkedTaskId,
         linkedTaskTitle: linkedTaskTitle);
-    // Pomodoro gives Willpower XP
-    await UserRepository.addXp(_uid, XpSphere.willpower, durationMinutes ~/ 5);
+    // Pomodoro gives Willpower XP: minutes ÷ 5 (min 1 XP)
+    final xpAmount = (durationMinutes ~/ 5).clamp(1, 999);
+    final profileBefore = ref.read(userProfileProvider).valueOrNull;
+    final levelBefore = profileBefore?.levelForSphere(XpSphere.willpower) ?? 1;
+    await UserRepository.addXp(_uid, XpSphere.willpower, xpAmount);
+    final profileAfter = await UserRepository.get(_uid);
+    final levelAfter = profileAfter?.levelForSphere(XpSphere.willpower) ?? levelBefore;
+    ref.read(xpEventProvider.notifier).state = XpEvent(
+      sphere: XpSphere.willpower,
+      amount: xpAmount,
+      isLevelUp: levelAfter > levelBefore,
+      newLevel: levelAfter,
+    );
   }
 }
 

@@ -945,6 +945,11 @@ class _HabitEditorSheetState extends State<_HabitEditorSheet> {
   List<int> _scheduleDays = [];
   late bool _isUnlimited;
   late TextEditingController _durationCtrl;
+  XpSphere? _xpSphereOverride;
+  bool _sphereManuallyOverridden = false;
+
+  XpSphere get _effectiveSphere =>
+      _xpSphereOverride ?? XpSphereExt.sphereForCategory(_category ?? '');
 
   final _emojis = [
     '🧘',
@@ -994,6 +999,13 @@ class _HabitEditorSheetState extends State<_HabitEditorSheet> {
     _durationCtrl = TextEditingController(
       text: e?.durationDays != null ? '${e!.durationDays}' : '',
     );
+    if (e != null) {
+      final autoSphere = XpSphereExt.sphereForCategory(e.category);
+      if (e.xpSphere != autoSphere) {
+        _xpSphereOverride = e.xpSphere;
+        _sphereManuallyOverridden = true;
+      }
+    }
   }
 
   @override
@@ -1044,7 +1056,7 @@ class _HabitEditorSheetState extends State<_HabitEditorSheet> {
         scheduleDays: _scheduleDays,
         reminderTime: _reminderTime,
         completionDates: e?.completionDates ?? [],
-        xpSphere: e?.xpSphere ?? XpSphere.willpower,
+        xpSphere: _effectiveSphere,
         xpReward: e?.xpReward ?? 15,
         archived: e?.archived ?? false,
         isUnlimited: _isUnlimited,
@@ -1256,7 +1268,12 @@ class _HabitEditorSheetState extends State<_HabitEditorSheet> {
                             final sel = _category == c;
                             return GestureDetector(
                               onTap: () {
-                                setState(() => _category = c);
+                                setState(() {
+                                  _category = c;
+                                  if (!_sphereManuallyOverridden) {
+                                    _xpSphereOverride = null;
+                                  }
+                                });
                                 HapticFeedback.selectionClick();
                               },
                               onLongPress: () {
@@ -1318,6 +1335,80 @@ class _HabitEditorSheetState extends State<_HabitEditorSheet> {
                               ),
                             ),
                         ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // ── XP Sphere selector ─────────────────────────────
+                    _Sec(
+                      label: 'XP Sphere  •  15 XP on completion',
+                      icon: Icons.auto_awesome_rounded,
+                      child: Row(
+                        children: XpSphere.values.map((sphere) {
+                          final isSelected = _effectiveSphere == sphere;
+                          final isAuto = !_sphereManuallyOverridden &&
+                              sphere == XpSphereExt.sphereForCategory(_category ?? '');
+                          return Expanded(
+                            child: Padding(
+                              padding: EdgeInsets.only(
+                                right: sphere != XpSphere.health ? 8 : 0,
+                              ),
+                              child: GestureDetector(
+                                onTap: () {
+                                  HapticFeedback.selectionClick();
+                                  setState(() {
+                                    _xpSphereOverride = sphere;
+                                    _sphereManuallyOverridden = true;
+                                  });
+                                },
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 150),
+                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? sphere.color.withValues(alpha: 0.15)
+                                        : AColors.bgCard,
+                                    borderRadius: ARadius.md,
+                                    border: Border.all(
+                                      color: isSelected ? sphere.color : AColors.border,
+                                      width: isSelected ? 1.5 : 1,
+                                    ),
+                                  ),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(sphere.emoji,
+                                          style: const TextStyle(fontSize: 18)),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        sphere.label,
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w700,
+                                          color: isSelected
+                                              ? sphere.color
+                                              : AColors.textMuted,
+                                        ),
+                                      ),
+                                      if (isAuto)
+                                        Padding(
+                                          padding: const EdgeInsets.only(top: 2),
+                                          child: Text(
+                                            'auto',
+                                            style: TextStyle(
+                                              fontSize: 9,
+                                              color: sphere.color.withValues(alpha: 0.7),
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
                       ),
                     ),
                     const SizedBox(height: 20),

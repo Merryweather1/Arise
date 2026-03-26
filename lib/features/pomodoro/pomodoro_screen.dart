@@ -221,8 +221,7 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
       if (uid != null && uid.isNotEmpty) {
         final focusMins = ref.read(pomodoroFocusMinsProvider);
         debugPrint('Pomodoro complete: phase=$_phase uid=$uid focus=$focusMins');
-        await PomodoroRepository.logSession(
-          uid,
+        await ref.read(pomodoroActionsProvider.notifier).logSession(
           durationMinutes: focusMins,
           linkedTaskTitle: _currentTask,
         );
