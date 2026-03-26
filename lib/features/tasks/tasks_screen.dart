@@ -2302,7 +2302,7 @@ class _IconBtn extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: AnimatedContainer(
+      child: AnimatedContainer( 
         duration: const Duration(milliseconds: 150),
         width: 42,
         height: 42,
