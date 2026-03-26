@@ -257,7 +257,7 @@ class HabitNotifier extends AsyncNotifier<void> {
     String category = 'Personal',
     int colorValue = 0xFF00C97B,
     List<int> scheduleDays = const [],
-    XpSphere xpSphere = XpSphere.willpower,
+    XpSphere? xpSphere,
     int xpReward = 15,
     String? note,
     TimeOfDay? reminderTime,
