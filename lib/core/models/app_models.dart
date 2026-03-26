@@ -40,6 +40,43 @@ class UserProfile {
   int get intellectLevelXp  => _levelStartXp(intellectLevel);
   int get healthLevelXp     => _levelStartXp(healthLevel);
 
+  // ─── COMBINED LEVEL MATH ───
+  int get totalXp => willpowerXp + intellectXp + healthXp;
+
+  int get combinedLevel {
+    int lvl = 1;
+    int req = 300;
+    int tot = 0;
+    while (tot + req <= totalXp) {
+      tot += req;
+      lvl++;
+      req = (req * 1.25).round();
+    }
+    return lvl;
+  }
+
+  int get combinedLevelStartXp {
+    int tot = 0;
+    int req = 300;
+    for (int i = 1; i < combinedLevel; i++) {
+      tot += req;
+      req = (req * 1.25).round();
+    }
+    return tot;
+  }
+
+  int get combinedNextLevelXp {
+    int req = 300;
+    for (int i = 1; i < combinedLevel; i++) req = (req * 1.25).round();
+    return req;
+  }
+
+  double get combinedProgress {
+    final start = combinedLevelStartXp;
+    final next = combinedNextLevelXp;
+    return next == 0 ? 0 : ((totalXp - start) / next).clamp(0.0, 1.0);
+  }
+
   static int _xpToLevel(int xp) {
     int level = 1;
     int required = 100;

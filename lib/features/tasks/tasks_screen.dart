@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/models/app_models.dart';
 import '../../core/providers/app_providers.dart';
@@ -12,9 +13,75 @@ import '../../core/theme/app_theme.dart';
 enum SortMode { date, priority }
 enum DisplayMode { cards, calendar }
 
-final tasksSortModeProvider = StateProvider<SortMode>((ref) => SortMode.date);
-final tasksDisplayModeProvider = StateProvider<DisplayMode>((ref) => DisplayMode.cards);
-final tasksHideCompletedProvider = StateProvider<bool>((ref) => false);
+// ─── PERSISTENT SETTINGS NOTIFIERS ────────────────────────────────────────
+class _SortModeNotifier extends Notifier<SortMode> {
+  static const _key = 'tasks_sort_mode';
+  @override
+  SortMode build() {
+    _load();
+    return SortMode.date;
+  }
+  Future<void> _load() async {
+    final prefs = await SharedPreferences.getInstance();
+    final v = prefs.getString(_key);
+    if (v != null) {
+      state = SortMode.values.firstWhere((e) => e.name == v, orElse: () => SortMode.date);
+    }
+  }
+  void set(SortMode mode) async {
+    state = mode;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_key, mode.name);
+  }
+}
+
+class _DisplayModeNotifier extends Notifier<DisplayMode> {
+  static const _key = 'tasks_display_mode';
+  @override
+  DisplayMode build() {
+    _load();
+    return DisplayMode.cards;
+  }
+  Future<void> _load() async {
+    final prefs = await SharedPreferences.getInstance();
+    final v = prefs.getString(_key);
+    if (v != null) {
+      state = DisplayMode.values.firstWhere((e) => e.name == v, orElse: () => DisplayMode.cards);
+    }
+  }
+  void set(DisplayMode mode) async {
+    state = mode;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_key, mode.name);
+  }
+}
+
+class _HideCompletedNotifier extends Notifier<bool> {
+  static const _key = 'tasks_hide_completed';
+  @override
+  bool build() {
+    _load();
+    return false;
+  }
+  Future<void> _load() async {
+    final prefs = await SharedPreferences.getInstance();
+    state = prefs.getBool(_key) ?? false;
+  }
+  void toggle() async {
+    state = !state;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_key, state);
+  }
+  void set(bool value) async {
+    state = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_key, value);
+  }
+}
+
+final tasksSortModeProvider = NotifierProvider<_SortModeNotifier, SortMode>(_SortModeNotifier.new);
+final tasksDisplayModeProvider = NotifierProvider<_DisplayModeNotifier, DisplayMode>(_DisplayModeNotifier.new);
+final tasksHideCompletedProvider = NotifierProvider<_HideCompletedNotifier, bool>(_HideCompletedNotifier.new);
 
 // ─── SCREEN ───────────────────────────────────────────────────────────────
 class TasksScreen extends ConsumerStatefulWidget {
@@ -36,6 +103,8 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
       final category = t.category.trim();
 
       if (hideCompleted && t.done) return false;
+      // Special filter for pending tasks
+      if (_filterCategory == '⏳ Pending') return t.pending && !t.done;
       if (_filterCategory != 'All' && category != _filterCategory) return false;
 
       return true;
@@ -73,7 +142,9 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
   }
 
   Future<void> _complete(TaskModel t) async {
-    await ref.read(taskActionsProvider.notifier).setDone(t, true);
+    // Auto-clear pending flag when task is completed
+    final toComplete = t.pending ? t.copyWith(pending: false) : t;
+    await ref.read(taskActionsProvider.notifier).setDone(toComplete, true);
     HapticFeedback.mediumImpact();
     _playTick();
   }
@@ -226,6 +297,27 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
                 _openTask(existing: task);
               },
             ),
+            // Quick pending toggle
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: Icon(
+                task.pending ? Icons.check_circle_outline_rounded : Icons.hourglass_empty_rounded,
+                color: task.pending ? AColors.primary : AColors.warning,
+              ),
+              title: Text(
+                task.pending ? 'Unmark Pending' : 'Mark as Pending',
+                style: AText.bodyLarge,
+              ),
+              subtitle: Text(
+                task.pending ? 'Task is no longer blocked' : 'Task is blocked or waiting',
+                style: AText.bodySmall,
+              ),
+              onTap: () async {
+                Navigator.pop(context);
+                final updated = task.copyWith(pending: !task.pending);
+                await ref.read(taskActionsProvider.notifier).save(updated);
+              },
+            ),
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.delete_rounded, color: AColors.error),
@@ -284,6 +376,11 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
                     label: 'All',
                     selected: _filterCategory == 'All',
                     onTap: () => setState(() => _filterCategory = 'All'),
+                  ),
+                  _CategoryChip(
+                    label: '⏳ Pending',
+                    selected: _filterCategory == '⏳ Pending',
+                    onTap: () => setState(() => _filterCategory = '⏳ Pending'),
                   ),
                   ...categories.map(
                         (c) => _CategoryChip(
@@ -1126,7 +1223,7 @@ class _SettingsSheet extends ConsumerWidget {
                 label: '⏰  Date',
                 selected: sortMode == SortMode.date,
                 onTap: () {
-                  ref.read(tasksSortModeProvider.notifier).state = SortMode.date;
+                  ref.read(tasksSortModeProvider.notifier).set(SortMode.date);
                   Navigator.pop(context);
                 },
               ),
@@ -1135,7 +1232,7 @@ class _SettingsSheet extends ConsumerWidget {
                 label: '🔺  Priority',
                 selected: sortMode == SortMode.priority,
                 onTap: () {
-                  ref.read(tasksSortModeProvider.notifier).state = SortMode.priority;
+                  ref.read(tasksSortModeProvider.notifier).set(SortMode.priority);
                   Navigator.pop(context);
                 },
               ),
@@ -1151,7 +1248,7 @@ class _SettingsSheet extends ConsumerWidget {
                 label: '▦  Cards',
                 selected: displayMode == DisplayMode.cards,
                 onTap: () {
-                  ref.read(tasksDisplayModeProvider.notifier).state = DisplayMode.cards;
+                  ref.read(tasksDisplayModeProvider.notifier).set(DisplayMode.cards);
                   Navigator.pop(context);
                 },
               ),
@@ -1160,7 +1257,7 @@ class _SettingsSheet extends ConsumerWidget {
                 label: '📅  Calendar',
                 selected: displayMode == DisplayMode.calendar,
                 onTap: () {
-                  ref.read(tasksDisplayModeProvider.notifier).state = DisplayMode.calendar;
+                  ref.read(tasksDisplayModeProvider.notifier).set(DisplayMode.calendar);
                   Navigator.pop(context);
                 },
               ),
@@ -1170,7 +1267,7 @@ class _SettingsSheet extends ConsumerWidget {
 
           GestureDetector(
             onTap: () {
-              ref.read(tasksHideCompletedProvider.notifier).state = !hideCompleted;
+              ref.read(tasksHideCompletedProvider.notifier).toggle();
               HapticFeedback.lightImpact();
             },
             child: Row(

@@ -211,6 +211,7 @@ class TaskNotifier extends AsyncNotifier<void> {
       title: task.title, note: task.note,
       priority: task.priority, category: task.category,
       dueDate: task.dueDate, subtasks: task.subtasks,
+      pending: task.pending,
       // Pass sphere/reward only if user explicitly overrode; null = auto-route
       xpSphere: task.xpSphere,
       xpReward: task.xpReward,

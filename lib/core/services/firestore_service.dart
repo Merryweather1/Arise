@@ -60,6 +60,7 @@ class TaskRepository {
     String category = 'Personal',
     DateTime? dueDate,
     List<SubTaskModel> subtasks = const [],
+    bool pending = false,
     XpSphere? xpSphere,      // null = auto-route from category
     int? xpReward,           // null = auto-compute from priority
   }) async {
@@ -69,6 +70,7 @@ class TaskRepository {
     final task = TaskModel(
       id: id, uid: uid, title: title, note: note,
       priority: priority, category: category, dueDate: dueDate,
+      pending: pending,
       subtasks: subtasks, xpSphere: resolvedSphere, xpReward: resolvedReward,
       createdAt: DateTime.now(),
     );
@@ -83,7 +85,11 @@ class TaskRepository {
       _col(uid).doc(taskId).delete();
 
   static Future<void> setDone(String uid, String taskId, bool done) =>
-      _col(uid).doc(taskId).update({'done': done});
+      _col(uid).doc(taskId).update({
+        'done': done,
+        // Clear pending flag when task is marked done
+        if (done) 'pending': false,
+      });
 }
 
 // ─── HABITS ───────────────────────────────────────────────────────────────

@@ -412,20 +412,16 @@ class _XpCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final profile = ref.watch(userProfileProvider).valueOrNull;
 
-    // Combined XP across all 3 spheres
-    final totalXp = (profile?.willpowerXp ?? 0)
-        + (profile?.intellectXp ?? 0)
-        + (profile?.healthXp ?? 0);
-
-    // Overall level based on combined XP (300 XP base for combined)
-    final level = _combinedLevel(totalXp);
-    final xpForThisLevel = _combinedLevelStartXp(level);
-    final xpForNextLevel = _combinedLevelStartXp(level + 1);
+    // Combined XP and Progress values
+    final totalXp = profile?.totalXp ?? 0;
+    final level = profile?.combinedLevel ?? 1;
+    final progress = profile?.combinedProgress ?? 0.0;
+    
+    final xpForThisLevel = profile?.combinedLevelStartXp ?? 0;
+    final xpForNextLevel = profile?.combinedNextLevelXp ?? 300;
+    
     final xpIntoLevel = totalXp - xpForThisLevel;
-    final xpNeeded = xpForNextLevel - xpForThisLevel;
-    final progress = xpNeeded > 0
-        ? (xpIntoLevel / xpNeeded).clamp(0.0, 1.0)
-        : 0.0;
+    final xpNeeded = xpForNextLevel;
 
     final rankTitle = _rankTitle(level);
 
@@ -531,29 +527,6 @@ class _XpCard extends ConsumerWidget {
         ],
       ),
     );
-  }
-
-  // Combined level from total XP (higher threshold than individual spheres)
-  static int _combinedLevel(int xp) {
-    int level = 1;
-    int required = 300;
-    int total = 0;
-    while (total + required <= xp) {
-      total += required;
-      level++;
-      required = (required * 1.25).round();
-    }
-    return level;
-  }
-
-  static int _combinedLevelStartXp(int level) {
-    int total = 0;
-    int required = 300;
-    for (int i = 1; i < level; i++) {
-      total += required;
-      required = (required * 1.25).round();
-    }
-    return total;
   }
 
   static String _rankTitle(int level) {
