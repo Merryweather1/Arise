@@ -50,6 +50,7 @@ dependencies:
   uuid: ^4.5.1
   intl: ^0.20.2
   percent_indicator: ^4.2.3
+  flutter_timezone: ^3.0.0
 
 dev_dependencies:
   flutter_test:

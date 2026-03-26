@@ -59,6 +59,8 @@ class TaskRepository {
     int priority = 5,
     String category = 'Personal',
     DateTime? dueDate,
+    TimeOfDay? reminderTime,
+    List<int> reminderDays = const [],
     List<SubTaskModel> subtasks = const [],
     bool pending = false,
     XpSphere? xpSphere,      // null = auto-route from category
@@ -70,6 +72,7 @@ class TaskRepository {
     final task = TaskModel(
       id: id, uid: uid, title: title, note: note,
       priority: priority, category: category, dueDate: dueDate,
+      reminderTime: reminderTime, reminderDays: reminderDays,
       pending: pending,
       subtasks: subtasks, xpSphere: resolvedSphere, xpReward: resolvedReward,
       createdAt: DateTime.now(),
@@ -279,7 +282,7 @@ class PomodoroRepository {
 class LifeBalanceRepository {
   static CollectionReference _col(String uid) => _userCol(uid, 'life_balance');
 
-  static Stream<List<LifeBalanceSnapshot>> stream(String uid) =>
+  static Stream<List<LifeBalanceSnapshot>> stream (String uid) =>
       _col(uid).orderBy('date', descending: true).snapshots().map(
               (s) => s.docs.map((d) => LifeBalanceSnapshot.fromFirestore(d)).toList());
 

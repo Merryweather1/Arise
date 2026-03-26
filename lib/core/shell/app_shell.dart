@@ -92,6 +92,10 @@ class _AppShellState extends ConsumerState<AppShell> {
     final location = GoRouterState.of(context).matchedLocation;
     final currentIndex = _currentIndex(location);
 
+    // Activate the startup re-schedule provider (watches tasks/habits/goals
+    // and re-registers all notifications once data loads from Firestore).
+    ref.watch(notificationBootProvider);
+
     return PopScope(
       canPop: currentIndex == 0,
       onPopInvokedWithResult: (didPop, _) {

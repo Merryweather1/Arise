@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/app_models.dart';
 import '../services/firestore_service.dart';
+import '../services/notification_service.dart';
 import 'package:flutter/material.dart';
 
 // ─── AUTH ──────────────────────────────────────────────────────────────────
@@ -210,22 +211,37 @@ class TaskNotifier extends AsyncNotifier<void> {
     await TaskRepository.create(_uid,
       title: task.title, note: task.note,
       priority: task.priority, category: task.category,
-      dueDate: task.dueDate, subtasks: task.subtasks,
+      dueDate: task.dueDate,
+      reminderTime: task.reminderTime,
+      reminderDays: task.reminderDays,
+      subtasks: task.subtasks,
       pending: task.pending,
-      // Pass sphere/reward only if user explicitly overrode; null = auto-route
       xpSphere: task.xpSphere,
       xpReward: task.xpReward,
     );
+    // Schedule reminder if set
+    await NotificationService.instance.scheduleTaskReminder(task);
   }
 
-  Future<void> save(TaskModel task) =>
-      TaskRepository.update(_uid, task);
+  Future<void> save(TaskModel task) async {
+    await TaskRepository.update(_uid, task);
+    // Re-schedule in case time/days changed
+    await NotificationService.instance.scheduleTaskReminder(task);
+  }
 
-  Future<void> delete(String id) =>
-      TaskRepository.delete(_uid, id);
+  Future<void> delete(String id) async {
+    await TaskRepository.delete(_uid, id);
+    await NotificationService.instance.cancelTask(id);
+  }
 
   Future<void> setDone(TaskModel task, bool done) async {
     await TaskRepository.setDone(_uid, task.id, done);
+    // Cancel reminders when task is completed; restore if un-done
+    if (done) {
+      await NotificationService.instance.cancelTask(task.id);
+    } else {
+      await NotificationService.instance.scheduleTaskReminder(task);
+    }
     // Guard: only award XP if transitioning from not-done → done
     if (done && !task.done) {
       final profileBefore = ref.read(userProfileProvider).valueOrNull;
@@ -264,27 +280,34 @@ class HabitNotifier extends AsyncNotifier<void> {
     TimeOfDay? reminderTime,
     bool isUnlimited = true,
     int? durationDays,
-  }) =>
-      HabitRepository.create(
-        _uid,
-        name: name,
-        emoji: emoji,
-        category: category,
-        colorValue: colorValue,
-        scheduleDays: scheduleDays,
-        xpSphere: xpSphere,
-        xpReward: xpReward,
-        note: note,
-        reminderTime: reminderTime,
-        isUnlimited: isUnlimited,
-        durationDays: durationDays,
-      );
+  }) async {
+    final habit = await HabitRepository.create(
+      _uid,
+      name: name,
+      emoji: emoji,
+      category: category,
+      colorValue: colorValue,
+      scheduleDays: scheduleDays,
+      xpSphere: xpSphere,
+      xpReward: xpReward,
+      note: note,
+      reminderTime: reminderTime,
+      isUnlimited: isUnlimited,
+      durationDays: durationDays,
+    );
+    await NotificationService.instance.scheduleHabitReminder(habit);
+    return habit;
+  }
 
-  Future<void> save(HabitModel habit) =>
-      HabitRepository.update(_uid, habit);
+  Future<void> save(HabitModel habit) async {
+    await HabitRepository.update(_uid, habit);
+    await NotificationService.instance.scheduleHabitReminder(habit);
+  }
 
-  Future<void> delete(String id) =>
-      HabitRepository.delete(_uid, id);
+  Future<void> delete(String id) async {
+    await HabitRepository.delete(_uid, id);
+    await NotificationService.instance.cancelHabit(id);
+  }
 
   Future<void> toggleToday(HabitModel habit) async {
     final wasComplete = habit.isCompletedToday;
@@ -315,22 +338,31 @@ class GoalNotifier extends AsyncNotifier<void> {
 
   String get _uid => ref.read(currentUidProvider)!;
 
-  Future<void> create(GoalModel goal) => GoalRepository.create(_uid,
+  Future<void> create(GoalModel goal) async {
+    await GoalRepository.create(_uid,
       title: goal.title, category: goal.category, emoji: goal.emoji,
       colorValue: goal.colorValue, note: goal.note, deadline: goal.deadline,
       steps: goal.steps, xpSphere: goal.xpSphere, xpReward: goal.xpReward,
       customReward: goal.customReward, measureTarget: goal.measureTarget,
       measureUnit: goal.measureUnit);
+    await NotificationService.instance.scheduleGoalDeadline(goal);
+  }
 
-  Future<void> save(GoalModel goal) =>
-      GoalRepository.update(_uid, goal);
+  Future<void> save(GoalModel goal) async {
+    await GoalRepository.update(_uid, goal);
+    await NotificationService.instance.scheduleGoalDeadline(goal);
+  }
 
-  Future<void> delete(String id) =>
-      GoalRepository.delete(_uid, id);
+  Future<void> delete(String id) async {
+    await GoalRepository.delete(_uid, id);
+    await NotificationService.instance.cancelGoal(id);
+  }
 
   Future<void> markComplete(GoalModel goal) async {
     final updated = goal.copyWith(manuallyComplete: true);
     await GoalRepository.update(_uid, updated);
+    // Cancel deadline notification — goal is done
+    await NotificationService.instance.cancelGoal(goal.id);
     final profileBefore = ref.read(userProfileProvider).valueOrNull;
     final levelBefore = profileBefore?.levelForSphere(goal.xpSphere) ?? 1;
     await UserRepository.addXp(_uid, goal.xpSphere, goal.xpReward);
@@ -392,3 +424,23 @@ class LifeBalanceNotifier extends AsyncNotifier<void> {
 
 final lifeBalanceActionsProvider =
 AsyncNotifierProvider<LifeBalanceNotifier, void>(LifeBalanceNotifier.new);
+
+// ─── NOTIFICATION BOOT PROVIDER ────────────────────────────────────────────
+// Watches tasks/habits/goals and re-registers all notifications once loaded.
+// This restores alarms after app restarts (flutter_local_notifications only
+// persists schedules while the app remembers them; this provider rebuilds them
+// from Firestore on every cold start).
+final notificationBootProvider = Provider<void>((ref) {
+  final tasks  = ref.watch(tasksProvider).valueOrNull;
+  final habits = ref.watch(habitsProvider).valueOrNull;
+  final goals  = ref.watch(goalsProvider).valueOrNull;
+
+  // Only reschedule once all 3 streams have data
+  if (tasks == null || habits == null || goals == null) return;
+
+  NotificationService.instance.rescheduleAll(
+    tasks:  tasks,
+    habits: habits,
+    goals:  goals,
+  );
+});
