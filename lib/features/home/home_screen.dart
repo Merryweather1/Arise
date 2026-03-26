@@ -5,8 +5,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/models/app_models.dart';
 import '../../core/providers/app_providers.dart';
+import '../../core/providers/notification_log_provider.dart';
 import '../../core/router/app_router.dart';
 import '../../core/theme/app_theme.dart';
+import 'notification_center.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -336,12 +338,14 @@ class HomeScreen extends ConsumerWidget {
 }
 
 // ─── HEADER ───────────────────────────────────────────────────────────────
-class _Header extends StatelessWidget {
+class _Header extends ConsumerWidget {
   final String greeting;
   const _Header({required this.greeting});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final unread = ref.watch(notifUnreadCountProvider);
+
     return SafeArea(
       bottom: false,
       child: Padding(
@@ -358,37 +362,72 @@ class _Header extends StatelessWidget {
                 ],
               ),
             ),
-            Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                color: AColors.bgCard,
-                borderRadius: ARadius.md,
-                border: Border.all(color: AColors.border),
-              ),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  const Icon(
-                    Icons.notifications_outlined,
-                    color: AColors.textPrimary,
-                    size: 22,
+
+            // ── Bell button with live badge ────────────────────────────
+            GestureDetector(
+              onTap: () {
+                HapticFeedback.lightImpact();
+                showNotificationCenter(context);
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: unread > 0
+                      ? AColors.primary.withAlpha(18)
+                      : AColors.bgCard,
+                  borderRadius: ARadius.md,
+                  border: Border.all(
+                    color: unread > 0 ? AColors.primary.withAlpha(80) : AColors.border,
+                    width: unread > 0 ? 1.5 : 1,
                   ),
-                  Positioned(
-                    right: 8,
-                    top: 8,
-                    child: Container(
-                      width: 8,
-                      height: 8,
-                      decoration: const BoxDecoration(
-                        color: AColors.primary,
-                        shape: BoxShape.circle,
-                      ),
+                ),
+                child: Stack(
+                  alignment: Alignment.center,
+                  clipBehavior: Clip.none,
+                  children: [
+                    Icon(
+                      unread > 0
+                          ? Icons.notifications_rounded
+                          : Icons.notifications_outlined,
+                      color: unread > 0 ? AColors.primary : AColors.textPrimary,
+                      size: 22,
                     ),
-                  ),
-                ],
+                    if (unread > 0)
+                      Positioned(
+                        right: -2,
+                        top: -2,
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 250),
+                          curve: Curves.elasticOut,
+                          constraints: const BoxConstraints(
+                              minWidth: 16, minHeight: 16),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 4, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: Colors.red.shade500,
+                            borderRadius: BorderRadius.circular(99),
+                            border: Border.all(
+                                color: AColors.bg, width: 1.5),
+                          ),
+                          child: Text(
+                            unread > 9 ? '9+' : '$unread',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w800,
+                              height: 1,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
+
             const SizedBox(width: 10),
             Container(
               width: 42,
@@ -397,7 +436,8 @@ class _Header extends StatelessWidget {
                 gradient: AColors.gradientPrimary,
                 borderRadius: ARadius.md,
               ),
-              child: const Icon(Icons.person_rounded, color: Colors.white, size: 22),
+              child: const Icon(Icons.person_rounded,
+                  color: Colors.white, size: 22),
             ),
           ],
         ),

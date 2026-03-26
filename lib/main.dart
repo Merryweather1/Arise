@@ -10,14 +10,19 @@ import 'firebase_options.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // Create the Riverpod container early so NotificationService can log entries
+  final container = ProviderContainer();
+
   // Initialize local notifications (requests permission, creates channels)
-  await NotificationService.instance.initialize();
+  await NotificationService.instance.initialize(container: container);
+
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.light,
   ));
-  runApp(const ProviderScope(child: AriseApp()));
+  runApp(ProviderScope(parent: container, child: const AriseApp()));
 }
 
 class AriseApp extends StatelessWidget {
