@@ -582,12 +582,21 @@ class _HabitCard extends StatelessWidget {
         curve: Curves.easeOutCubic,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: done ? habit.color.withValues(alpha: 0.08) : AColors.bgCard,
+          color: done ? habit.color.withValues(alpha: 0.08) : AColors.bgSleek,
           borderRadius: ARadius.lg,
           border: Border.all(
-            color: done ? habit.color.withValues(alpha: 0.4) : AColors.border,
+            color: done ? habit.color.withValues(alpha: 0.3) : AColors.primary.withValues(alpha: 0.2),
             width: done ? 1.5 : 1,
           ),
+          boxShadow: done
+              ? null
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
         ),
         child: Row(
           children: [

@@ -200,8 +200,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: AColors.bg,
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
+      body: Stack(
+        children: [
+          // Ethereal Top Glow
+          Positioned(
+            top: -150,
+            left: -100,
+            right: -100,
+            child: Container(
+              height: 400,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: AColors.primary.withValues(alpha: 0.15),
+                    blurRadius: 150,
+                    spreadRadius: 80,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          CustomScrollView(
+            physics: const BouncingScrollPhysics(),
         slivers: [
           SliverToBoxAdapter(child: _Header(greeting: _greeting(), tagline: _tagline())),
 
@@ -409,6 +430,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ],
 
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
+        ],
+      ),
         ],
       ),
     );
@@ -984,14 +1007,16 @@ class _TaskDashboardCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
-          color: task.done ? AColors.bgElevated : AColors.bgCard,
+          color: task.done ? AColors.bgElevated : AColors.bgSleek,
           borderRadius: ARadius.lg,
-          border: Border.all(color: AColors.border),
+          border: Border.all(
+            color: task.done ? AColors.border : AColors.primary.withValues(alpha: 0.2),
+          ),
           boxShadow: task.done
               ? null
               : [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.25),
+                    color: Colors.black.withValues(alpha: 0.3),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -1097,13 +1122,26 @@ class _HabitDashboardChip extends StatelessWidget {
         width: 120,
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: done ? habit.color.withValues(alpha: 0.08) : AColors.bgCard,
+          color: done ? habit.color.withValues(alpha: 0.08) : AColors.bgSleek,
           borderRadius: ARadius.lg,
           border: Border.all(
-            color: done
-                ? habit.color.withValues(alpha: 0.32)
-                : AColors.border,
+            color: done ? habit.color.withValues(alpha: 0.3) : AColors.borderSleek,
           ),
+          boxShadow: done
+              ? [
+                  BoxShadow(
+                    color: habit.color.withValues(alpha: 0.05),
+                    blurRadius: 10,
+                    spreadRadius: 1,
+                  ),
+                ]
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    blurRadius: 6,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

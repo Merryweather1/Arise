@@ -13,6 +13,9 @@ class AColors {
   static const bgCard        = Color(0xFF131A16);
   static const bgElevated    = Color(0xFF1A2420);
   static const bgInput       = Color(0xFF1F2B26);
+  
+  static const bgSleek       = Color(0xFF0D1210);
+  static const borderSleek   = Color(0xFF18221D);
 
   static const border        = Color(0xFF243029);
 
@@ -51,11 +54,11 @@ class ARadius {
 class AText {
   AText._();
 
-  static const displayLarge  = TextStyle(fontSize: 32, fontWeight: FontWeight.w800, color: AColors.textPrimary, letterSpacing: -0.5);
-  static const displayMedium = TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: AColors.textPrimary);
-  static const titleLarge    = TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AColors.textPrimary);
-  static const titleMedium   = TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AColors.textPrimary);
-  static const titleSmall    = TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AColors.textPrimary);
+  static const displayLarge  = TextStyle(fontSize: 32, fontWeight: FontWeight.w800, color: AColors.textPrimary, letterSpacing: -1.0);
+  static const displayMedium = TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: AColors.textPrimary, letterSpacing: -0.8);
+  static const titleLarge    = TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AColors.textPrimary, letterSpacing: -0.5);
+  static const titleMedium   = TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AColors.textPrimary, letterSpacing: -0.4);
+  static const titleSmall    = TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AColors.textPrimary, letterSpacing: -0.3);
   static const bodyLarge     = TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: AColors.textPrimary);
   static const bodyMedium    = TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AColors.textSecondary);
   static const bodySmall     = TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AColors.textMuted);

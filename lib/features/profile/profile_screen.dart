@@ -151,7 +151,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         ?? '';
 
     return Scaffold(
-      backgroundColor: const Color(0xFF080A0F),
+      backgroundColor: AColors.bg,
       body: AnimatedBuilder(
         animation: _entryCtrl,
         builder: (_, child) => Opacity(
@@ -161,10 +161,31 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             child: child,
           ),
         ),
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            _buildAppBar(context, profile),
+        child: Stack(
+          children: [
+            // Ethereal Top Glow
+            Positioned(
+              top: -150,
+              left: -100,
+              right: -100,
+              child: Container(
+                height: 400,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AColors.primary.withValues(alpha: 0.1),
+                      blurRadius: 150,
+                      spreadRadius: 80,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            CustomScrollView(
+              physics: const BouncingScrollPhysics(),
+              slivers: [
+                _buildAppBar(context, profile),
             if (profile != null) ...[
               SliverToBoxAdapter(child: _HeroCard(profile: profile, email: liveEmail, onEditName: () => _editName(profile))),
               const SliverToBoxAdapter(child: SizedBox(height: 24)),
@@ -184,13 +205,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             ],
           ],
         ),
+          ],
+        ),
       ),
     );
   }
 
   SliverAppBar _buildAppBar(BuildContext context, UserProfile? profile) {
     return SliverAppBar(
-      backgroundColor: const Color(0xFF080A0F),
+      backgroundColor: Colors.transparent,
       elevation: 0,
       pinned: true,
       leadingWidth: 64,
@@ -264,15 +287,15 @@ class _HeroCard extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              const Color(0xFF14171E),
-              const Color(0xFF0E1117),
+              AColors.bgSleek,
+              AColors.bg,
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
-          borderRadius: BorderRadius.circular(28),
+          borderRadius: BorderRadius.circular(32),
           border: Border.all(
-              color: gradient[0].withAlpha(50), width: 1.5),
+              color: gradient[0].withValues(alpha: 0.15), width: 1.5),
         ),
         child: Column(
           children: [
@@ -285,14 +308,14 @@ class _HeroCard extends StatelessWidget {
                       width: 68,
                       height: 68,
                       decoration: BoxDecoration(
-                        gradient:
-                            LinearGradient(colors: gradient, begin: Alignment.topLeft, end: Alignment.bottomRight),
+                        color: AColors.bgElevated,
                         shape: BoxShape.circle,
+                        border: Border.all(color: gradient[0], width: 2),
                         boxShadow: [
                           BoxShadow(
-                            color: gradient[0].withAlpha(80),
-                            blurRadius: 20,
-                            spreadRadius: 2,
+                            color: gradient[0].withValues(alpha: 0.35),
+                            blurRadius: 16,
+                            spreadRadius: 4,
                           )
                         ],
                       ),
@@ -497,9 +520,19 @@ class _SphereCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: const Color(0xFF0E1117),
+          color: AColors.bgSleek,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: color.withAlpha(40), width: 1),
+          border: Border.all(color: color.withValues(alpha: 0.15), width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 10, offset: const Offset(0, 4),
+            ),
+            BoxShadow(
+              color: color.withValues(alpha: 0.05),
+              blurRadius: 20, spreadRadius: 2,
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -721,9 +754,9 @@ class _SettingsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF0E1117),
+        color: AColors.bgSleek,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF1E2230), width: 1),
+        border: Border.all(color: AColors.borderSleek, width: 1),
       ),
       child: Column(
         children: [

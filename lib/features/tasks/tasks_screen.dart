@@ -887,16 +887,25 @@ class _SwipeableTaskTileState extends State<_SwipeableTaskTile>
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOutCubic,
           decoration: BoxDecoration(
-            color: isDone ? AColors.bgElevated : AColors.bgCard,
+            color: isDone ? AColors.bgElevated : AColors.bgSleek,
             borderRadius: ARadius.lg,
             border: Border.all(
               color: task.pending
                   ? AColors.warning.withValues(alpha: 0.5)
                   : (isDone
-                  ? AColors.border.withValues(alpha: 0.5)
-                  : AColors.border),
-              width: task.pending ? 1.5 : 1,
+                      ? Colors.transparent
+                      : AColors.primary.withValues(alpha: 0.2)),
+              width: task.pending ? 1.5 : 1.0,
             ),
+            boxShadow: isDone
+                ? null
+                : [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
