@@ -41,9 +41,12 @@ class _NotificationCenterSheetState
     _fade = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
     _ctrl.forward();
 
-    // Mark all as read when opened
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(notificationLogProvider.notifier).markAllRead();
+      final notifier = ref.read(notificationLogProvider.notifier);
+      // Purge habit entries from previous days (habits reset each cycle)
+      notifier.purgeOldHabitEntries();
+      // Mark all currently-fired entries as read
+      notifier.markAllRead();
     });
   }
 
@@ -77,7 +80,9 @@ class _NotificationCenterSheetState
 
   @override
   Widget build(BuildContext context) {
-    final entries = ref.watch(notificationLogProvider);
+    final allEntries = ref.watch(notificationLogProvider);
+    // Only show entries that have actually fired
+    final entries = allEntries.where((e) => e.hasFired).toList();
     final grouped = _grouped(entries);
     final sections = grouped.entries.toList();
 
@@ -215,7 +220,8 @@ class _NotificationCenterSheetState
                 TextButton(
                   onPressed: () {
                     HapticFeedback.mediumImpact();
-                    ref.read(notificationLogProvider.notifier).clearAll();
+                    // Only clear fired ones; keeps future-scheduled pending
+                    ref.read(notificationLogProvider.notifier).clearFired();
                   },
                   style: TextButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
@@ -265,7 +271,7 @@ class _NotificationCenterSheetState
               )),
           const SizedBox(height: 6),
           const Text(
-            'Your reminders will appear here\nwhen you set them.',
+            'Notifications appear here\nonce their reminder fires.',
             textAlign: TextAlign.center,
             style: TextStyle(color: AColors.textMuted, fontSize: 13, height: 1.5),
           ),
@@ -381,6 +387,12 @@ class _NotifTileState extends State<_NotifTile>
     return DateFormat('MMM d, h:mm a').format(t);
   }
 
+  /// Task reminders that fired >6 h ago without being dismissed = overdue.
+  bool get _isOverdue {
+    if (widget.entry.type != NotifType.task) return false;
+    return DateTime.now().difference(widget.entry.time).inHours >= 6;
+  }
+
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
@@ -476,6 +488,30 @@ class _NotifTileState extends State<_NotifTile>
                                   ),
                                 ),
                               ),
+                              // Overdue badge for stale task reminders
+                              if (_isOverdue) ...[
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 7, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFFB800).withAlpha(25),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                        color: const Color(0xFFFFB800).withAlpha(80),
+                                        width: 1),
+                                  ),
+                                  child: const Text(
+                                    'OVERDUE',
+                                    style: TextStyle(
+                                      color: Color(0xFFFFB800),
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 0.6,
+                                    ),
+                                  ),
+                                ),
+                              ],
                               const Spacer(),
                               Text(
                                 _formatTime(widget.entry.time),
@@ -512,17 +548,19 @@ class _NotifTileState extends State<_NotifTile>
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          // Reminder time chip
+                          // Fired-at time chip
                           const SizedBox(height: 8),
                           Row(
                             children: [
-                              Icon(Icons.schedule_rounded,
+                              Icon(Icons.notifications_active_rounded,
                                   size: 11, color: _typeColor.withAlpha(180)),
                               const SizedBox(width: 4),
                               Text(
-                                'Reminder: ${DateFormat('EEE, MMM d · h:mm a').format(widget.entry.time)}',
+                                'Fired at ${DateFormat('EEE, MMM d \u00b7 h:mm a').format(widget.entry.time)}',
                                 style: TextStyle(
-                                  color: _typeColor.withAlpha(200),
+                                  color: _isOverdue
+                                      ? const Color(0xFFFFB800).withAlpha(200)
+                                      : _typeColor.withAlpha(200),
                                   fontSize: 11,
                                   fontWeight: FontWeight.w500,
                                 ),

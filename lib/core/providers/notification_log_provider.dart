@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-// ─── NOTIFICATION ENTRY MODEL ─────────────────────────────────────────────
+// в”Ђв”Ђв”Ђ NOTIFICATION ENTRY MODEL в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 enum NotifType { task, habit, goal }
 
 class NotificationEntry {
@@ -11,7 +11,7 @@ class NotificationEntry {
   final NotifType type;
   final String title;
   final String body;
-  final DateTime time;
+  final DateTime time; // the moment the notification is scheduled to fire
   final bool read;
 
   const NotificationEntry({
@@ -51,16 +51,22 @@ class NotificationEntry {
         time: DateTime.parse(j['time'] as String),
         read: j['read'] as bool? ?? false,
       );
+
+  /// True once the scheduled fire time has passed.
+  bool get hasFired => !time.isAfter(DateTime.now());
 }
 
-// ─── PROVIDER ────────────────────────────────────────────────────────────
+// в”Ђв”Ђв”Ђ PROVIDER в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 const _kPrefKey = 'arise_notification_log';
-const _kMaxEntries = 50; // keep last 50
+const _kMaxEntries = 50;
 
 class NotificationLogNotifier extends Notifier<List<NotificationEntry>> {
+  /// Completes once SharedPreferences has been loaded into [state].
+  late Future<void> _ready;
+
   @override
   List<NotificationEntry> build() {
-    _load();
+    _ready = _load();
     return [];
   }
 
@@ -68,10 +74,15 @@ class NotificationLogNotifier extends Notifier<List<NotificationEntry>> {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_kPrefKey);
     if (raw == null) return;
-    final list = (jsonDecode(raw) as List)
-        .map((e) => NotificationEntry.fromJson(e as Map<String, dynamic>))
-        .toList();
-    state = list;
+    try {
+      final list = (jsonDecode(raw) as List)
+          .map((e) => NotificationEntry.fromJson(e as Map<String, dynamic>))
+          .toList();
+      state = list;
+    } catch (_) {
+      // Corrupted data — start fresh
+      await prefs.remove(_kPrefKey);
+    }
   }
 
   Future<void> _save() async {
@@ -80,7 +91,8 @@ class NotificationLogNotifier extends Notifier<List<NotificationEntry>> {
         _kPrefKey, jsonEncode(state.map((e) => e.toJson()).toList()));
   }
 
-  /// Add a new notification entry (called when scheduling a notification).
+  /// Store a scheduled notification entry.
+  /// The entry is invisible in the center until [time] passes.
   Future<void> add({
     required String id,
     required NotifType type,
@@ -88,6 +100,7 @@ class NotificationLogNotifier extends Notifier<List<NotificationEntry>> {
     required String body,
     DateTime? time,
   }) async {
+    await _ready; // wait for initial load so we don't lose existing entries
     final entry = NotificationEntry(
       id: id,
       type: type,
@@ -95,41 +108,79 @@ class NotificationLogNotifier extends Notifier<List<NotificationEntry>> {
       body: body,
       time: time ?? DateTime.now(),
     );
-    // Prepend; remove duplicates by id; cap at max
     final updated = [entry, ...state.where((e) => e.id != id)];
-    state =
-        updated.length > _kMaxEntries ? updated.sublist(0, _kMaxEntries) : updated;
+    state = updated.length > _kMaxEntries
+        ? updated.sublist(0, _kMaxEntries)
+        : updated;
     await _save();
   }
 
-  /// Mark all as read.
+  /// Mark all FIRED entries as read.
   Future<void> markAllRead() async {
-    state = state.map((e) => e.copyWith(read: true)).toList();
+    await _ready;
+    final now = DateTime.now();
+    state = state.map((e) {
+      if (!e.time.isAfter(now)) return e.copyWith(read: true);
+      return e;
+    }).toList();
     await _save();
   }
 
-  /// Remove a single entry.
+  /// Remove a single entry by ID (no-op if not found).
   Future<void> remove(String id) async {
+    await _ready;
+    final before = state.length;
     state = state.where((e) => e.id != id).toList();
+    if (state.length != before) await _save();
+  }
+
+  /// Clear all FIRED entries; keeps future-scheduled ones.
+  Future<void> clearFired() async {
+    await _ready;
+    state = state.where((e) => e.time.isAfter(DateTime.now())).toList();
     await _save();
   }
 
   /// Clear everything.
   Future<void> clearAll() async {
+    await _ready;
     state = [];
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_kPrefKey);
   }
 
-  int get unreadCount => state.where((e) => !e.read).length;
+  /// Called when the Notification Center opens.
+  /// Removes habit entries from previous days — habits reset each cycle.
+  Future<void> purgeOldHabitEntries() async {
+    await _ready;
+    final todayMidnight = () {
+      final d = DateTime.now();
+      return DateTime(d.year, d.month, d.day);
+    }();
+    bool changed = false;
+    state = state.where((e) {
+      if (e.type != NotifType.habit) return true;
+      if (!e.hasFired) return true;
+      final firedDay = DateTime(e.time.year, e.time.month, e.time.day);
+      if (firedDay.isBefore(todayMidnight)) {
+        changed = true;
+        return false;
+      }
+      return true;
+    }).toList();
+    if (changed) await _save();
+  }
 }
+
 
 final notificationLogProvider =
     NotifierProvider<NotificationLogNotifier, List<NotificationEntry>>(
         NotificationLogNotifier.new);
 
-/// Convenience: how many unread entries are there right now.
+/// Count of UNREAD entries that have already fired (time <= now).
+/// This is what drives the bell badge.
 final notifUnreadCountProvider = Provider<int>((ref) {
   final entries = ref.watch(notificationLogProvider);
-  return entries.where((e) => !e.read).length;
+  final now = DateTime.now();
+  return entries.where((e) => !e.read && !e.time.isAfter(now)).length;
 });

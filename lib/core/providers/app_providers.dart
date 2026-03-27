@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/app_models.dart';
 import '../services/firestore_service.dart';
 import '../services/notification_service.dart';
+import '../providers/notification_log_provider.dart';
 import 'package:flutter/material.dart';
 
 // ─── AUTH ──────────────────────────────────────────────────────────────────
@@ -232,13 +233,16 @@ class TaskNotifier extends AsyncNotifier<void> {
   Future<void> delete(String id) async {
     await TaskRepository.delete(_uid, id);
     await NotificationService.instance.cancelTask(id);
+    // Remove from notification center too
+    await ref.read(notificationLogProvider.notifier).remove('task-$id');
   }
 
   Future<void> setDone(TaskModel task, bool done) async {
     await TaskRepository.setDone(_uid, task.id, done);
-    // Cancel reminders when task is completed; restore if un-done
     if (done) {
       await NotificationService.instance.cancelTask(task.id);
+      // Remove fired notification from center — task is complete
+      await ref.read(notificationLogProvider.notifier).remove('task-${task.id}');
     } else {
       await NotificationService.instance.scheduleTaskReminder(task);
     }
@@ -307,6 +311,7 @@ class HabitNotifier extends AsyncNotifier<void> {
   Future<void> delete(String id) async {
     await HabitRepository.delete(_uid, id);
     await NotificationService.instance.cancelHabit(id);
+    await ref.read(notificationLogProvider.notifier).remove('habit-$id');
   }
 
   Future<void> toggleToday(HabitModel habit) async {
@@ -314,6 +319,8 @@ class HabitNotifier extends AsyncNotifier<void> {
     final updated = await HabitRepository.toggleToday(_uid, habit);
 
     if (!wasComplete && updated.isCompletedToday) {
+      // Habit just completed — remove today's notification center entry
+      await ref.read(notificationLogProvider.notifier).remove('habit-${habit.id}');
       final profileBefore = ref.read(userProfileProvider).valueOrNull;
       final levelBefore = profileBefore?.levelForSphere(habit.xpSphere) ?? 1;
       await UserRepository.addXp(_uid, habit.xpSphere, habit.xpReward);
