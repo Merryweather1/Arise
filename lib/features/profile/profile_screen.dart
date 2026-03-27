@@ -145,6 +145,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   Widget build(BuildContext context) {
     final profileAsync = ref.watch(userProfileProvider);
     final profile = profileAsync.valueOrNull;
+    // Always use the live Firebase Auth email — Firestore's copy may be stale
+    final liveEmail = FirebaseAuth.instance.currentUser?.email
+        ?? profile?.email
+        ?? '';
 
     return Scaffold(
       backgroundColor: const Color(0xFF080A0F),
@@ -162,11 +166,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           slivers: [
             _buildAppBar(context, profile),
             if (profile != null) ...[
-              SliverToBoxAdapter(child: _HeroCard(profile: profile, onEditName: () => _editName(profile))),
+              SliverToBoxAdapter(child: _HeroCard(profile: profile, email: liveEmail, onEditName: () => _editName(profile))),
               const SliverToBoxAdapter(child: SizedBox(height: 24)),
               SliverToBoxAdapter(child: _XpSphereRow(profile: profile)),
               const SliverToBoxAdapter(child: SizedBox(height: 28)),
-              SliverToBoxAdapter(child: _AccountSection(profile: profile, onEditName: () => _editName(profile))),
+              SliverToBoxAdapter(child: _AccountSection(profile: profile, email: liveEmail)),
               const SliverToBoxAdapter(child: SizedBox(height: 16)),
               SliverToBoxAdapter(child: _DangerSection(onSignOut: _signOut)),
               const SliverToBoxAdapter(child: SizedBox(height: 48)),
@@ -223,9 +227,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 // ─── HERO CARD ────────────────────────────────────────────────────────────
 class _HeroCard extends StatelessWidget {
   final UserProfile profile;
+  final String email;
   final VoidCallback onEditName;
 
-  const _HeroCard({required this.profile, required this.onEditName});
+  const _HeroCard({required this.profile, required this.email, required this.onEditName});
 
   // Deterministic avatar gradient from uid
   List<Color> _avatarGradient() {
@@ -349,7 +354,7 @@ class _HeroCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 3),
                       Text(
-                        profile.email,
+                        email.isEmpty ? 'No email' : email,
                         style: const TextStyle(
                             color: AColors.textMuted, fontSize: 12),
                         overflow: TextOverflow.ellipsis,
@@ -592,9 +597,9 @@ class _ArcPainter extends CustomPainter {
 // ─── ACCOUNT SECTION ──────────────────────────────────────────────────────
 class _AccountSection extends StatelessWidget {
   final UserProfile profile;
-  final VoidCallback onEditName;
+  final String email;
 
-  const _AccountSection({required this.profile, required this.onEditName});
+  const _AccountSection({required this.profile, required this.email});
 
   @override
   Widget build(BuildContext context) {
@@ -615,22 +620,15 @@ class _AccountSection extends StatelessWidget {
           _SettingsCard(
             items: [
               _SettingsItem(
-                icon: Icons.person_outline_rounded,
-                iconColor: AColors.primary,
-                label: 'Display Name',
-                trailing: Text(profile.name,
-                    style: const TextStyle(
-                        color: AColors.textMuted, fontSize: 13)),
-                onTap: onEditName,
-              ),
-              _SettingsItem(
                 icon: Icons.mail_outline_rounded,
                 iconColor: const Color(0xFF00BFFF),
                 label: 'Email',
                 trailing: Text(
-                  profile.email.length > 22
-                      ? '${profile.email.substring(0, 22)}…'
-                      : profile.email,
+                  email.isEmpty
+                      ? 'Not set'
+                      : (email.length > 24
+                          ? '${email.substring(0, 24)}…'
+                          : email),
                   style: const TextStyle(
                       color: AColors.textMuted, fontSize: 13),
                 ),

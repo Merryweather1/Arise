@@ -54,13 +54,21 @@ class _SignInScreenState extends State<SignInScreen> {
 
   Future<void> _ensureUserProfile(User user) async {
     final existing = await UserRepository.get(user.uid);
-    if (existing != null) return;
+    final realName = user.displayName?.trim().isNotEmpty == true
+        ? user.displayName!.trim()
+        : null;
+
+    if (existing != null) {
+      // Silently upgrade a stale 'Warrior' default with the real Google name
+      if (existing.name == 'Warrior' && realName != null) {
+        await UserRepository.update(user.uid, {'name': realName});
+      }
+      return;
+    }
 
     final profile = UserProfile(
       uid: user.uid,
-      name: user.displayName?.trim().isNotEmpty == true
-          ? user.displayName!.trim()
-          : 'Warrior',
+      name: realName ?? user.email?.split('@').first ?? 'User',
       email: user.email ?? '',
       photoUrl: user.photoURL,
       createdAt: DateTime.now(),
