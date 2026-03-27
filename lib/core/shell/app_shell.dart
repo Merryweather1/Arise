@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -105,67 +108,84 @@ class _AppShellState extends ConsumerState<AppShell> {
       child: Scaffold(
         backgroundColor: AColors.bg,
         body: widget.child,
-        bottomNavigationBar: Container(
-          decoration: const BoxDecoration(
-            color: AColors.bgCard,
-            border: Border(top: BorderSide(color: AColors.border)),
-          ),
-          child: SafeArea(
-            top: false,
-            child: SizedBox(
-              height: 64,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: List.generate(_tabs.length, (i) {
-                  final selected = i == currentIndex;
-                  return GestureDetector(
-                    onTap: () {
-                      HapticFeedback.selectionClick();
-                      context.go(_tabs[i]);
-                    },
-                    behavior: HitTestBehavior.opaque,
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 6),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: selected
-                                  ? AColors.primaryGlow
-                                  : Colors.transparent,
-                              borderRadius: ARadius.md,
-                            ),
-                            child: Icon(
-                              _icons[i],
-                              size: 22,
-                              color: selected
-                                  ? AColors.primary
-                                  : AColors.textMuted,
+        // Glassmorphic Bottom Navigation Bar
+        bottomNavigationBar: ClipRect(
+          child: BackdropFilter(
+            filter: ui.ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+            child: Container(
+              decoration: BoxDecoration(
+                color: AColors.bgCard.withValues(alpha: 0.85),
+                border: const Border(top: BorderSide(color: AColors.border)),
+              ),
+              child: SafeArea(
+                top: false,
+                child: SizedBox(
+                  height: 64,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: List.generate(_tabs.length, (i) {
+                      final selected = i == currentIndex;
+                      return GestureDetector(
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          context.go(_tabs[i]);
+                        },
+                        behavior: HitTestBehavior.opaque,
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 6),
+                          child: TweenAnimationBuilder<double>(
+                            tween: Tween(begin: 1.0, end: selected ? 1.1 : 1.0),
+                            duration: const Duration(milliseconds: 350),
+                            curve: Curves.elasticOut,
+                            builder: (context, scale, child) {
+                              return Transform.scale(
+                                scale: scale,
+                                child: child,
+                              );
+                            },
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: selected
+                                        ? AColors.primary.withValues(alpha: 0.15)
+                                        : Colors.transparent,
+                                    borderRadius: ARadius.md,
+                                  ),
+                                  child: Icon(
+                                    _icons[i],
+                                    size: 22,
+                                    color: selected
+                                        ? AColors.primary
+                                        : AColors.textMuted,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  _labels[i],
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: selected
+                                        ? FontWeight.w700
+                                        : FontWeight.w500,
+                                    color: selected
+                                        ? AColors.primary
+                                        : AColors.textMuted,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            _labels[i],
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: selected
-                                  ? FontWeight.w700
-                                  : FontWeight.w500,
-                              color: selected
-                                  ? AColors.primary
-                                  : AColors.textMuted,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }),
+                        ),
+                      );
+                    }),
+                  ),
+                ),
               ),
             ),
           ),

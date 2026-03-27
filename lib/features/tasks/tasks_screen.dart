@@ -589,6 +589,7 @@ class _TaskList extends StatefulWidget {
 
 class _TaskListState extends State<_TaskList> {
   late List<TaskModel> _visible;
+  bool _hasAnimated = false;
 
   /// Optimistic overrides: taskId → done value shown immediately on swipe.
   /// Cleared when Firestore streams back and replaces the list.
@@ -598,6 +599,9 @@ class _TaskListState extends State<_TaskList> {
   void initState() {
     super.initState();
     _visible = List<TaskModel>.from(widget.tasks);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) setState(() => _hasAnimated = true);
+    });
   }
 
   @override
@@ -637,7 +641,7 @@ class _TaskListState extends State<_TaskList> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('✅', style: TextStyle(fontSize: 52)),
+            Icon(Icons.check_circle_outline_rounded, size: 52, color: AColors.primary),
             SizedBox(height: 16),
             Text('All clear!', style: AText.titleMedium),
             SizedBox(height: 6),
@@ -659,47 +663,51 @@ class _TaskListState extends State<_TaskList> {
             : task.done;
         return Padding(
           padding: const EdgeInsets.only(bottom: 10),
-          child: _SwipeableTaskTile(
-            // Include done state in key so that after a dismiss+re-insert the
-            // toggled card gets a brand-new Slidable (avoiding the
-            // "dismissed widget still in tree" error from flutter_slidable).
-            key: ValueKey('${task.id}_$optimisticDone'),
-            task: task,
-            optimisticDone: optimisticDone,
-            // Right swipe full-dismiss: must remove from tree (Slidable contract),
-            // but immediately re-insert a toggled copy so there's no visual gap.
-            onDismissComplete: () async {
-              final idx = _visible.indexWhere((t) => t.id == task.id);
-              final currentDone = _localDone.containsKey(task.id)
-                  ? _localDone[task.id]!
-                  : task.done;
-              final newDone = !currentDone;
-              final toggled = task.copyWith(done: newDone);
-              setState(() {
-                _localDone[task.id] = newDone;
-                _visible.removeWhere((t) => t.id == task.id);
-                // Re-insert at same position so card reappears instantly
-                _visible.insert(idx.clamp(0, _visible.length), toggled);
-              });
-              if (newDone) {
-                await widget.onComplete(task);
-              } else {
-                await widget.onUndo(task);
-              }
-            },
-            // Left swipe: always delete (remove immediately)
-            onDismissDelete: () async {
-              _removeLocalById(task.id);
-              await widget.onDelete(task);
-            },
-            onCompleteTap: () => _toggleDoneInstant(task),
-            onUndoTap: () => _toggleDoneInstant(task),
-            onDeleteTap: () async {
-              _removeLocalById(task.id);
-              await widget.onDelete(task);
-            },
-            onTap: () => widget.onTap(task),
-            onLongPress: () => widget.onLongPress(task),
+          child: _AnimatedEntrance(
+            delay: i * 50, // Staggered delay based on index
+            play: _hasAnimated,
+            child: _SwipeableTaskTile(
+              // Include done state in key so that after a dismiss+re-insert the
+              // toggled card gets a brand-new Slidable (avoiding the
+              // "dismissed widget still in tree" error from flutter_slidable).
+              key: ValueKey('${task.id}_$optimisticDone'),
+              task: task,
+              optimisticDone: optimisticDone,
+              // Right swipe full-dismiss: must remove from tree (Slidable contract),
+              // but immediately re-insert a toggled copy so there's no visual gap.
+              onDismissComplete: () async {
+                final idx = _visible.indexWhere((t) => t.id == task.id);
+                final currentDone = _localDone.containsKey(task.id)
+                    ? _localDone[task.id]!
+                    : task.done;
+                final newDone = !currentDone;
+                final toggled = task.copyWith(done: newDone);
+                setState(() {
+                  _localDone[task.id] = newDone;
+                  _visible.removeWhere((t) => t.id == task.id);
+                  // Re-insert at same position so card reappears instantly
+                  _visible.insert(idx.clamp(0, _visible.length), toggled);
+                });
+                if (newDone) {
+                  await widget.onComplete(task);
+                } else {
+                  await widget.onUndo(task);
+                }
+              },
+              // Left swipe: always delete (remove immediately)
+              onDismissDelete: () async {
+                _removeLocalById(task.id);
+                await widget.onDelete(task);
+              },
+              onCompleteTap: () => _toggleDoneInstant(task),
+              onUndoTap: () => _toggleDoneInstant(task),
+              onDeleteTap: () async {
+                _removeLocalById(task.id);
+                await widget.onDelete(task);
+              },
+              onTap: () => widget.onTap(task),
+              onLongPress: () => widget.onLongPress(task),
+            ),
           ),
         );
       },
@@ -752,11 +760,11 @@ class _SwipeableTaskTileState extends State<_SwipeableTaskTile>
     super.initState();
     _strikeCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 400),
+      duration: const Duration(milliseconds: 600), // Slower, smoother sweep
     );
     _strikeAnim = CurvedAnimation(
       parent: _strikeCtrl,
-      curve: Curves.easeOutCubic,
+      curve: Curves.easeOutQuart, // More dramatic ease out
     );
     if (widget.task.done) _strikeCtrl.value = 1.0;
   }
@@ -939,6 +947,7 @@ class _SwipeableTaskTileState extends State<_SwipeableTaskTile>
                           AnimatedBuilder(
                             animation: _strikeAnim,
                             builder: (_, __) => Stack(
+                              clipBehavior: Clip.none,
                               children: [
                                 Text(
                                   task.title,
@@ -952,14 +961,21 @@ class _SwipeableTaskTileState extends State<_SwipeableTaskTile>
                                   Positioned(
                                     left: 0,
                                     right: 0,
-                                    top: 11,
+                                    top: 13, // Slightly lower, like an underline edit
                                     child: FractionallySizedBox(
                                       widthFactor: _strikeAnim.value,
                                       alignment: Alignment.centerLeft,
                                       child: Container(
-                                        height: 1.5,
-                                        color: AColors.textMuted.withValues(
-                                          alpha: 0.6,
+                                        height: 2.5, // Thicker neon sweep
+                                        decoration: BoxDecoration(
+                                          color: AColors.primary,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: AColors.primary.withValues(alpha: 0.8),
+                                              blurRadius: 6,
+                                              spreadRadius: 1,
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ),
@@ -1229,7 +1245,7 @@ class _SettingsSheet extends ConsumerWidget {
               ),
               const SizedBox(width: 10),
               _SettingChip(
-                label: '🔺  Priority',
+                label: 'Priority',
                 selected: sortMode == SortMode.priority,
                 onTap: () {
                   ref.read(tasksSortModeProvider.notifier).set(SortMode.priority);
@@ -1245,7 +1261,7 @@ class _SettingsSheet extends ConsumerWidget {
           Row(
             children: [
               _SettingChip(
-                label: '▦  Cards',
+                label: 'Cards',
                 selected: displayMode == DisplayMode.cards,
                 onTap: () {
                   ref.read(tasksDisplayModeProvider.notifier).set(DisplayMode.cards);
@@ -1254,7 +1270,7 @@ class _SettingsSheet extends ConsumerWidget {
               ),
               const SizedBox(width: 10),
               _SettingChip(
-                label: '📅  Calendar',
+                label: 'Calendar',
                 selected: displayMode == DisplayMode.calendar,
                 onTap: () {
                   ref.read(tasksDisplayModeProvider.notifier).set(DisplayMode.calendar);
@@ -2424,6 +2440,51 @@ class _IconBtn extends StatelessWidget {
           size: 22,
         ),
       ),
+    );
+  }
+}
+
+// ─── ANIMATIONS ────────────────────────────────────────────────────────
+class _AnimatedEntrance extends StatelessWidget {
+  final Widget child;
+  final int delay;
+  final bool play;
+
+  const _AnimatedEntrance({
+    required this.child,
+    required this.delay,
+    required this.play,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 500),
+      switchInCurve: Curves.easeOutCubic,
+      transitionBuilder: (w, anim) {
+        final slideAnim = Tween<Offset>(
+          begin: const Offset(0, 0.1),
+          end: Offset.zero,
+        ).animate(anim);
+        return FadeTransition(
+          opacity: anim,
+          child: SlideTransition(
+            position: slideAnim,
+            child: w,
+          ),
+        );
+      },
+      child: play
+          ? FutureBuilder(
+              future: Future.delayed(Duration(milliseconds: delay)),
+              builder: (ctx, snap) {
+                if (snap.connectionState != ConnectionState.done) {
+                  return const SizedBox();
+                }
+                return child;
+              },
+            )
+          : const SizedBox(),
     );
   }
 }

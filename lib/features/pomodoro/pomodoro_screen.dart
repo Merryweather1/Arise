@@ -343,11 +343,11 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
         ? 'Start Long Break'
         : 'Start Break';
 
-    final title = completedFocus ? '🎉 Session Complete!' : '⏰ Break Finished!';
+    final title = completedFocus ? 'Session Complete' : 'Break Finished';
     final body = completedFocus
         ? nextIsBreak
-        ? 'Nice work. You can close this or start your break now.'
-        : 'Nice work. You can close this or start your next focus session now.'
+        ? 'Excellent work. You can close this or start your break now.'
+        : 'Excellent work. You can close this or start your next focus session now.'
         : 'Break is over. You can close this or start focusing again.';
 
     showDialog(
@@ -629,22 +629,19 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
                                         ],
                                       ),
                                     ),
-                                    TweenAnimationBuilder<double>(
-                                      tween: Tween(begin: 0, end: _progress),
-                                      duration: const Duration(milliseconds: 300),
-                                      builder: (_, val, __) => SizedBox(
-                                        width: size - 20,
-                                        height: size - 20,
-                                        child: CircularProgressIndicator(
-                                          value: val,
-                                          strokeWidth: 8,
-                                          backgroundColor: AColors.bgElevated,
-                                          valueColor:
-                                          AlwaysStoppedAnimation(_phaseColor),
-                                          strokeCap: StrokeCap.round,
+                                      AnimatedBuilder(
+                                        animation: Listenable.merge([
+                                          _pulseCtrl, // if we want the stroke to throb
+                                        ]),
+                                        builder: (_, __) => CustomPaint(
+                                          size: Size(size, size),
+                                          painter: _PomodoroRingPainter(
+                                            progress: _progress,
+                                            color: _phaseColor,
+                                            glowIntensity: _running ? _pulseAnim.value - 1.0 : 0.0,
+                                          ),
                                         ),
                                       ),
-                                    ),
                                     Column(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
@@ -877,11 +874,11 @@ class _StatsBar extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _Stat(label: 'Sessions', value: '$sessionsToday', icon: '🍅'),
+          _Stat(label: 'Sessions', value: '$sessionsToday', iconData: Icons.check_circle_rounded),
           const _Divider(),
-          _Stat(label: 'Focus Time', value: '${focusMinutes}m', icon: '⏱️'),
+          _Stat(label: 'Focus Time', value: '${focusMinutes}m', iconData: Icons.timer_rounded),
           const _Divider(),
-          _Stat(label: 'Cycle', value: '$cycleDone/$cycleTotal', icon: '🔁'),
+          _Stat(label: 'Cycle', value: '$cycleDone/$cycleTotal', iconData: Icons.loop_rounded),
         ],
       ),
     );
@@ -891,19 +888,19 @@ class _StatsBar extends StatelessWidget {
 class _Stat extends StatelessWidget {
   final String label;
   final String value;
-  final String icon;
+  final IconData iconData;
 
   const _Stat({
     required this.label,
     required this.value,
-    required this.icon,
+    required this.iconData,
   });
 
   @override
   Widget build(BuildContext context) => Expanded(
     child: Column(
       children: [
-        Text(icon, style: const TextStyle(fontSize: 20)),
+        Icon(iconData, size: 20, color: AColors.primary.withAlpha(200)),
         const SizedBox(height: 4),
         Text(value, style: AText.titleMedium),
         Text(label, style: AText.bodySmall),
@@ -964,7 +961,7 @@ class _SettingsSheet extends ConsumerWidget {
           const SizedBox(height: 24),
           _TimerRow(
             label: 'Focus',
-            emoji: '🎯',
+            iconData: Icons.center_focus_strong_rounded,
             color: AColors.primary,
             value: focus,
             min: 5,
@@ -978,7 +975,7 @@ class _SettingsSheet extends ConsumerWidget {
           const SizedBox(height: 16),
           _TimerRow(
             label: 'Short Break',
-            emoji: '☕',
+            iconData: Icons.coffee_rounded,
             color: AColors.info,
             value: short,
             min: 1,
@@ -992,7 +989,7 @@ class _SettingsSheet extends ConsumerWidget {
           const SizedBox(height: 16),
           _TimerRow(
             label: 'Long Break',
-            emoji: '🛌',
+            iconData: Icons.battery_charging_full_rounded,
             color: AColors.warning,
             value: long,
             min: 5,
@@ -1006,7 +1003,7 @@ class _SettingsSheet extends ConsumerWidget {
           const SizedBox(height: 16),
           _TimerRow(
             label: 'Sessions until long break',
-            emoji: '🔁',
+            iconData: Icons.loop_rounded,
             color: AColors.primary,
             value: sessions,
             min: 2,
@@ -1052,7 +1049,7 @@ class _SettingsSheet extends ConsumerWidget {
 
 class _TimerRow extends StatelessWidget {
   final String label;
-  final String emoji;
+  final IconData iconData;
   final Color color;
   final int value;
   final int min;
@@ -1062,7 +1059,7 @@ class _TimerRow extends StatelessWidget {
 
   const _TimerRow({
     required this.label,
-    required this.emoji,
+    required this.iconData,
     required this.color,
     required this.value,
     required this.min,
@@ -1075,7 +1072,7 @@ class _TimerRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Text(emoji, style: const TextStyle(fontSize: 20)),
+        Icon(iconData, size: 20, color: color),
         const SizedBox(width: 10),
         Expanded(child: Text(label, style: AText.bodyLarge)),
         GestureDetector(
@@ -1152,6 +1149,75 @@ class _TimerRow extends StatelessWidget {
   }
 }
 
+class _PomodoroRingPainter extends CustomPainter {
+  final double progress;
+  final Color color;
+  final double glowIntensity; // 0.0 to ~0.04
+
+  _PomodoroRingPainter({
+    required this.progress,
+    required this.color,
+    required this.glowIntensity,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = (size.width - 24) / 2; // Inset slightly
+
+    // Background track
+    final bgPaint = Paint()
+      ..color = AColors.bgElevated
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 12
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawCircle(center, radius, bgPaint);
+
+    if (progress <= 0) return;
+
+    // Glowing shadow
+    if (glowIntensity > 0) {
+      final glowPaint = Paint()
+        ..color = color.withValues(alpha: 0.3 + (glowIntensity * 5))
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 14 + (glowIntensity * 100)
+        ..strokeCap = StrokeCap.round
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        -90 * (3.1415927 / 180), // Start at top
+        progress * 360 * (3.1415927 / 180),
+        false,
+        glowPaint,
+      );
+    }
+
+    // Foreground track
+    final fgPaint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 12
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      -90 * (3.1415927 / 180),
+      progress * 360 * (3.1415927 / 180),
+      false,
+      fgPaint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _PomodoroRingPainter oldDelegate) {
+    return oldDelegate.progress != progress ||
+        oldDelegate.color != color ||
+        oldDelegate.glowIntensity != glowIntensity;
+  }
+}
+
 // ─── HELPERS ──────────────────────────────────────────────────────────────
 class _CircleBtn extends StatelessWidget {
   final IconData icon;
@@ -1182,15 +1248,38 @@ class _CircleBtn extends StatelessWidget {
       decoration: BoxDecoration(
         color: bgColor,
         shape: BoxShape.circle,
+        gradient: LinearGradient(
+          colors: [
+            bgColor,
+            bgColor.withValues(alpha: 0.8),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.1),
+          width: 0.5,
+        ),
         boxShadow: glow
             ? [
-          BoxShadow(
-            color: (glowColor ?? bgColor).withValues(alpha: 0.45),
-            blurRadius: 24,
-            spreadRadius: 2,
-          ),
-        ]
-            : null,
+                BoxShadow(
+                  color: (glowColor ?? bgColor).withValues(alpha: 0.45),
+                  blurRadius: 24,
+                  spreadRadius: 2,
+                ),
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.4),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ]
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
       ),
       child: Icon(icon, color: color, size: size * 0.45),
     ),

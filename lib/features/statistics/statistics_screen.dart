@@ -910,8 +910,8 @@ class _BarChart extends StatelessWidget {
                       const SizedBox(height: 3),
                       TweenAnimationBuilder<double>(
                         tween: Tween(begin: 0, end: frac),
-                        duration: const Duration(milliseconds: 550),
-                        curve: Curves.easeOutCubic,
+                        duration: const Duration(milliseconds: 1200),
+                        curve: Curves.elasticOut,
                         builder: (_, val, __) => Container(
                           height: 100 * val,
                           decoration: BoxDecoration(
@@ -965,10 +965,16 @@ class _DonutChart extends StatelessWidget {
         SizedBox(
           width: 130,
           height: 130,
-          child: CustomPaint(
-            painter: _DonutPainter(
-              data: entries.map((e) => e.value.toDouble()).toList(),
-              colors: colors,
+          child: TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0.0, end: 1.0),
+            duration: const Duration(milliseconds: 1500),
+            curve: Curves.easeOutExpo,
+            builder: (_, val, __) => CustomPaint(
+              painter: _DonutPainter(
+                data: entries.map((e) => e.value.toDouble()).toList(),
+                colors: colors,
+                progress: val,
+              ),
             ),
           ),
         ),
@@ -1013,7 +1019,13 @@ class _DonutChart extends StatelessWidget {
 class _DonutPainter extends CustomPainter {
   final List<double> data;
   final List<Color> colors;
-  _DonutPainter({required this.data, required this.colors});
+  final double progress; // 0.0 to 1.0
+
+  _DonutPainter({
+    required this.data,
+    required this.colors,
+    this.progress = 1.0,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -1025,7 +1037,8 @@ class _DonutPainter extends CustomPainter {
     double start = -math.pi / 2;
 
     for (int i = 0; i < data.length; i++) {
-      final sweep = 2 * math.pi * data[i] / total;
+      final sweep = 2 * math.pi * data[i] / total * progress; // Animate draw
+      if (sweep <= 0) continue;
       canvas.drawArc(
         Rect.fromCircle(center: center, radius: radius - 4),
         start,
@@ -1065,8 +1078,8 @@ class _DonutPainter extends CustomPainter {
     tp.paint(canvas, Offset(center.dx - tp.width / 2, center.dy - tp.height / 2));
   }
 
-  @override
-  bool shouldRepaint(covariant _DonutPainter oldDelegate) => true;
+  bool shouldRepaint(covariant _DonutPainter oldDelegate) =>
+      oldDelegate.progress != progress;
 }
 
 class _PeriodSelector extends StatelessWidget {
@@ -1126,23 +1139,45 @@ class _ChartCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AColors.bgCard,
-        borderRadius: ARadius.lg,
-        border: Border.all(color: AColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: AText.titleSmall),
-          const SizedBox(height: 2),
-          Text(subtitle, style: AText.bodySmall),
-          const SizedBox(height: 16),
-          child,
-        ],
-      ),
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0.0, end: 1.0),
+      duration: const Duration(milliseconds: 800),
+      curve: Curves.easeOutQuint,
+      builder: (context, value, childWidget) {
+        return Transform.translate(
+          offset: Offset(0, 20 * (1 - value)),
+          child: Opacity(
+            opacity: value,
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AColors.bgCard,
+                borderRadius: ARadius.lg,
+                border: Border.all(
+                  color: AColors.primary.withValues(alpha: 0.2), // Subtle accent border
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: AText.titleSmall),
+                  const SizedBox(height: 2),
+                  Text(subtitle, style: AText.bodySmall),
+                  const SizedBox(height: 16),
+                  child,
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -1166,8 +1201,23 @@ class _HeroStat extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AColors.bgCard,
+        gradient: LinearGradient(
+          colors: [
+            AColors.bgCard,
+            color.withValues(alpha: 0.1),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: ARadius.lg,
-        border: Border.all(color: AColors.border),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.1),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

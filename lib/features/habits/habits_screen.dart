@@ -433,7 +433,7 @@ class _TodayTab extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('🌱', style: TextStyle(fontSize: 52)),
+            Icon(Icons.bolt_rounded, size: 52, color: AColors.primary),
             SizedBox(height: 16),
             Text('No habits scheduled for today', style: AText.titleMedium),
             SizedBox(height: 6),
@@ -515,7 +515,7 @@ class _AllTab extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('📚', style: TextStyle(fontSize: 52)),
+            Icon(Icons.local_fire_department_rounded, size: 52, color: AColors.primary),
             SizedBox(height: 16),
             Text('No habits yet', style: AText.titleMedium),
             SizedBox(height: 6),
@@ -632,9 +632,14 @@ class _HabitCard extends StatelessWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(
-                              habit.streak > 0 ? '🔥' : '⚪',
-                              style: const TextStyle(fontSize: 11),
+                            Icon(
+                              habit.streak > 0
+                                  ? Icons.local_fire_department_rounded
+                                  : Icons.circle_outlined,
+                              size: 14,
+                              color: habit.streak > 0
+                                  ? AColors.warning
+                                  : AColors.textMuted,
                             ),
                             const SizedBox(width: 4),
                             Text(
@@ -667,25 +672,45 @@ class _HabitCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
-            GestureDetector(
-              onTap: onToggle,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 250),
-                curve: Curves.easeOutBack,
-                width: 34,
-                height: 34,
-                decoration: BoxDecoration(
-                  color: done ? habit.color : Colors.transparent,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: done ? habit.color : AColors.border,
-                    width: 2,
+            TweenAnimationBuilder<double>(
+              tween: Tween(begin: 1.0, end: done ? 1.15 : 1.0),
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.elasticOut,
+              builder: (context, scale, child) {
+                return Transform.scale(
+                  scale: scale,
+                  child: GestureDetector(
+                    onTap: onToggle,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.easeOutCubic,
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: done ? habit.color : Colors.transparent,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: done ? habit.color : AColors.border,
+                          width: 2,
+                        ),
+                        boxShadow: done
+                            ? [
+                                BoxShadow(
+                                  color: habit.color.withValues(alpha: 0.4),
+                                  blurRadius: 8,
+                                  spreadRadius: 1,
+                                )
+                              ]
+                            : [],
+                      ),
+                      child: done
+                          ? const Icon(Icons.check_rounded,
+                              color: Colors.white, size: 20)
+                          : null,
+                    ),
                   ),
-                ),
-                child: done
-                    ? const Icon(Icons.check_rounded, color: Colors.white, size: 18)
-                    : null,
-              ),
+                );
+              },
             ),
           ],
         ),
@@ -1343,7 +1368,8 @@ class _HabitEditorSheetState extends State<_HabitEditorSheet> {
                                 }
                               },
                               child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 150),
+                                duration: const Duration(milliseconds: 250),
+                                curve: Curves.easeOutCubic,
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 14,
                                   vertical: 8,
@@ -1374,7 +1400,8 @@ class _HabitEditorSheetState extends State<_HabitEditorSheet> {
                                 HapticFeedback.selectionClick();
                               },
                               child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 150),
+                                duration: const Duration(milliseconds: 250),
+                                curve: Curves.easeOutCubic,
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 14,
                                   vertical: 8,

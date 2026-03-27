@@ -177,10 +177,16 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('🎉 "${goal.title}" completed!'),
-            backgroundColor: AColors.bgElevated,
+            content: Text('Goal completed: "${goal.title}"'),
+            backgroundColor: AColors.primary,
             behavior: SnackBarBehavior.floating,
             shape: const RoundedRectangleBorder(borderRadius: ARadius.md),
+            duration: const Duration(seconds: 3),
+            action: SnackBarAction(
+              label: 'View',
+              textColor: const Color(0xFF003D25),
+              onPressed: () {},
+            ),
           ),
         );
       }
@@ -197,10 +203,16 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen>
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('🎉 "${goal.title}" completed!'),
-        backgroundColor: AColors.bgElevated,
+        content: Text('Goal completed: "${goal.title}"'),
+        backgroundColor: AColors.primary,
         behavior: SnackBarBehavior.floating,
         shape: const RoundedRectangleBorder(borderRadius: ARadius.md),
+        duration: const Duration(seconds: 3),
+        action: SnackBarAction(
+          label: 'View',
+          textColor: const Color(0xFF003D25),
+          onPressed: () {},
+        ),
       ),
     );
   }
@@ -312,10 +324,11 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen>
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Goals', style: AText.displayMedium),
+                          Text('Goals', style: AText.displayLarge), // Larger text
+                          SizedBox(height: 4),
                           Text(
-                            'Dream it. Track it. Achieve it.',
-                            style: AText.bodyMedium,
+                            'Define targets. Measure progress.', // More serious copy
+                            style: AText.bodyLarge,
                           ),
                         ],
                       ),
@@ -459,7 +472,15 @@ class _OverallProgress extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: AColors.gradientPrimary,
+        gradient: LinearGradient(
+          colors: [
+            AColors.primary,
+            AColors.primary.withValues(alpha: 0.6),
+            const Color(0xFF003D25),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: ARadius.lg,
         boxShadow: [
           BoxShadow(
@@ -570,11 +591,11 @@ class _GoalList extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('🎯', style: TextStyle(fontSize: 52)),
+            Icon(Icons.flag_rounded, size: 52, color: AColors.primary),
             SizedBox(height: 16),
-            Text('Nothing here', style: AText.titleMedium),
+            Text('No goals defined', style: AText.titleMedium),
             SizedBox(height: 6),
-            Text('Add a goal or change the filter', style: AText.bodyMedium),
+            Text('Set your targets and track them here.', style: AText.bodyMedium),
           ],
         ),
       );
@@ -661,12 +682,31 @@ class _GoalCardState extends State<_GoalCard> {
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeOutCubic,
         decoration: BoxDecoration(
-          color: complete ? goalColor.withValues(alpha: 0.06) : AColors.bgCard,
+          color: complete ? goalColor.withValues(alpha: 0.06) : null,
+          gradient: complete
+              ? null
+              : LinearGradient(
+                  colors: [
+                    AColors.bgCard,
+                    goalColor.withValues(alpha: 0.05), // subtle tint at the bottom right
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
           borderRadius: ARadius.lg,
           border: Border.all(
             color: complete ? goalColor.withValues(alpha: 0.35) : AColors.border,
             width: complete ? 1.5 : 1,
           ),
+          boxShadow: !complete
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  )
+                ]
+              : null,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -689,7 +729,11 @@ class _GoalCardState extends State<_GoalCard> {
                             borderRadius: ARadius.md,
                           ),
                           child: Center(
-                            child: Text(g.emoji, style: const TextStyle(fontSize: 24)),
+                            child: Icon(
+                              Icons.data_exploration_rounded, // Better generic goal icon
+                              color: goalColor,
+                              size: 24,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -710,13 +754,24 @@ class _GoalCardState extends State<_GoalCard> {
                                         color: goalColor.withValues(alpha: 0.15),
                                         borderRadius: ARadius.full,
                                       ),
-                                      child: Text(
-                                        '✅ Done',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w700,
-                                          color: goalColor,
-                                        ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            Icons.check_circle_rounded,
+                                            size: 13,
+                                            color: goalColor,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            'Completed',
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w700,
+                                              color: goalColor,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                 ],

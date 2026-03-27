@@ -445,7 +445,7 @@ class _XpSphereRow extends StatelessWidget {
         children: [
           _SphereCard(
             label: 'Willpower',
-            emoji: '⚡',
+            icon: Icons.bolt_rounded,
             xp: profile.willpowerXp,
             level: profile.willpowerLevel,
             progress: profile.willpowerProgress,
@@ -454,7 +454,7 @@ class _XpSphereRow extends StatelessWidget {
           const SizedBox(width: 10),
           _SphereCard(
             label: 'Intellect',
-            emoji: '🧠',
+            icon: Icons.psychology_rounded,
             xp: profile.intellectXp,
             level: profile.intellectLevel,
             progress: profile.intellectProgress,
@@ -463,7 +463,7 @@ class _XpSphereRow extends StatelessWidget {
           const SizedBox(width: 10),
           _SphereCard(
             label: 'Health',
-            emoji: '💪',
+            icon: Icons.fitness_center_rounded,
             xp: profile.healthXp,
             level: profile.healthLevel,
             progress: profile.healthProgress,
@@ -476,14 +476,15 @@ class _XpSphereRow extends StatelessWidget {
 }
 
 class _SphereCard extends StatelessWidget {
-  final String label, emoji;
+  final String label;
+  final IconData icon;
   final int xp, level;
   final double progress;
   final Color color;
 
   const _SphereCard({
     required this.label,
-    required this.emoji,
+    required this.icon,
     required this.xp,
     required this.level,
     required this.progress,
@@ -503,7 +504,7 @@ class _SphereCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(emoji, style: const TextStyle(fontSize: 20)),
+            Icon(icon, color: color, size: 22),
             const SizedBox(height: 8),
             Text(
               'Lv $level',

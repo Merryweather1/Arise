@@ -10,14 +10,15 @@ import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 
 class LifeSphere {
-  final String id, name, emoji;
+  final String id, name;
+  final IconData iconData;
   final Color color;
   double score; // 0..10
 
   LifeSphere({
     required this.id,
     required this.name,
-    required this.emoji,
+    required this.iconData,
     required this.color,
     this.score = 5.0,
   });
@@ -36,14 +37,14 @@ class _LifeBalanceScreenState extends ConsumerState<LifeBalanceScreen>
 
   // Neutral defaults (NOT fake success data). Real values come from Firestore snapshots.
   final List<LifeSphere> _spheres = [
-    LifeSphere(id: 'health', name: 'Health', emoji: '💪', color: const Color(0xFF00C97B), score: 5.0),
-    LifeSphere(id: 'career', name: 'Career', emoji: '💼', color: const Color(0xFF4D9FFF), score: 5.0),
-    LifeSphere(id: 'finance', name: 'Finance', emoji: '💰', color: const Color(0xFFFFD700), score: 5.0),
-    LifeSphere(id: 'relations', name: 'Relations', emoji: '❤️', color: const Color(0xFFFF6B9D), score: 5.0),
-    LifeSphere(id: 'learning', name: 'Learning', emoji: '📚', color: const Color(0xFFBF7FF5), score: 5.0),
-    LifeSphere(id: 'mindset', name: 'Mindset', emoji: '🧠', color: const Color(0xFFFF8C69), score: 5.0),
-    LifeSphere(id: 'social', name: 'Social', emoji: '👥', color: const Color(0xFF00D4D4), score: 5.0),
-    LifeSphere(id: 'fun', name: 'Fun', emoji: '🎉', color: const Color(0xFFFF6B6B), score: 5.0),
+    LifeSphere(id: 'health', name: 'Health', iconData: Icons.fitness_center_rounded, color: const Color(0xFF00C97B), score: 5.0),
+    LifeSphere(id: 'career', name: 'Career', iconData: Icons.work_outline_rounded, color: const Color(0xFF4D9FFF), score: 5.0),
+    LifeSphere(id: 'finance', name: 'Finance', iconData: Icons.attach_money_rounded, color: const Color(0xFFFFD700), score: 5.0),
+    LifeSphere(id: 'relations', name: 'Relations', iconData: Icons.favorite_border_rounded, color: const Color(0xFFFF6B9D), score: 5.0),
+    LifeSphere(id: 'learning', name: 'Learning', iconData: Icons.menu_book_rounded, color: const Color(0xFFBF7FF5), score: 5.0),
+    LifeSphere(id: 'mindset', name: 'Mindset', iconData: Icons.psychology_rounded, color: const Color(0xFFFF8C69), score: 5.0),
+    LifeSphere(id: 'social', name: 'Social', iconData: Icons.people_outline_rounded, color: const Color(0xFF00D4D4), score: 5.0),
+    LifeSphere(id: 'fun', name: 'Fun', iconData: Icons.sports_esports_rounded, color: const Color(0xFFFF6B6B), score: 5.0),
   ];
 
   bool _loadedFromFirestore = false;
@@ -405,7 +406,15 @@ class _RadarPainter extends CustomPainter {
       );
 
       final tp = TextPainter(
-        text: TextSpan(text: spheres[i].emoji, style: const TextStyle(fontSize: 16)),
+        text: TextSpan(
+          text: String.fromCharCode(spheres[i].iconData.codePoint),
+          style: TextStyle(
+            fontSize: 16,
+            fontFamily: spheres[i].iconData.fontFamily,
+            package: spheres[i].iconData.fontPackage,
+            color: spheres[i].color,
+          ),
+        ),
         textDirection: ui.TextDirection.ltr,
       )..layout();
 
@@ -448,7 +457,7 @@ class _SphereSlider extends StatelessWidget {
           children: [
             Row(
               children: [
-                Text(sphere.emoji, style: const TextStyle(fontSize: 20)),
+                Icon(sphere.iconData, size: 20, color: sphere.color),
                 const SizedBox(width: 10),
                 Expanded(child: Text(sphere.name, style: AText.titleSmall)),
                 AnimatedContainer(
@@ -512,7 +521,7 @@ class _HistoryTab extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: const [
-            Text('🧭', style: TextStyle(fontSize: 52)),
+            Icon(Icons.explore_off_rounded, size: 52, color: AColors.primary),
             SizedBox(height: 16),
             Text('No snapshots yet', style: AText.titleMedium),
             SizedBox(height: 6),
@@ -562,7 +571,7 @@ class _TrendRow extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Text(sphere.emoji, style: const TextStyle(fontSize: 18)),
+            Icon(sphere.iconData, size: 18, color: sphere.color),
             const SizedBox(width: 10),
             Expanded(
               child: Column(
@@ -690,13 +699,20 @@ class _SnapshotCard extends StatelessWidget {
                     color: s.color.withValues(alpha: 0.1),
                     borderRadius: ARadius.full,
                   ),
-                  child: Text(
-                    '${s.emoji} ${score.toStringAsFixed(1)}',
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(s.iconData, size: 12, color: s.color),
+                      const SizedBox(width: 4),
+                      Text(
+                        score.toStringAsFixed(1),
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: s.color,
                     ),
+                      ),
+                    ],
                   ),
                 );
               }).toList(),

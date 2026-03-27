@@ -10,8 +10,23 @@ import '../../core/router/app_router.dart';
 import '../../core/theme/app_theme.dart';
 import 'notification_center.dart';
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  bool _hasAnimated = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (mounted) setState(() => _hasAnimated = true);
+    });
+  }
 
   static const _taglines = [
     'Ready to Arise? 💪',
@@ -107,7 +122,7 @@ class HomeScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final tasksAsync = ref.watch(tasksProvider);
     final habitsAsync = ref.watch(habitsProvider);
 
@@ -191,95 +206,107 @@ class HomeScreen extends ConsumerWidget {
           SliverToBoxAdapter(child: _Header(greeting: _greeting(), tagline: _tagline())),
 
           SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-              child: _XpCard(),
-            ),
-          ),
-
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-              child: Row(
-                children: [
-                  _StatCard(
-                    icon: Icons.check_circle_rounded,
-                    label: 'Tasks Done',
-                    value: '$completedTasks',
-                    color: AColors.primary,
-                  ),
-                  const SizedBox(width: 12),
-                  _StatCard(
-                    icon: Icons.local_fire_department_rounded,
-                    label: 'Best Streak',
-                    value: '$bestHabitStreak',
-                    color: AColors.warning,
-                  ),
-                  const SizedBox(width: 12),
-                  _StatCard(
-                    icon: Icons.timer_rounded,
-                    label: 'Focus Time',
-                    value: '${todayFocusMinutes}m',
-                    color: AColors.info,
-                  ),
-                ],
+            child: _AnimatedEntrance(
+              delay: 100,
+              play: _hasAnimated,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                child: _XpCard(),
               ),
             ),
           ),
 
           SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _FeatureCard(
-                      onTap: () => context.push(ARoutes.lifeBalance),
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF1A2F26), Color(0xFF0F2420)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      accentColor: AColors.primary,
-                      icon: Icons.balance_rounded,
-                      title: 'Life Balance',
-                      subtitle: hasLifeData
-                          ? 'Overall ${latestLifeAverage.toStringAsFixed(1)}/10'
-                          : 'No snapshots yet',
-                      badge: hasLifeData ? 'Live' : 'Empty',
-                      badgeColor: hasLifeData ? AColors.primary : AColors.textMuted,
-                      child: hasLifeData
-                          ? _FeatureLiveStat(
-                        text: '${lifeSnapshots.length} snapshot${lifeSnapshots.length == 1 ? '' : 's'}',
-                      )
-                          : const _FeaturePlaceholder(text: 'No data yet'),
+            child: _AnimatedEntrance(
+              delay: 200,
+              play: _hasAnimated,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                child: Row(
+                  children: [
+                    _StatCard(
+                      icon: Icons.check_circle_rounded,
+                      label: 'Tasks Done',
+                      value: '$completedTasks',
+                      color: AColors.primary,
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _FeatureCard(
-                      onTap: () => context.push(ARoutes.statistics),
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF1A2030), Color(0xFF0F1520)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      accentColor: AColors.info,
-                      icon: Icons.bar_chart_rounded,
-                      title: 'Statistics',
-                      subtitle: hasStatsData
-                          ? '$completedTasksTotal tasks • ${totalFocusMinutes}m focus'
-                          : 'No data yet',
-                      badge: hasStatsData ? 'Live' : 'Empty',
-                      badgeColor: hasStatsData ? AColors.info : AColors.textMuted,
-                      child: hasStatsData
-                          ? _FeatureLiveStat(
-                        text: '$totalPomodoroSessions session${totalPomodoroSessions == 1 ? '' : 's'} logged',
-                      )
-                          : const _FeaturePlaceholder(text: 'No stats yet'),
+                    const SizedBox(width: 12),
+                    _StatCard(
+                      icon: Icons.local_fire_department_rounded,
+                      label: 'Best Streak',
+                      value: '$bestHabitStreak',
+                      color: AColors.warning,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 12),
+                    _StatCard(
+                      icon: Icons.timer_rounded,
+                      label: 'Focus Time',
+                      value: '${todayFocusMinutes}m',
+                      color: AColors.info,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          SliverToBoxAdapter(
+            child: _AnimatedEntrance(
+              delay: 300,
+              play: _hasAnimated,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _FeatureCard(
+                        onTap: () => context.push(ARoutes.lifeBalance),
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF1A2F26), Color(0xFF0F2420)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        accentColor: AColors.primary,
+                        icon: Icons.balance_rounded,
+                        title: 'Life Balance',
+                        subtitle: hasLifeData
+                            ? 'Overall ${latestLifeAverage.toStringAsFixed(1)}/10'
+                            : 'No snapshots yet',
+                        badge: hasLifeData ? 'Live' : 'Empty',
+                        badgeColor: hasLifeData ? AColors.primary : AColors.textMuted,
+                        child: hasLifeData
+                            ? _FeatureLiveStat(
+                                text: '${lifeSnapshots.length} snapshot${lifeSnapshots.length == 1 ? '' : 's'}',
+                              )
+                            : const _FeaturePlaceholder(text: 'No data yet'),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _FeatureCard(
+                        onTap: () => context.push(ARoutes.statistics),
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF1A2030), Color(0xFF0F1520)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        accentColor: AColors.info,
+                        icon: Icons.bar_chart_rounded,
+                        title: 'Statistics',
+                        subtitle: hasStatsData
+                            ? '$completedTasksTotal tasks • ${totalFocusMinutes}m focus'
+                            : 'No data yet',
+                        badge: hasStatsData ? 'Live' : 'Empty',
+                        badgeColor: hasStatsData ? AColors.info : AColors.textMuted,
+                        child: hasStatsData
+                            ? _FeatureLiveStat(
+                                text: '$totalPomodoroSessions session${totalPomodoroSessions == 1 ? '' : 's'} logged',
+                              )
+                            : const _FeaturePlaceholder(text: 'No stats yet'),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -299,17 +326,21 @@ class HomeScreen extends ConsumerWidget {
                   delegate: SliverChildBuilderDelegate(
                         (_, i) {
                       final task = dashboardTasks[i];
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: _TaskDashboardCard(
-                          task: task,
-                          priorityColor: _taskPriorityColor(task.priority),
-                          onTap: () => context.go(ARoutes.tasks),
-                          onToggle: () async {
-                            final notifier = ref.read(taskActionsProvider.notifier);
-                            await notifier.setDone(task, !task.done);
-                            HapticFeedback.lightImpact();
-                          },
+                      return _AnimatedEntrance(
+                        delay: 300 + (i * 100),
+                        play: _hasAnimated,
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: _TaskDashboardCard(
+                            task: task,
+                            priorityColor: _taskPriorityColor(task.priority),
+                            onTap: () => context.go(ARoutes.tasks),
+                            onToggle: () async {
+                              final notifier = ref.read(taskActionsProvider.notifier);
+                              await notifier.setDone(task, !task.done);
+                              HapticFeedback.lightImpact();
+                            },
+                          ),
                         ),
                       );
                     },
@@ -338,17 +369,21 @@ class HomeScreen extends ConsumerWidget {
                     itemCount: todayHabits.length,
                     itemBuilder: (_, i) {
                       final habit = todayHabits[i];
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 12),
-                        child: _HabitDashboardChip(
-                          habit: habit,
-                          onTap: () => context.go(ARoutes.habits),
-                          onToggle: () async {
-                            await ref
-                                .read(habitActionsProvider.notifier)
-                                .toggleToday(habit);
-                            HapticFeedback.lightImpact();
-                          },
+                      return _AnimatedEntrance(
+                        delay: 400 + (i * 100),
+                        play: _hasAnimated,
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 12),
+                          child: _HabitDashboardChip(
+                            habit: habit,
+                            onTap: () => context.go(ARoutes.habits),
+                            onToggle: () async {
+                              await ref
+                                  .read(habitActionsProvider.notifier)
+                                  .toggleToday(habit);
+                              HapticFeedback.lightImpact();
+                            },
+                          ),
                         ),
                       );
                     },
@@ -358,12 +393,16 @@ class HomeScreen extends ConsumerWidget {
             ],
           ] else ...[
             SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-                child: _EmptyDashboardMainCard(
-                  onQuickAdd: () => context.go(ARoutes.tasks),
-                  onTasks: () => context.go(ARoutes.tasks),
-                  onHabits: () => context.go(ARoutes.habits),
+              child: _AnimatedEntrance(
+                delay: 400,
+                play: _hasAnimated,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                  child: _EmptyDashboardMainCard(
+                    onQuickAdd: () => context.go(ARoutes.tasks),
+                    onTasks: () => context.go(ARoutes.tasks),
+                    onHabits: () => context.go(ARoutes.habits),
+                  ),
                 ),
               ),
             ),
@@ -736,18 +775,28 @@ class _FeatureCard extends StatelessWidget {
         onTap();
         HapticFeedback.lightImpact();
       },
-      child: Container(
+      child: SizedBox(
         height: 160,
+        child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           gradient: gradient,
           borderRadius: ARadius.lg,
-          border: Border.all(color: accentColor.withValues(alpha: 0.25)),
+          border: Border.all(
+            color: accentColor.withValues(alpha: 0.15),
+            width: 1,
+          ),
           boxShadow: [
             BoxShadow(
-              color: accentColor.withValues(alpha: 0.12),
+              color: Colors.black.withValues(alpha: 0.25),
               blurRadius: 16,
-              offset: const Offset(0, 4),
+              offset: const Offset(0, 8),
+            ),
+            BoxShadow(
+              color: accentColor.withValues(alpha: 0.05),
+              blurRadius: 24,
+              spreadRadius: 2,
             ),
           ],
         ),
@@ -792,6 +841,7 @@ class _FeatureCard extends StatelessWidget {
             child,
           ],
         ),
+      ),
       ),
     );
   }
@@ -932,11 +982,20 @@ class _TaskDashboardCard extends StatelessWidget {
         onTap();
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
           color: task.done ? AColors.bgElevated : AColors.bgCard,
           borderRadius: ARadius.lg,
           border: Border.all(color: AColors.border),
+          boxShadow: task.done
+              ? null
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.25),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
         ),
         child: Row(
           children: [
@@ -1265,4 +1324,70 @@ class _MiniTag extends StatelessWidget {
       ),
     ),
   );
+}
+
+class _AnimatedEntrance extends StatefulWidget {
+  final int delay;
+  final bool play;
+  final Widget child;
+
+  const _AnimatedEntrance({
+    required this.delay,
+    required this.play,
+    required this.child,
+  });
+
+  @override
+  State<_AnimatedEntrance> createState() => _AnimatedEntranceState();
+}
+
+class _AnimatedEntranceState extends State<_AnimatedEntrance> {
+  bool _start = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.play) _trigger();
+  }
+
+  @override
+  void didUpdateWidget(covariant _AnimatedEntrance oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.play && !oldWidget.play) _trigger();
+  }
+
+  void _trigger() {
+    Future.delayed(Duration(milliseconds: widget.delay), () {
+      if (mounted) setState(() => _start = true);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!widget.play) {
+      return Opacity(
+        opacity: 0,
+        child: Transform.translate(
+          offset: const Offset(0, 20),
+          child: widget.child,
+        ),
+      );
+    }
+
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0.0, end: _start ? 1.0 : 0.0),
+      duration: const Duration(milliseconds: 600),
+      curve: Curves.easeOutQuint,
+      builder: (context, value, childWidget) {
+        return Opacity(
+          opacity: value,
+          child: Transform.translate(
+            offset: Offset(0, 20 * (1 - value)),
+            child: childWidget,
+          ),
+        );
+      },
+      child: widget.child,
+    );
+  }
 }
