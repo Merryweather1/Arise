@@ -11,6 +11,7 @@ import '../../features/habits/habits_screen.dart';
 import '../../features/home/home_screen.dart';
 import '../../features/life_balance/life_balance_screen.dart';
 import '../../features/pomodoro/pomodoro_screen.dart';
+import '../../features/profile/profile_screen.dart';
 import '../../features/statistics/statistics_screen.dart';
 import '../../features/tasks/tasks_screen.dart';
 import '../shell/app_shell.dart';
@@ -24,6 +25,7 @@ class ARoutes {
   static const pomodoro = '/pomodoro';
   static const lifeBalance = '/life-balance';
   static const statistics = '/statistics';
+  static const profile = '/profile';
 }
 
 class GoRouterRefreshStream extends ChangeNotifier {
@@ -97,6 +99,11 @@ final appRouter = GoRouter(
           builder: (_, __) => const StatisticsScreen(),
         ),
       ],
+    ),
+    // Full-screen profile — outside shell so nav bar is hidden
+    GoRoute(
+      path: ARoutes.profile,
+      pageBuilder: (_, __) => const MaterialPage(child: ProfileScreen()),
     ),
   ],
 );

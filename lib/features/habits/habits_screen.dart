@@ -215,9 +215,69 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
 
             const SizedBox(height: 16),
 
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: _DailyProgress(done: doneToday, total: totalToday),
+            // Progress card – only when there are 2+ habits
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 450),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeInCubic,
+              transitionBuilder: (child, anim) => FadeTransition(
+                opacity: anim,
+                child: SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(0, -0.08),
+                    end: Offset.zero,
+                  ).animate(anim),
+                  child: child,
+                ),
+              ),
+              child: visibleHabits.length >= 2
+                  ? Padding(
+                      key: const ValueKey('progress'),
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: _DailyProgress(done: doneToday, total: totalToday),
+                    )
+                  : Padding(
+                      key: const ValueKey('start'),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 4),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: AColors.bgCard,
+                          borderRadius: ARadius.lg,
+                          border: Border.all(color: AColors.border),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: AColors.primary.withAlpha(20),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.track_changes_rounded,
+                                  color: AColors.primary, size: 18),
+                            ),
+                            const SizedBox(width: 12),
+                            const Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Build your streak',
+                                      style: TextStyle(
+                                        color: AColors.textPrimary,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                      )),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
             ),
 
             const SizedBox(height: 16),

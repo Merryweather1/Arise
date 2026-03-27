@@ -10,11 +10,54 @@ import '../../core/models/app_models.dart';
 import '../../core/providers/app_providers.dart';
 import '../../core/services/firestore_service.dart';
 
-// ─── PROVIDERS ────────────────────────────────────────────────────────────
-final pomodoroFocusMinsProvider = StateProvider<int>((ref) => 25);
-final pomodoroShortBreakMinsProvider = StateProvider<int>((ref) => 5);
-final pomodoroLongBreakMinsProvider = StateProvider<int>((ref) => 15);
-final pomodoroSessionsUntilLongProvider = StateProvider<int>((ref) => 4);
+import 'package:shared_preferences/shared_preferences.dart';
+
+// ─── PERSISTENT TIMER SETTINGS ────────────────────────────────────────────
+// Each setting is stored in SharedPreferences so restarts remember the user's
+// chosen durations.
+
+class _PomodoroIntSetting extends Notifier<int> {
+  final String _key;
+  final int _defaultValue;
+  late Future<void> _ready;
+
+  _PomodoroIntSetting(this._key, this._defaultValue);
+
+  @override
+  int build() {
+    _ready = _load();
+    return _defaultValue;
+  }
+
+  Future<void> _load() async {
+    final prefs = await SharedPreferences.getInstance();
+    final stored = prefs.getInt(_key);
+    if (stored != null) state = stored;
+  }
+
+  @override
+  set state(int value) {
+    super.state = value;
+    // Persist asynchronously — fire-and-forget is fine here
+    SharedPreferences.getInstance().then((p) => p.setInt(_key, value));
+  }
+
+  /// Ensure load finishes before the settings sheet reads the value.
+  Future<void> get ready => _ready;
+}
+
+final pomodoroFocusMinsProvider =
+    NotifierProvider<_PomodoroIntSetting, int>(
+        () => _PomodoroIntSetting('pomo_focus', 25));
+final pomodoroShortBreakMinsProvider =
+    NotifierProvider<_PomodoroIntSetting, int>(
+        () => _PomodoroIntSetting('pomo_short', 5));
+final pomodoroLongBreakMinsProvider =
+    NotifierProvider<_PomodoroIntSetting, int>(
+        () => _PomodoroIntSetting('pomo_long', 15));
+final pomodoroSessionsUntilLongProvider =
+    NotifierProvider<_PomodoroIntSetting, int>(
+        () => _PomodoroIntSetting('pomo_sessions', 4));
 
 // ─── MODELS ───────────────────────────────────────────────────────────────
 enum PomodoroPhase { focus, shortBreak, longBreak }
@@ -397,12 +440,15 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
             'What are you working on?',
             style: AText.titleMedium,
           ),
-          content: TextField(
-            controller: ctrl,
-            autofocus: true,
-            style: AText.bodyLarge,
-            decoration: const InputDecoration(
-              hintText: 'e.g. Write feature spec...',
+          // SingleChildScrollView prevents the 232-px keyboard overflow
+          content: SingleChildScrollView(
+            child: TextField(
+              controller: ctrl,
+              autofocus: true,
+              style: AText.bodyLarge,
+              decoration: const InputDecoration(
+                hintText: 'e.g. Write feature spec...',
+              ),
             ),
           ),
           actions: [

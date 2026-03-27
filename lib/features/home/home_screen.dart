@@ -13,6 +13,45 @@ import 'notification_center.dart';
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
+  static const _taglines = [
+    'Ready to Arise? 💪',
+    'Make today count. ⚡',
+    'One step at a time. 🎯',
+    'Your future self is watching. 🔮',
+    'Progress, not perfection. 📈',
+    'Small steps, big wins. 🏆',
+    'Build the life you want. 🌟',
+    'Discipline is freedom. 🔓',
+    'Show up. Every. Day. 🔥',
+    'You got this. Seriously. 🙌',
+    'Momentum starts here. 🚀',
+    'Focus. Flow. Finish. ✨',
+    'The grind is the gift. 🎁',
+    'Earn your rest. 💤',
+    'Today’s effort = tomorrow’s edge. 🔥',
+    'Push past the plateau. 💪',
+    'Winners start before they’re ready. 🚀',
+    'Consistency over intensity. 📊',
+    'No shortcuts, no regrets. 🤝',
+    'Your habits shape your future. 🏗️',
+    'Invest in yourself today. 💰',
+    'Every rep counts. 💪',
+    'Rise and dominate. 👑',
+    'Keep the streak alive. 🔥',
+    'Outwork yesterday. ⏰',
+    'Dream big, execute bigger. 🛠️',
+    'Be the hardest worker in the room. 🔑',
+    'Lock in. Let’s go. 🎓',
+    'Clarity + action = results. 🎯',
+    'Take the shot. You’ll make it. 🏀',
+  ];
+
+  String _tagline() {
+    final d = DateTime.now();
+    final seed = d.year * 10000 + d.month * 100 + d.day;
+    return _taglines[seed % _taglines.length];
+  }
+
   String _greeting() {
     final h = DateTime.now().hour;
     if (h < 12) return 'Good morning';
@@ -149,7 +188,7 @@ class HomeScreen extends ConsumerWidget {
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
-          SliverToBoxAdapter(child: _Header(greeting: _greeting())),
+          SliverToBoxAdapter(child: _Header(greeting: _greeting(), tagline: _tagline())),
 
           SliverToBoxAdapter(
             child: Padding(
@@ -340,7 +379,8 @@ class HomeScreen extends ConsumerWidget {
 // ─── HEADER ───────────────────────────────────────────────────────────────
 class _Header extends ConsumerWidget {
   final String greeting;
-  const _Header({required this.greeting});
+  final String tagline;
+  const _Header({required this.greeting, required this.tagline});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -358,7 +398,15 @@ class _Header extends ConsumerWidget {
                 children: [
                   Text(greeting, style: AText.bodyMedium),
                   const SizedBox(height: 2),
-                  const Text('Ready to Arise? 💪', style: AText.titleLarge),
+                  // Daily-rotating tagline with a soft fade-in
+                  TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0.0, end: 1.0),
+                    duration: const Duration(milliseconds: 600),
+                    curve: Curves.easeOut,
+                    builder: (_, v, child) =>
+                        Opacity(opacity: v, child: child),
+                    child: Text(tagline, style: AText.titleLarge),
+                  ),
                 ],
               ),
             ),
@@ -428,16 +476,21 @@ class _Header extends ConsumerWidget {
               ),
             ),
 
-            const SizedBox(width: 10),
-            Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                gradient: AColors.gradientPrimary,
-                borderRadius: ARadius.md,
+            GestureDetector(
+              onTap: () {
+                HapticFeedback.lightImpact();
+                context.push(ARoutes.profile);
+              },
+              child: Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  gradient: AColors.gradientPrimary,
+                  borderRadius: ARadius.md,
+                ),
+                child: const Icon(Icons.person_rounded,
+                    color: Colors.white, size: 22),
               ),
-              child: const Icon(Icons.person_rounded,
-                  color: Colors.white, size: 22),
             ),
           ],
         ),
