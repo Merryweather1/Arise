@@ -686,13 +686,13 @@ class _GoalCardState extends State<_GoalCard> {
           gradient: complete
               ? null
               : LinearGradient(
-                  colors: [
-                    AColors.bgCard,
-                    goalColor.withValues(alpha: 0.05), // subtle tint at the bottom right
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+            colors: [
+              AColors.bgCard,
+              goalColor.withValues(alpha: 0.05), // subtle tint at the bottom right
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
           borderRadius: ARadius.lg,
           border: Border.all(
             color: complete ? goalColor.withValues(alpha: 0.35) : AColors.border,
@@ -700,12 +700,12 @@ class _GoalCardState extends State<_GoalCard> {
           ),
           boxShadow: !complete
               ? [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.2),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  )
-                ]
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.2),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            )
+          ]
               : null,
         ),
         child: Column(
@@ -1337,36 +1337,33 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
                     _Sec(
                       label: 'Emoji',
                       icon: Icons.emoji_emotions_rounded,
-                      child: Wrap(
-                        spacing: 10,
-                        runSpacing: 10,
-                        children: _emojis.map((e) {
-                          final sel = _emoji == e;
-                          return GestureDetector(
-                            onTap: () {
-                              setState(() => _emoji = e);
-                              HapticFeedback.selectionClick();
-                            },
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 150),
-                              width: 44,
-                              height: 44,
-                              decoration: BoxDecoration(
-                                color: sel
-                                    ? _color.withValues(alpha: 0.2)
-                                    : AColors.bgCard,
-                                borderRadius: ARadius.md,
-                                border: Border.all(
-                                  color: sel ? _color : AColors.border,
-                                  width: sel ? 2 : 1,
+                      child: SizedBox(
+                        height: 52,
+                        child: ListView(
+                          scrollDirection: Axis.horizontal,
+                          children: _emojis.map((e) {
+                            final sel = _emoji == e;
+                            return GestureDetector(
+                              onTap: () { setState(() => _emoji = e); HapticFeedback.selectionClick(); },
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 180),
+                                curve: Curves.easeOutCubic,
+                                width: 48,
+                                height: 48,
+                                margin: const EdgeInsets.only(right: 8),
+                                decoration: BoxDecoration(
+                                  color: sel ? _color.withValues(alpha: 0.18) : AColors.bgCard,
+                                  borderRadius: ARadius.md,
+                                  border: Border.all(
+                                    color: sel ? _color : AColors.border,
+                                    width: sel ? 2 : 1,
+                                  ),
                                 ),
+                                child: Center(child: Text(e, style: const TextStyle(fontSize: 22))),
                               ),
-                              child: Center(
-                                child: Text(e, style: const TextStyle(fontSize: 20)),
-                              ),
-                            ),
-                          );
-                        }).toList(),
+                            );
+                          }).toList(),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -1374,44 +1371,42 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
                     _Sec(
                       label: 'Color',
                       icon: Icons.palette_rounded,
-                      child: Row(
-                        children: _colors.map((c) {
-                          final sel = _color == c;
-                          return GestureDetector(
-                            onTap: () {
-                              setState(() => _color = c);
-                              HapticFeedback.selectionClick();
-                            },
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 150),
-                              width: 34,
-                              height: 34,
-                              margin: const EdgeInsets.only(right: 10),
-                              decoration: BoxDecoration(
-                                color: c,
-                                shape: BoxShape.circle,
-                                border: sel
-                                    ? Border.all(color: Colors.white, width: 2.5)
-                                    : null,
-                                boxShadow: sel
-                                    ? [
-                                  BoxShadow(
-                                    color: c.withValues(alpha: 0.5),
-                                    blurRadius: 8,
+                      child: SizedBox(
+                        height: 40,
+                        child: ListView(
+                          scrollDirection: Axis.horizontal,
+                          children: _colors.map((c) {
+                            final sel = _color == c;
+                            return GestureDetector(
+                              onTap: () { setState(() => _color = c); HapticFeedback.selectionClick(); },
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 180),
+                                curve: Curves.easeOutCubic,
+                                margin: const EdgeInsets.only(right: 10),
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: sel ? c.withValues(alpha: 0.18) : AColors.bgCard,
+                                  borderRadius: ARadius.full,
+                                  border: Border.all(
+                                    color: sel ? c : AColors.border,
+                                    width: sel ? 2 : 1,
                                   ),
-                                ]
-                                    : null,
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(width: 12, height: 12,
+                                        decoration: BoxDecoration(color: c, shape: BoxShape.circle)),
+                                    if (sel) ...[
+                                      const SizedBox(width: 6),
+                                      const Icon(Icons.check_rounded, size: 13, color: Colors.white),
+                                    ],
+                                  ],
+                                ),
                               ),
-                              child: sel
-                                  ? const Icon(
-                                Icons.check_rounded,
-                                color: Colors.white,
-                                size: 16,
-                              )
-                                  : null,
-                            ),
-                          );
-                        }).toList(),
+                            );
+                          }).toList(),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -1419,81 +1414,31 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
                     _Sec(
                       label: 'Category',
                       icon: Icons.folder_rounded,
-                      child: Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          ...widget.categories.map((c) {
-                            final sel = _category == c;
-                            return GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  _category = c;
-                                  if (!_sphereManuallyOverridden) {
-                                    _xpSphereOverride = null;
-                                  }
-                                });
-                                HapticFeedback.selectionClick();
-                              },
-                              onLongPress: () {
-                                if (_category == c) {
-                                  setState(() => _category = null);
-                                  HapticFeedback.selectionClick();
-                                }
-                              },
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 150),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 8,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: sel ? AColors.primaryGlow : AColors.bgCard,
-                                  borderRadius: ARadius.full,
-                                  border: Border.all(
-                                    color: sel ? AColors.primary : AColors.border,
-                                    width: sel ? 1.5 : 1,
-                                  ),
-                                ),
-                                child: Text(
-                                  c,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: sel ? AColors.primary : AColors.textMuted,
-                                  ),
-                                ),
-                              ),
-                            );
-                          }),
-                          if (_category != null)
-                            GestureDetector(
-                              onTap: () {
-                                setState(() => _category = null);
-                                HapticFeedback.selectionClick();
-                              },
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 150),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 8,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AColors.bgCard,
-                                  borderRadius: ARadius.full,
-                                  border: Border.all(color: AColors.border),
-                                ),
-                                child: const Text(
-                                  'Clear',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: AColors.textMuted,
-                                  ),
-                                ),
-                              ),
-                            ),
+                      child: _HScrollSelector(
+                        items: [
+                          ...widget.categories.map((c) => _HScrollItem(
+                            label: c,
+                            selected: _category == c,
+                            onTap: () => setState(() {
+                              _category = c;
+                              if (!_sphereManuallyOverridden) _xpSphereOverride = null;
+                            }),
+                          )),
                         ],
+                        trailing: _category != null
+                            ? GestureDetector(
+                          onTap: () => setState(() => _category = null),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                            decoration: BoxDecoration(
+                              color: AColors.bgCard,
+                              borderRadius: ARadius.full,
+                              border: Border.all(color: AColors.error.withValues(alpha: 0.4)),
+                            ),
+                            child: const Icon(Icons.close_rounded, size: 14, color: AColors.error),
+                          ),
+                        )
+                            : null,
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -2053,4 +1998,55 @@ class _ATabBar extends StatelessWidget {
       tabs: tabs.map((t) => Tab(text: t)).toList(),
     ),
   );
+}
+// ─── SHARED HORIZONTAL SCROLL SELECTOR ───────────────────────────────────
+class _HScrollItem {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  const _HScrollItem({required this.label, required this.selected, required this.onTap});
+}
+
+class _HScrollSelector extends StatelessWidget {
+  final List<_HScrollItem> items;
+  final Widget? trailing;
+  const _HScrollSelector({required this.items, this.trailing});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 36,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: [
+          ...items.map((item) => GestureDetector(
+            onTap: () { item.onTap(); HapticFeedback.selectionClick(); },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOutCubic,
+              margin: const EdgeInsets.only(right: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: item.selected ? AColors.primaryGlow : AColors.bgCard,
+                borderRadius: ARadius.full,
+                border: Border.all(
+                  color: item.selected ? AColors.primary : AColors.border,
+                  width: item.selected ? 1.5 : 1,
+                ),
+              ),
+              child: Text(
+                item.label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: item.selected ? AColors.primary : AColors.textMuted,
+                ),
+              ),
+            ),
+          )),
+          if (trailing != null) trailing!,
+        ],
+      ),
+    );
+  }
 }

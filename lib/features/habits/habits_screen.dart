@@ -232,52 +232,52 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
               ),
               child: visibleHabits.length >= 2
                   ? Padding(
-                      key: const ValueKey('progress'),
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: _DailyProgress(done: doneToday, total: totalToday),
-                    )
+                key: const ValueKey('progress'),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: _DailyProgress(done: doneToday, total: totalToday),
+              )
                   : Padding(
-                      key: const ValueKey('start'),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 4),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 12),
+                key: const ValueKey('start'),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 20, vertical: 4),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: AColors.bgCard,
+                    borderRadius: ARadius.lg,
+                    border: Border.all(color: AColors.border),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 36,
+                        height: 36,
                         decoration: BoxDecoration(
-                          color: AColors.bgCard,
-                          borderRadius: ARadius.lg,
-                          border: Border.all(color: AColors.border),
+                          color: AColors.primary.withAlpha(20),
+                          shape: BoxShape.circle,
                         ),
-                        child: Row(
+                        child: const Icon(Icons.track_changes_rounded,
+                            color: AColors.primary, size: 18),
+                      ),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Container(
-                              width: 36,
-                              height: 36,
-                              decoration: BoxDecoration(
-                                color: AColors.primary.withAlpha(20),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(Icons.track_changes_rounded,
-                                  color: AColors.primary, size: 18),
-                            ),
-                            const SizedBox(width: 12),
-                            const Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('Build your streak',
-                                      style: TextStyle(
-                                        color: AColors.textPrimary,
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                      )),
-                                ],
-                              ),
-                            ),
+                            Text('Build your streak',
+                                style: TextStyle(
+                                  color: AColors.textPrimary,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                )),
                           ],
                         ),
                       ),
-                    ),
+                    ],
+                  ),
+                ),
+              ),
             ),
 
             const SizedBox(height: 16),
@@ -582,21 +582,12 @@ class _HabitCard extends StatelessWidget {
         curve: Curves.easeOutCubic,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: done ? habit.color.withValues(alpha: 0.08) : AColors.bgSleek,
+          color: done ? habit.color.withValues(alpha: 0.08) : AColors.bgCard,
           borderRadius: ARadius.lg,
           border: Border.all(
-            color: done ? habit.color.withValues(alpha: 0.3) : AColors.primary.withValues(alpha: 0.2),
+            color: done ? habit.color.withValues(alpha: 0.4) : AColors.border,
             width: done ? 1.5 : 1,
           ),
-          boxShadow: done
-              ? null
-              : [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.3),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
         ),
         child: Row(
           children: [
@@ -704,17 +695,17 @@ class _HabitCard extends StatelessWidget {
                         ),
                         boxShadow: done
                             ? [
-                                BoxShadow(
-                                  color: habit.color.withValues(alpha: 0.4),
-                                  blurRadius: 8,
-                                  spreadRadius: 1,
-                                )
-                              ]
+                          BoxShadow(
+                            color: habit.color.withValues(alpha: 0.4),
+                            blurRadius: 8,
+                            spreadRadius: 1,
+                          )
+                        ]
                             : [],
                       ),
                       child: done
                           ? const Icon(Icons.check_rounded,
-                              color: Colors.white, size: 20)
+                          color: Colors.white, size: 20)
                           : null,
                     ),
                   ),
@@ -1175,535 +1166,479 @@ class _HabitEditorSheetState extends State<_HabitEditorSheet> {
           minChildSize: 0.5,
           maxChildSize: 0.95,
           builder: (_, ctrl) => Column(
-            children: [
+              children: [
               const SizedBox(height: 12),
-              Center(
-                child: Container(
-                  width: 36,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: AColors.border,
-                    borderRadius: ARadius.full,
+          Center(
+            child: Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AColors.border,
+                borderRadius: ARadius.full,
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            child: Row(
+              children: [
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(
+                      color: AColors.textMuted,
+                      fontSize: 16,
+                    ),
                   ),
                 ),
+                const Spacer(),
+                Text(
+                  widget.existing == null ? 'New Habit' : 'Edit Habit',
+                  style: AText.titleMedium,
+                ),
+                const Spacer(),
+                GestureDetector(
+                  onTap: _save,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 18,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: AColors.gradientPrimary,
+                      borderRadius: ARadius.full,
+                    ),
+                    child: const Text(
+                      'Save',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(color: AColors.border, height: 1),
+          Expanded(
+            child: ListView(
+              controller: ctrl,
+              padding: const EdgeInsets.all(20),
+              children: [
+            Row(
+            children: [
+            Container(
+            width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: _color.withValues(alpha: 0.15),
+                borderRadius: ARadius.lg,
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                child: Row(
-                  children: [
-                    GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: const Text(
-                        'Cancel',
-                        style: TextStyle(
-                          color: AColors.textMuted,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      widget.existing == null ? 'New Habit' : 'Edit Habit',
-                      style: AText.titleMedium,
-                    ),
-                    const Spacer(),
-                    GestureDetector(
-                      onTap: _save,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 18,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          gradient: AColors.gradientPrimary,
-                          borderRadius: ARadius.full,
-                        ),
-                        child: const Text(
-                          'Save',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+              child: Center(
+                child: Text(_emoji, style: const TextStyle(fontSize: 30)),
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: TextField(
+                controller: _nameCtrl,
+                autofocus: widget.existing == null,
+                style: AText.titleMedium,
+                decoration: const InputDecoration(
+                  hintText: 'Habit name',
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  fillColor: Colors.transparent,
                 ),
               ),
-              const Divider(color: AColors.border, height: 1),
-              Expanded(
-                child: ListView(
-                  controller: ctrl,
-                  padding: const EdgeInsets.all(20),
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 64,
-                          height: 64,
-                          decoration: BoxDecoration(
-                            color: _color.withValues(alpha: 0.15),
-                            borderRadius: ARadius.lg,
-                          ),
-                          child: Center(
-                            child: Text(_emoji, style: const TextStyle(fontSize: 30)),
-                          ),
+            ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          _Sec(
+            label: 'Emoji',
+            icon: Icons.emoji_emotions_rounded,
+            child: SizedBox(
+              height: 52,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: _emojis.map((e) {
+                  final sel = _emoji == e;
+                  return GestureDetector(
+                    onTap: () { setState(() => _emoji = e); HapticFeedback.selectionClick(); },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      curve: Curves.easeOutCubic,
+                      width: 48,
+                      height: 48,
+                      margin: const EdgeInsets.only(right: 8),
+                      decoration: BoxDecoration(
+                        color: sel ? _color.withValues(alpha: 0.18) : AColors.bgCard,
+                        borderRadius: ARadius.md,
+                        border: Border.all(
+                          color: sel ? _color : AColors.border,
+                          width: sel ? 2 : 1,
                         ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: TextField(
-                            controller: _nameCtrl,
-                            autofocus: widget.existing == null,
-                            style: AText.titleMedium,
-                            decoration: const InputDecoration(
-                              hintText: 'Habit name',
-                              border: InputBorder.none,
-                              enabledBorder: InputBorder.none,
-                              focusedBorder: InputBorder.none,
-                              fillColor: Colors.transparent,
-                            ),
-                          ),
+                      ),
+                      child: Center(child: Text(e, style: const TextStyle(fontSize: 22))),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          _Sec(
+            label: 'Color',
+            icon: Icons.palette_rounded,
+            child: SizedBox(
+              height: 40,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: _colors.map((c) {
+                  final sel = _color.value == c.value;
+                  return GestureDetector(
+                    onTap: () { setState(() => _color = c); HapticFeedback.selectionClick(); },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      curve: Curves.easeOutCubic,
+                      margin: const EdgeInsets.only(right: 10),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: sel ? c.withValues(alpha: 0.18) : AColors.bgCard,
+                        borderRadius: ARadius.full,
+                        border: Border.all(
+                          color: sel ? c : AColors.border,
+                          width: sel ? 2 : 1,
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-
-                    _Sec(
-                      label: 'Choose Emoji',
-                      icon: Icons.emoji_emotions_rounded,
-                      child: Wrap(
-                        spacing: 10,
-                        runSpacing: 10,
-                        children: _emojis.map((e) {
-                          final sel = _emoji == e;
-                          return GestureDetector(
-                            onTap: () {
-                              setState(() => _emoji = e);
-                              HapticFeedback.selectionClick();
-                            },
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 150),
-                              width: 44,
-                              height: 44,
-                              decoration: BoxDecoration(
-                                color: sel
-                                    ? _color.withValues(alpha: 0.2)
-                                    : AColors.bgCard,
-                                borderRadius: ARadius.md,
-                                border: Border.all(
-                                  color: sel ? _color : AColors.border,
-                                  width: sel ? 2 : 1,
-                                ),
-                              ),
-                              child: Center(
-                                child: Text(e, style: const TextStyle(fontSize: 20)),
-                              ),
-                            ),
-                          );
-                        }).toList(),
                       ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    _Sec(
-                      label: 'Color',
-                      icon: Icons.palette_rounded,
                       child: Row(
-                        children: _colors.map((c) {
-                          final sel = _color.value == c.value;
-                          return GestureDetector(
-                            onTap: () {
-                              setState(() => _color = c);
-                              HapticFeedback.selectionClick();
-                            },
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 150),
-                              width: 34,
-                              height: 34,
-                              margin: const EdgeInsets.only(right: 10),
-                              decoration: BoxDecoration(
-                                color: c,
-                                shape: BoxShape.circle,
-                                border: sel
-                                    ? Border.all(color: Colors.white, width: 2.5)
-                                    : null,
-                                boxShadow: sel
-                                    ? [
-                                  BoxShadow(
-                                    color: c.withValues(alpha: 0.5),
-                                    blurRadius: 8,
-                                  ),
-                                ]
-                                    : null,
-                              ),
-                              child: sel
-                                  ? const Icon(
-                                Icons.check_rounded,
-                                color: Colors.white,
-                                size: 16,
-                              )
-                                  : null,
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    _Sec(
-                      label: 'Category',
-                      icon: Icons.folder_rounded,
-                      child: Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          ...widget.categories.map((c) {
-                            final sel = _category == c;
-                            return GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  _category = c;
-                                  if (!_sphereManuallyOverridden) {
-                                    _xpSphereOverride = null;
-                                  }
-                                });
-                                HapticFeedback.selectionClick();
-                              },
-                              onLongPress: () {
-                                if (_category == c) {
-                                  setState(() => _category = null);
-                                  HapticFeedback.selectionClick();
-                                }
-                              },
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 250),
-                                curve: Curves.easeOutCubic,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 8,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: sel ? AColors.primaryGlow : AColors.bgCard,
-                                  borderRadius: ARadius.full,
-                                  border: Border.all(
-                                    color: sel ? AColors.primary : AColors.border,
-                                    width: sel ? 1.5 : 1,
-                                  ),
-                                ),
-                                child: Text(
-                                  c,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: sel ? AColors.primary : AColors.textMuted,
-                                  ),
-                                ),
-                              ),
-                            );
-                          }),
-                          if (_category != null)
-                            GestureDetector(
-                              onTap: () {
-                                setState(() => _category = null);
-                                HapticFeedback.selectionClick();
-                              },
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 250),
-                                curve: Curves.easeOutCubic,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 8,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AColors.bgCard,
-                                  borderRadius: ARadius.full,
-                                  border: Border.all(color: AColors.border),
-                                ),
-                                child: const Text(
-                                  'Clear',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: AColors.textMuted,
-                                  ),
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // ── XP Sphere selector ─────────────────────────────
-                    _Sec(
-                      label: 'XP Sphere  •  15 XP on completion',
-                      icon: Icons.auto_awesome_rounded,
-                      child: Row(
-                        children: XpSphere.values.map((sphere) {
-                          final isSelected = _effectiveSphere == sphere;
-                          final isAuto = !_sphereManuallyOverridden &&
-                              sphere == XpSphereExt.sphereForCategory(_category ?? '');
-                          return Expanded(
-                            child: Padding(
-                              padding: EdgeInsets.only(
-                                right: sphere != XpSphere.health ? 8 : 0,
-                              ),
-                              child: GestureDetector(
-                                onTap: () {
-                                  HapticFeedback.selectionClick();
-                                  setState(() {
-                                    _xpSphereOverride = sphere;
-                                    _sphereManuallyOverridden = true;
-                                  });
-                                },
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 150),
-                                  padding: const EdgeInsets.symmetric(vertical: 10),
-                                  decoration: BoxDecoration(
-                                    color: isSelected
-                                        ? sphere.color.withValues(alpha: 0.15)
-                                        : AColors.bgCard,
-                                    borderRadius: ARadius.md,
-                                    border: Border.all(
-                                      color: isSelected ? sphere.color : AColors.border,
-                                      width: isSelected ? 1.5 : 1,
-                                    ),
-                                  ),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(sphere.emoji,
-                                          style: const TextStyle(fontSize: 18)),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        sphere.label,
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w700,
-                                          color: isSelected
-                                              ? sphere.color
-                                              : AColors.textMuted,
-                                        ),
-                                      ),
-                                      if (isAuto)
-                                        Padding(
-                                          padding: const EdgeInsets.only(top: 2),
-                                          child: Text(
-                                            'auto',
-                                            style: TextStyle(
-                                              fontSize: 9,
-                                              color: sphere.color.withValues(alpha: 0.7),
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    _Sec(
-                      label: 'Schedule',
-                      icon: Icons.calendar_month_rounded,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Repeat on (empty = every day)',
-                            style: AText.bodyMedium,
+                          Container(
+                            width: 12, height: 12,
+                            decoration: BoxDecoration(color: c, shape: BoxShape.circle),
                           ),
-                          const SizedBox(height: 10),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: List.generate(7, (i) {
-                              final day = i + 1;
-                              final sel = _scheduleDays.contains(day);
-                              return GestureDetector(
-                                onTap: () {
-                                  setState(() => sel
-                                      ? _scheduleDays.remove(day)
-                                      : _scheduleDays.add(day));
-                                  HapticFeedback.selectionClick();
-                                },
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 150),
-                                  width: 38,
-                                  height: 38,
-                                  decoration: BoxDecoration(
-                                    color: sel ? _color : AColors.bgCard,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: sel ? _color : AColors.border,
-                                    ),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      _dayLabels[i],
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w700,
-                                        color: sel ? Colors.white : AColors.textMuted,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    _Sec(
-                      label: 'Duration',
-                      icon: Icons.timelapse_rounded,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          GestureDetector(
-                            onTap: () {
-                              setState(() => _isUnlimited = !_isUnlimited);
-                              HapticFeedback.selectionClick();
-                            },
-                            child: Row(
-                              children: [
-                                const Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Unlimited habit', style: AText.bodyLarge),
-                                      Text(
-                                        'Turn off to set a fixed number of days',
-                                        style: AText.bodySmall,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                _Toggle(
-                                  value: _isUnlimited,
-                                  color: AColors.primary,
-                                  onTap: () {
-                                    setState(() => _isUnlimited = !_isUnlimited);
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                          if (!_isUnlimited) ...[
-                            const SizedBox(height: 12),
-                            TextField(
-                              controller: _durationCtrl,
-                              keyboardType: TextInputType.number,
-                              style: AText.bodyMedium,
-                              decoration: const InputDecoration(
-                                hintText: 'Number of days',
-                                contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 12,
-                                ),
-                              ),
-                            ),
+                          if (sel) ...[
+                            const SizedBox(width: 6),
+                            const Icon(Icons.check_rounded, size: 13, color: Colors.white),
                           ],
                         ],
                       ),
                     ),
-                    const SizedBox(height: 20),
+                  );
+                }).toList(),
+              ),
+            ),
+          ), const SizedBox(height: 20),
 
-                    _Sec(
-                      label: 'Reminder',
-                      icon: Icons.notifications_rounded,
-                      child: GestureDetector(
-                        onTap: _pickTime,
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 150),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 13,
+      _Sec(
+        label: 'Category',
+        icon: Icons.folder_rounded,
+        child: _HScrollSelector(
+          items: [
+            ...widget.categories.map((c) => _HScrollItem(
+              label: c,
+              selected: _category == c,
+              onTap: () => setState(() {
+                _category = c;
+                if (!_sphereManuallyOverridden) _xpSphereOverride = null;
+              }),
+            )),
+          ],
+          trailing: _category != null
+              ? GestureDetector(
+            onTap: () => setState(() => _category = null),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+              decoration: BoxDecoration(
+                color: AColors.bgCard,
+                borderRadius: ARadius.full,
+                border: Border.all(color: AColors.error.withValues(alpha: 0.4)),
+              ),
+              child: const Icon(Icons.close_rounded, size: 14, color: AColors.error),
+            ),
+          )
+              : null,
+        ),
+      ),
+      const SizedBox(height: 20),
+
+      // ── XP Sphere selector ─────────────────────────────
+      _Sec(
+        label: 'XP Sphere  •  15 XP on completion',
+        icon: Icons.auto_awesome_rounded,
+        child: Row(
+          children: XpSphere.values.map((sphere) {
+            final isSelected = _effectiveSphere == sphere;
+            final isAuto = !_sphereManuallyOverridden &&
+                sphere == XpSphereExt.sphereForCategory(_category ?? '');
+            return Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  right: sphere != XpSphere.health ? 8 : 0,
+                ),
+                child: GestureDetector(
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    setState(() {
+                      _xpSphereOverride = sphere;
+                      _sphereManuallyOverridden = true;
+                    });
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 150),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? sphere.color.withValues(alpha: 0.15)
+                          : AColors.bgCard,
+                      borderRadius: ARadius.md,
+                      border: Border.all(
+                        color: isSelected ? sphere.color : AColors.border,
+                        width: isSelected ? 1.5 : 1,
+                      ),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(sphere.emoji,
+                            style: const TextStyle(fontSize: 18)),
+                        const SizedBox(height: 4),
+                        Text(
+                          sphere.label,
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: isSelected
+                                ? sphere.color
+                                : AColors.textMuted,
                           ),
-                          decoration: BoxDecoration(
-                            color: _reminderTime != null
-                                ? AColors.primaryGlow
-                                : AColors.bgCard,
-                            borderRadius: ARadius.md,
-                            border: Border.all(
-                              color: _reminderTime != null
-                                  ? AColors.primary
-                                  : AColors.border,
+                        ),
+                        if (isAuto)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: Text(
+                              'auto',
+                              style: TextStyle(
+                                fontSize: 9,
+                                color: sphere.color.withValues(alpha: 0.7),
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.access_time_rounded,
-                                color: _reminderTime != null
-                                    ? AColors.primary
-                                    : AColors.textMuted,
-                                size: 18,
-                              ),
-                              const SizedBox(width: 10),
-                              Text(
-                                _reminderTime != null
-                                    ? _reminderTime!.format(context)
-                                    : 'Set daily reminder',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: _reminderTime != null
-                                      ? AColors.primary
-                                      : AColors.textMuted,
-                                ),
-                              ),
-                              const Spacer(),
-                              if (_reminderTime != null)
-                                GestureDetector(
-                                  onTap: () => setState(() => _reminderTime = null),
-                                  child: const Icon(
-                                    Icons.close_rounded,
-                                    color: AColors.textMuted,
-                                    size: 18,
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                      ),
+                      ],
                     ),
-                    const SizedBox(height: 20),
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+      const SizedBox(height: 20),
 
-                    _Sec(
-                      label: 'Note',
-                      icon: Icons.notes_rounded,
-                      child: TextField(
-                        controller: _noteCtrl,
-                        style: AText.bodyMedium,
-                        maxLines: 3,
-                        minLines: 1,
-                        decoration: const InputDecoration(
-                          hintText: 'Why does this habit matter?',
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                          fillColor: Colors.transparent,
-                          contentPadding: EdgeInsets.zero,
+      _Sec(
+        label: 'Schedule',
+        icon: Icons.calendar_month_rounded,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Repeat on (empty = every day)',
+              style: AText.bodyMedium,
+            ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: List.generate(7, (i) {
+                final day = i + 1;
+                final sel = _scheduleDays.contains(day);
+                return GestureDetector(
+                  onTap: () {
+                    setState(() => sel
+                        ? _scheduleDays.remove(day)
+                        : _scheduleDays.add(day));
+                    HapticFeedback.selectionClick();
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 150),
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: sel ? _color : AColors.bgCard,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: sel ? _color : AColors.border,
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(
+                        _dayLabels[i],
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: sel ? Colors.white : AColors.textMuted,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 40),
-                  ],
+                  ),
+                );
+              }),
+            ),
+          ],
+        ),
+      ),
+      const SizedBox(height: 20),
+
+      _Sec(
+        label: 'Duration',
+        icon: Icons.timelapse_rounded,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            GestureDetector(
+              onTap: () {
+                setState(() => _isUnlimited = !_isUnlimited);
+                HapticFeedback.selectionClick();
+              },
+              child: Row(
+                children: [
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Unlimited habit', style: AText.bodyLarge),
+                        Text(
+                          'Turn off to set a fixed number of days',
+                          style: AText.bodySmall,
+                        ),
+                      ],
+                    ),
+                  ),
+                  _Toggle(
+                    value: _isUnlimited,
+                    color: AColors.primary,
+                    onTap: () {
+                      setState(() => _isUnlimited = !_isUnlimited);
+                    },
+                  ),
+                ],
+              ),
+            ),
+            if (!_isUnlimited) ...[
+              const SizedBox(height: 12),
+              TextField(
+                controller: _durationCtrl,
+                keyboardType: TextInputType.number,
+                style: AText.bodyMedium,
+                decoration: const InputDecoration(
+                  hintText: 'Number of days',
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 12,
+                  ),
                 ),
               ),
             ],
+          ],
+        ),
+      ),
+      const SizedBox(height: 20),
+
+      _Sec(
+        label: 'Reminder',
+        icon: Icons.notifications_rounded,
+        child: GestureDetector(
+          onTap: _pickTime,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 13,
+            ),
+            decoration: BoxDecoration(
+              color: _reminderTime != null
+                  ? AColors.primaryGlow
+                  : AColors.bgCard,
+              borderRadius: ARadius.md,
+              border: Border.all(
+                color: _reminderTime != null
+                    ? AColors.primary
+                    : AColors.border,
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.access_time_rounded,
+                  color: _reminderTime != null
+                      ? AColors.primary
+                      : AColors.textMuted,
+                  size: 18,
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  _reminderTime != null
+                      ? _reminderTime!.format(context)
+                      : 'Set daily reminder',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: _reminderTime != null
+                        ? AColors.primary
+                        : AColors.textMuted,
+                  ),
+                ),
+                const Spacer(),
+                if (_reminderTime != null)
+                  GestureDetector(
+                    onTap: () => setState(() => _reminderTime = null),
+                    child: const Icon(
+                      Icons.close_rounded,
+                      color: AColors.textMuted,
+                      size: 18,
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
+      const SizedBox(height: 20),
+
+      _Sec(
+        label: 'Note',
+        icon: Icons.notes_rounded,
+        child: TextField(
+          controller: _noteCtrl,
+          style: AText.bodyMedium,
+          maxLines: 3,
+          minLines: 1,
+          decoration: const InputDecoration(
+            hintText: 'Why does this habit matter?',
+            border: InputBorder.none,
+            enabledBorder: InputBorder.none,
+            focusedBorder: InputBorder.none,
+            fillColor: Colors.transparent,
+            contentPadding: EdgeInsets.zero,
+          ),
+        ),
+      ),
+      const SizedBox(height: 40),
+      ],
+    ),
+    ),
+    ],
+    ),
+    ),
+    ),
     );
   }
 }
@@ -1898,4 +1833,55 @@ class _InfoPill extends StatelessWidget {
       ],
     ),
   );
+}
+// ─── SHARED HORIZONTAL SCROLL SELECTOR ───────────────────────────────────
+class _HScrollItem {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  const _HScrollItem({required this.label, required this.selected, required this.onTap});
+}
+
+class _HScrollSelector extends StatelessWidget {
+  final List<_HScrollItem> items;
+  final Widget? trailing;
+  const _HScrollSelector({required this.items, this.trailing});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 36,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: [
+          ...items.map((item) => GestureDetector(
+            onTap: () { item.onTap(); HapticFeedback.selectionClick(); },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOutCubic,
+              margin: const EdgeInsets.only(right: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: item.selected ? AColors.primaryGlow : AColors.bgCard,
+                borderRadius: ARadius.full,
+                border: Border.all(
+                  color: item.selected ? AColors.primary : AColors.border,
+                  width: item.selected ? 1.5 : 1,
+                ),
+              ),
+              child: Text(
+                item.label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: item.selected ? AColors.primary : AColors.textMuted,
+                ),
+              ),
+            ),
+          )),
+          if (trailing != null) trailing!,
+        ],
+      ),
+    );
+  }
 }

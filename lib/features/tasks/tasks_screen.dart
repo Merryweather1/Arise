@@ -887,25 +887,16 @@ class _SwipeableTaskTileState extends State<_SwipeableTaskTile>
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOutCubic,
           decoration: BoxDecoration(
-            color: isDone ? AColors.bgElevated : AColors.bgSleek,
+            color: isDone ? AColors.bgElevated : AColors.bgCard,
             borderRadius: ARadius.lg,
             border: Border.all(
               color: task.pending
                   ? AColors.warning.withValues(alpha: 0.5)
                   : (isDone
-                      ? Colors.transparent
-                      : AColors.primary.withValues(alpha: 0.2)),
-              width: task.pending ? 1.5 : 1.0,
+                  ? AColors.border.withValues(alpha: 0.5)
+                  : AColors.border),
+              width: task.pending ? 1.5 : 1,
             ),
-            boxShadow: isDone
-                ? null
-                : [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.3),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1744,89 +1735,31 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
                     _Sec(
                       label: 'Category',
                       icon: Icons.folder_rounded,
-                      child: Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          ...widget.categories.map((c) {
-                            final sel = _category == c;
-                            return GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  _category = c;
-                                  // Auto-update sphere when category changes,
-                                  // unless user already manually picked one
-                                  if (!_sphereManuallyOverridden) {
-                                    _xpSphereOverride = null;
-                                  }
-                                });
-                                HapticFeedback.selectionClick();
-                              },
-                              onLongPress: () {
-                                if (_category == c) {
-                                  setState(() => _category = null);
-                                  HapticFeedback.selectionClick();
-                                }
-                              },
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 150),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 8,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: sel
-                                      ? AColors.primaryGlow
-                                      : AColors.bgCard,
-                                  borderRadius: ARadius.full,
-                                  border: Border.all(
-                                    color: sel
-                                        ? AColors.primary
-                                        : AColors.border,
-                                    width: sel ? 1.5 : 1,
-                                  ),
-                                ),
-                                child: Text(
-                                  c,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: sel
-                                        ? AColors.primary
-                                        : AColors.textMuted,
-                                  ),
-                                ),
-                              ),
-                            );
-                          }),
-                          if (_category != null)
-                            GestureDetector(
-                              onTap: () {
-                                setState(() => _category = null);
-                                HapticFeedback.selectionClick();
-                              },
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 150),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 8,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AColors.bgCard,
-                                  borderRadius: ARadius.full,
-                                  border: Border.all(color: AColors.border),
-                                ),
-                                child: const Text(
-                                  'Clear',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: AColors.textMuted,
-                                  ),
-                                ),
-                              ),
-                            ),
+                      child: _HScrollSelector(
+                        items: [
+                          ...widget.categories.map((c) => _HScrollItem(
+                            label: c,
+                            selected: _category == c,
+                            onTap: () => setState(() {
+                              _category = c;
+                              if (!_sphereManuallyOverridden) _xpSphereOverride = null;
+                            }),
+                          )),
                         ],
+                        trailing: _category != null
+                            ? GestureDetector(
+                          onTap: () => setState(() => _category = null),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                            decoration: BoxDecoration(
+                              color: AColors.bgCard,
+                              borderRadius: ARadius.full,
+                              border: Border.all(color: AColors.error.withValues(alpha: 0.4)),
+                            ),
+                            child: const Icon(Icons.close_rounded, size: 14, color: AColors.error),
+                          ),
+                        )
+                            : null,
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -2424,7 +2357,7 @@ class _IconBtn extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: AnimatedContainer( 
+      child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         width: 42,
         height: 42,
@@ -2485,15 +2418,67 @@ class _AnimatedEntrance extends StatelessWidget {
       },
       child: play
           ? FutureBuilder(
-              future: Future.delayed(Duration(milliseconds: delay)),
-              builder: (ctx, snap) {
-                if (snap.connectionState != ConnectionState.done) {
-                  return const SizedBox();
-                }
-                return child;
-              },
-            )
+        future: Future.delayed(Duration(milliseconds: delay)),
+        builder: (ctx, snap) {
+          if (snap.connectionState != ConnectionState.done) {
+            return const SizedBox();
+          }
+          return child;
+        },
+      )
           : const SizedBox(),
+    );
+  }
+}
+
+// ─── SHARED HORIZONTAL SCROLL SELECTOR ───────────────────────────────────
+class _HScrollItem {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  const _HScrollItem({required this.label, required this.selected, required this.onTap});
+}
+
+class _HScrollSelector extends StatelessWidget {
+  final List<_HScrollItem> items;
+  final Widget? trailing;
+  const _HScrollSelector({required this.items, this.trailing});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 36,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: [
+          ...items.map((item) => GestureDetector(
+            onTap: () { item.onTap(); HapticFeedback.selectionClick(); },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOutCubic,
+              margin: const EdgeInsets.only(right: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: item.selected ? AColors.primaryGlow : AColors.bgCard,
+                borderRadius: ARadius.full,
+                border: Border.all(
+                  color: item.selected ? AColors.primary : AColors.border,
+                  width: item.selected ? 1.5 : 1,
+                ),
+              ),
+              child: Text(
+                item.label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: item.selected ? AColors.primary : AColors.textMuted,
+                ),
+              ),
+            ),
+          )),
+          if (trailing != null) trailing!,
+        ],
+      ),
     );
   }
 }
