@@ -652,8 +652,11 @@ class _TaskListState extends State<_TaskList> {
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       physics: const BouncingScrollPhysics(),
-      itemCount: _visible.length,
+      itemCount: _visible.length + 1,
       itemBuilder: (_, i) {
+        if (i == _visible.length) {
+          return const SizedBox(height: 120);
+        }
         final task = _visible[i];
         // Apply optimistic override if we have one
         final optimisticDone = _localDone.containsKey(task.id)

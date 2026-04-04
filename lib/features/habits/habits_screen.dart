@@ -534,8 +534,12 @@ class _AllTab extends StatelessWidget {
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       physics: const BouncingScrollPhysics(),
-      itemCount: habits.length,
-      itemBuilder: (_, i) => Padding(
+      itemCount: habits.length + 1,
+      itemBuilder: (_, i) {
+        if (i == habits.length) {
+          return const SizedBox(height: 120);
+        }
+        return Padding(
         padding: const EdgeInsets.only(bottom: 10),
         child: _HabitCard(
           habit: habits[i],
@@ -543,7 +547,8 @@ class _AllTab extends StatelessWidget {
           onEdit: () => onEdit(habits[i]),
           onDelete: () => onDelete(habits[i]),
         ),
-      ),
+      );
+      },
     );
   }
 }

@@ -584,10 +584,14 @@ class _GoalList extends StatelessWidget {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       physics: const BouncingScrollPhysics(),
-      itemCount: goals.length,
-      itemBuilder: (_, i) => Padding(
+      itemCount: goals.length + 1,
+      itemBuilder: (_, i) {
+        if (i == goals.length) {
+          return const SizedBox(height: 120);
+        }
+        return Padding(
         padding: const EdgeInsets.only(bottom: 14),
         child: _GoalCard(
           goal: goals[i],
@@ -602,7 +606,8 @@ class _GoalList extends StatelessWidget {
           rewardLabel: rewardLabel,
           color: color,
         ),
-      ),
+      );
+      },
     );
   }
 }
