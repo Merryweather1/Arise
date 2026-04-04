@@ -7,6 +7,8 @@ import '../../core/theme/app_theme.dart';
 import '../../core/models/app_models.dart';
 import '../../core/providers/app_providers.dart';
 import '../../core/services/firestore_service.dart';
+import '../../core/utils/icon_mapper.dart';
+import '../../core/widgets/app_toast.dart';
 
 // ─── SCREEN ───────────────────────────────────────────────────────────────
 class GoalsScreen extends ConsumerStatefulWidget {
@@ -131,6 +133,8 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen>
 
     if (existing != null) {
       await GoalRepository.update(uid, result);
+      if (!mounted) return;
+      AToast.show(context, 'Goal updated');
     } else {
       await GoalRepository.create(
         uid,
@@ -147,12 +151,16 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen>
         measureTarget: result.measureTarget,
         measureUnit: result.measureUnit,
       );
+      if (!mounted) return;
+      AToast.show(context, 'Goal created', icon: Icons.flag_rounded);
     }
   }
 
   Future<void> _deleteGoal(String uid, GoalModel g) async {
     await GoalRepository.delete(uid, g.id);
     HapticFeedback.heavyImpact();
+    if (!mounted) return;
+    AToast.show(context, 'Goal deleted', icon: Icons.delete_rounded, iconColor: AColors.error);
   }
 
   Future<void> _toggleStep(String uid, GoalModel goal, GoalStepModel step) async {
@@ -175,20 +183,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen>
       await ref.read(goalActionsProvider.notifier).markComplete(goal);
       _celebrate();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Goal completed: "${goal.title}"'),
-            backgroundColor: AColors.primary,
-            behavior: SnackBarBehavior.floating,
-            shape: const RoundedRectangleBorder(borderRadius: ARadius.md),
-            duration: const Duration(seconds: 3),
-            action: SnackBarAction(
-              label: 'View',
-              textColor: const Color(0xFF003D25),
-              onPressed: () {},
-            ),
-          ),
-        );
+        AToast.show(context, 'Goal completed: "${goal.title}"', icon: Icons.emoji_events_rounded);
       }
     }
   }
@@ -201,20 +196,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen>
     _celebrate();
 
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Goal completed: "${goal.title}"'),
-        backgroundColor: AColors.primary,
-        behavior: SnackBarBehavior.floating,
-        shape: const RoundedRectangleBorder(borderRadius: ARadius.md),
-        duration: const Duration(seconds: 3),
-        action: SnackBarAction(
-          label: 'View',
-          textColor: const Color(0xFF003D25),
-          onPressed: () {},
-        ),
-      ),
-    );
+    AToast.show(context, 'Goal completed: "${goal.title}"', icon: Icons.emoji_events_rounded);
   }
 
   void _celebrate() {
@@ -1233,12 +1215,13 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final iconData = AIconMapper.resolve(_emoji);
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: Container(
         decoration: const BoxDecoration(
           color: AColors.bgElevated,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
         ),
         child: DraggableScrollableSheet(
           expand: false,
@@ -1250,7 +1233,7 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
               const SizedBox(height: 12),
               Center(
                 child: Container(
-                  width: 36,
+                  width: 40,
                   height: 4,
                   decoration: BoxDecoration(
                     color: AColors.border,
@@ -1259,158 +1242,206 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                 child: Row(
                   children: [
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
-                      child: const Text(
-                        'Cancel',
-                        style: TextStyle(color: AColors.textMuted, fontSize: 16),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                        decoration: BoxDecoration(
+                          color: AColors.bgCard,
+                          borderRadius: ARadius.full,
+                          border: Border.all(color: AColors.border),
+                        ),
+                        child: Text('Cancel', style: AText.bodyMedium.copyWith(color: AColors.textMuted)),
                       ),
                     ),
                     const Spacer(),
                     Text(
                       widget.existing == null ? 'New Goal' : 'Edit Goal',
-                      style: AText.titleMedium,
+                      style: AText.titleSmall,
                     ),
                     const Spacer(),
                     GestureDetector(
                       onTap: _save,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                         decoration: BoxDecoration(
                           gradient: AColors.gradientPrimary,
                           borderRadius: ARadius.full,
+                          boxShadow: [
+                            BoxShadow(
+                              color: AColors.primary.withValues(alpha: 0.3),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
-                        child: const Text(
-                          'Save',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 15,
-                          ),
-                        ),
+                        child: Text('Save', style: AText.labelLarge.copyWith(color: Colors.white)),
                       ),
                     ),
                   ],
                 ),
               ),
-              const Divider(color: AColors.border, height: 1),
               Expanded(
                 child: ListView(
                   controller: ctrl,
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
                   children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 64,
-                          height: 64,
-                          decoration: BoxDecoration(
-                            color: _color.withValues(alpha: 0.15),
-                            borderRadius: ARadius.lg,
-                          ),
-                          child: Center(
-                            child: Text(_emoji, style: const TextStyle(fontSize: 30)),
-                          ),
+                    // ── Hero Card ──────────────────────────────────────
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            _color.withValues(alpha: 0.12),
+                            AColors.bgCard,
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: TextField(
-                            controller: _titleCtrl,
-                            autofocus: widget.existing == null,
-                            style: AText.titleMedium,
-                            decoration: const InputDecoration(
-                              hintText: 'What is your goal?',
-                              border: InputBorder.none,
-                              enabledBorder: InputBorder.none,
-                              focusedBorder: InputBorder.none,
-                              fillColor: Colors.transparent,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: _color.withValues(alpha: 0.15)),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 56,
+                            height: 56,
+                            decoration: BoxDecoration(
+                              color: _color.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(color: _color.withValues(alpha: 0.25)),
+                            ),
+                            child: Center(
+                              child: iconData != null
+                                  ? Icon(iconData, size: 28, color: _color)
+                                  : Text(_emoji, style: const TextStyle(fontSize: 28)),
                             ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: TextField(
+                              controller: _titleCtrl,
+                              autofocus: widget.existing == null,
+                              style: AText.titleMedium,
+                              decoration: InputDecoration(
+                                hintText: 'What is your goal?',
+                                hintStyle: AText.titleMedium.copyWith(color: AColors.textMuted),
+                                border: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                fillColor: Colors.transparent,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 24),
 
+                    // ── Icon Selector ────────────────────────────────
                     _Sec(
-                      label: 'Emoji',
-                      icon: Icons.emoji_emotions_rounded,
+                      label: 'Icon',
+                      icon: Icons.grid_view_rounded,
                       child: SizedBox(
                         height: 52,
-                        child: ListView(
+                        child: ListView.separated(
                           scrollDirection: Axis.horizontal,
-                          children: _emojis.map((e) {
+                          itemCount: _emojis.length,
+                          separatorBuilder: (_, __) => const SizedBox(width: 8),
+                          itemBuilder: (_, i) {
+                            final e = _emojis[i];
                             final sel = _emoji == e;
+                            final mappedIcon = AIconMapper.resolve(e);
                             return GestureDetector(
                               onTap: () { setState(() => _emoji = e); HapticFeedback.selectionClick(); },
                               child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 180),
+                                duration: const Duration(milliseconds: 200),
                                 curve: Curves.easeOutCubic,
                                 width: 48,
                                 height: 48,
-                                margin: const EdgeInsets.only(right: 8),
                                 decoration: BoxDecoration(
                                   color: sel ? _color.withValues(alpha: 0.18) : AColors.bgCard,
-                                  borderRadius: ARadius.md,
+                                  borderRadius: BorderRadius.circular(14),
                                   border: Border.all(
                                     color: sel ? _color : AColors.border,
-                                    width: sel ? 2 : 1,
+                                    width: sel ? 1.5 : 1,
                                   ),
+                                  boxShadow: sel ? [
+                                    BoxShadow(
+                                      color: _color.withValues(alpha: 0.2),
+                                      blurRadius: 8,
+                                      spreadRadius: 1,
+                                    ),
+                                  ] : null,
                                 ),
-                                child: Center(child: Text(e, style: const TextStyle(fontSize: 22))),
+                                child: Center(
+                                  child: mappedIcon != null
+                                      ? Icon(mappedIcon, size: 22, color: sel ? _color : AColors.textSecondary)
+                                      : Text(e, style: const TextStyle(fontSize: 22)),
+                                ),
                               ),
                             );
-                          }).toList(),
+                          },
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 24),
 
+                    // ── Color Selector ───────────────────────────────
                     _Sec(
                       label: 'Color',
                       icon: Icons.palette_rounded,
                       child: SizedBox(
-                        height: 40,
-                        child: ListView(
+                        height: 38,
+                        child: ListView.separated(
                           scrollDirection: Axis.horizontal,
-                          children: _colors.map((c) {
-                            final sel = _color == c;
+                          itemCount: _colors.length,
+                          separatorBuilder: (_, __) => const SizedBox(width: 8),
+                          itemBuilder: (_, i) {
+                            final c = _colors[i];
+                            final sel = _color.toARGB32() == c.toARGB32();
                             return GestureDetector(
                               onTap: () { setState(() => _color = c); HapticFeedback.selectionClick(); },
                               child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 180),
+                                duration: const Duration(milliseconds: 200),
                                 curve: Curves.easeOutCubic,
-                                margin: const EdgeInsets.only(right: 10),
-                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                width: sel ? 56 : 38,
+                                height: 38,
                                 decoration: BoxDecoration(
-                                  color: sel ? c.withValues(alpha: 0.18) : AColors.bgCard,
+                                  color: sel ? c.withValues(alpha: 0.2) : AColors.bgCard,
                                   borderRadius: ARadius.full,
                                   border: Border.all(
                                     color: sel ? c : AColors.border,
-                                    width: sel ? 2 : 1,
+                                    width: sel ? 1.5 : 1,
                                   ),
                                 ),
                                 child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Container(width: 12, height: 12,
-                                        decoration: BoxDecoration(color: c, shape: BoxShape.circle)),
+                                    Container(
+                                      width: 14,
+                                      height: 14,
+                                      decoration: BoxDecoration(color: c, shape: BoxShape.circle),
+                                    ),
                                     if (sel) ...[
-                                      const SizedBox(width: 6),
-                                      const Icon(Icons.check_rounded, size: 13, color: Colors.white),
+                                      const SizedBox(width: 4),
+                                      Icon(Icons.check_rounded, size: 14, color: c),
                                     ],
                                   ],
                                 ),
                               ),
                             );
-                          }).toList(),
+                          },
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 24),
 
+                    // ── Category ─────────────────────────────────────
                     _Sec(
                       label: 'Category',
                       icon: Icons.folder_rounded,
@@ -1421,99 +1452,99 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
                             selected: _category == c,
                             onTap: () => setState(() {
                               _category = c;
-                              if (!_sphereManuallyOverridden) _xpSphereOverride = null;
+                              if (!_sphereManuallyOverridden) {
+                                _xpSphereOverride = null;
+                              }
                             }),
                           )),
                         ],
                         trailing: _category != null
                             ? GestureDetector(
-                          onTap: () => setState(() => _category = null),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                            decoration: BoxDecoration(
-                              color: AColors.bgCard,
-                              borderRadius: ARadius.full,
-                              border: Border.all(color: AColors.error.withValues(alpha: 0.4)),
-                            ),
-                            child: const Icon(Icons.close_rounded, size: 14, color: AColors.error),
-                          ),
-                        )
+                                onTap: () => setState(() => _category = null),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                                  decoration: BoxDecoration(
+                                    color: AColors.bgCard,
+                                    borderRadius: ARadius.full,
+                                    border: Border.all(color: AColors.error.withValues(alpha: 0.4)),
+                                  ),
+                                  child: const Icon(Icons.close_rounded, size: 14, color: AColors.error),
+                                ),
+                              )
                             : null,
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 24),
 
-                    // ── XP Sphere selector ─────────────────────────────
+                    // ── XP Sphere ────────────────────────────────────
                     _Sec(
-                      label: 'XP Sphere  •  50 XP on completion',
+                      label: 'XP Sphere  ·  50 XP on completion',
                       icon: Icons.auto_awesome_rounded,
-                      child: Row(
-                        children: XpSphere.values.map((sphere) {
-                          final isSelected = _effectiveSphere == sphere;
-                          final isAuto = !_sphereManuallyOverridden &&
-                              sphere == XpSphereExt.sphereForCategory(_category ?? '');
-                          return Expanded(
-                            child: Padding(
-                              padding: EdgeInsets.only(
-                                right: sphere != XpSphere.health ? 8 : 0,
-                              ),
-                              child: GestureDetector(
-                                onTap: () {
-                                  HapticFeedback.selectionClick();
-                                  setState(() {
-                                    _xpSphereOverride = sphere;
-                                    _sphereManuallyOverridden = true;
-                                  });
-                                },
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 150),
-                                  padding: const EdgeInsets.symmetric(vertical: 10),
-                                  decoration: BoxDecoration(
-                                    color: isSelected
-                                        ? sphere.color.withValues(alpha: 0.15)
-                                        : AColors.bgCard,
-                                    borderRadius: ARadius.md,
-                                    border: Border.all(
-                                      color: isSelected ? sphere.color : AColors.border,
-                                      width: isSelected ? 1.5 : 1,
+                      child: SizedBox(
+                        height: 72,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: XpSphere.values.length,
+                          separatorBuilder: (_, __) => const SizedBox(width: 8),
+                          itemBuilder: (_, i) {
+                            final sphere = XpSphere.values[i];
+                            final isSelected = _effectiveSphere == sphere;
+                            final isAuto = !_sphereManuallyOverridden &&
+                                sphere == XpSphereExt.sphereForCategory(_category ?? '');
+                            return GestureDetector(
+                              onTap: () {
+                                HapticFeedback.selectionClick();
+                                setState(() {
+                                  _xpSphereOverride = sphere;
+                                  _sphereManuallyOverridden = true;
+                                });
+                              },
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                curve: Curves.easeOutCubic,
+                                width: 80,
+                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? sphere.color.withValues(alpha: 0.15)
+                                      : AColors.bgCard,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: isSelected ? sphere.color : AColors.border,
+                                    width: isSelected ? 1.5 : 1,
+                                  ),
+                                  boxShadow: isSelected ? [
+                                    BoxShadow(
+                                      color: sphere.color.withValues(alpha: 0.15),
+                                      blurRadius: 8,
                                     ),
-                                  ),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(sphere.emoji,
-                                          style: const TextStyle(fontSize: 18)),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        sphere.label,
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w700,
-                                          color: isSelected
-                                              ? sphere.color
-                                              : AColors.textMuted,
-                                        ),
+                                  ] : null,
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(sphere.emoji, style: const TextStyle(fontSize: 18)),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      sphere.label,
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w700,
+                                        color: isSelected ? sphere.color : AColors.textMuted,
                                       ),
-                                      if (isAuto)
-                                        Padding(
-                                          padding: const EdgeInsets.only(top: 2),
-                                          child: Text(
-                                            'auto',
-                                            style: TextStyle(
-                                              fontSize: 9,
-                                              color: sphere.color
-                                                  .withValues(alpha: 0.7),
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ),
-                                    ],
-                                  ),
+                                    ),
+                                    if (isAuto)
+                                      Text('auto', style: TextStyle(
+                                        fontSize: 9,
+                                        color: sphere.color.withValues(alpha: 0.7),
+                                        fontWeight: FontWeight.w600,
+                                      )),
+                                  ],
                                 ),
                               ),
-                            ),
-                          );
-                        }).toList(),
+                            );
+                          },
+                        ),
                       ),
                     ),
                     const SizedBox(height: 20),

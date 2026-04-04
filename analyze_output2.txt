@@ -1,0 +1,124 @@
+﻿Resolving dependencies...
+Downloading packages...
+  _flutterfire_internals 1.3.59 (1.3.68 available)
+  async 2.13.0 (2.13.1 available)
+  characters 1.4.0 (1.4.1 available)
+  cloud_firestore 5.6.12 (6.2.0 available)
+  cloud_firestore_platform_interface 6.6.12 (7.1.0 available)
+  cloud_firestore_web 4.4.12 (5.2.0 available)
+  cupertino_icons 1.0.8 (1.0.9 available)
+  firebase_auth 5.7.0 (6.3.0 available)
+  firebase_auth_platform_interface 7.7.3 (8.1.8 available)
+  firebase_auth_web 5.15.3 (6.1.4 available)
+  firebase_core 3.15.2 (4.6.0 available)
+  firebase_core_platform_interface 6.0.2 (6.0.3 available)
+  firebase_core_web 2.24.1 (3.5.1 available)
+  firebase_storage 12.4.10 (13.2.0 available)
+  firebase_storage_platform_interface 5.2.10 (5.2.19 available)
+  firebase_storage_web 3.10.17 (3.11.4 available)
+  fl_chart 0.70.2 (1.2.0 available)
+  flutter_local_notifications 18.0.1 (21.0.0 available)
+  flutter_local_notifications_linux 5.0.0 (8.0.0 available)
+  flutter_local_notifications_platform_interface 8.0.0 (11.0.0 available)
+  flutter_plugin_android_lifecycle 2.0.33 (2.0.34 available)
+  flutter_riverpod 2.6.1 (3.3.1 available)
+  flutter_slidable 3.1.2 (4.0.3 available)
+  flutter_timezone 3.0.1 (5.0.2 available)
+  go_router 15.1.3 (17.2.0 available)
+  google_sign_in 6.3.0 (7.2.0 available)
+  google_sign_in_android 6.2.1 (7.2.10 available)
+  google_sign_in_ios 5.9.0 (6.3.0 available)
+  google_sign_in_platform_interface 2.5.0 (3.1.0 available)
+  google_sign_in_web 0.12.4+4 (1.1.3 available)
+  hooks 1.0.1 (1.0.2 available)
+  image_picker_android 0.8.13+14 (0.8.13+16 available)
+  matcher 0.12.17 (0.12.19 available)
+  material_color_utilities 0.11.1 (0.13.0 available)
+  meta 1.17.0 (1.18.2 available)
+  native_toolchain_c 0.17.4 (0.17.6 available)
+  path_provider_android 2.2.22 (2.2.23 available)
+  riverpod 2.6.1 (3.2.1 available)
+  shared_preferences 2.5.4 (2.5.5 available)
+  shared_preferences_android 2.4.21 (2.4.23 available)
+  shared_preferences_platform_interface 2.4.1 (2.4.2 available)
+  sqflite_android 2.4.2+2 (2.4.2+3 available)
+  test_api 0.7.7 (0.7.11 available)
+  timezone 0.10.1 (0.11.0 available)
+  vector_math 2.2.0 (2.3.0 available)
+Got dependencies!
+45 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Analyzing arise_test...                                         
+
+   info - Statements in a for should be enclosed in a block - lib\core\models\app_models.dart:70:45 - curly_braces_in_flow_control_structures
+   info - Statements in a for should be enclosed in a block - lib\core\models\app_models.dart:94:37 - curly_braces_in_flow_control_structures
+warning - Unused import: 'package:flutter/material.dart' - lib\core\providers\notification_log_provider.dart:2:8 - unused_import
+   info - The import of 'package:flutter/foundation.dart' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/material.dart' - lib\core\router\app_router.dart:4:8 - unnecessary_import
+   info - Unnecessary use of multiple underscores - lib\core\router\app_router.dart:68:20 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\core\router\app_router.dart:75:24 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\core\router\app_router.dart:79:24 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\core\router\app_router.dart:83:24 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\core\router\app_router.dart:87:24 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\core\router\app_router.dart:91:24 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\core\router\app_router.dart:95:24 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\core\router\app_router.dart:99:24 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\core\router\app_router.dart:106:24 - unnecessary_underscores
+   info - The imported package 'timezone' isn't a dependency of the importing package - lib\core\services\notification_service.dart:5:8 - depend_on_referenced_packages
+   info - The imported package 'timezone' isn't a dependency of the importing package - lib\core\services\notification_service.dart:6:8 - depend_on_referenced_packages
+warning - Unused import: 'dart:async' - lib\core\shell\app_shell.dart:1:8 - unused_import
+   info - Unnecessary use of multiple underscores - lib\core\shell\app_shell.dart:247:22 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\core\shell\app_shell.dart:371:26 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\core\shell\app_shell.dart:422:28 - unnecessary_underscores
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\goals\goals_screen.dart:240:43 - use_build_context_synchronously
+   info - Unnecessary use of multiple underscores - lib\features\goals\goals_screen.dart:808:47 - unnecessary_underscores
+   info - 'value' is deprecated and shouldn't be used. Use component accessors like .r or .g, or toARGB32 for an explicit conversion - lib\features\goals\goals_screen.dart:1191:26 - deprecated_member_use
+   info - Unnecessary use of multiple underscores - lib\features\goals\goals_screen.dart:1353:49 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\goals\goals_screen.dart:1402:49 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\goals\goals_screen.dart:1488:49 - unnecessary_underscores
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\features\goals\goals_screen.dart:2078:11 - use_null_aware_elements
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\habits\habits_screen.dart:163:43 - use_build_context_synchronously
+   info - Unnecessary use of multiple underscores - lib\features\habits\habits_screen.dart:407:31 - unnecessary_underscores
+warning - The declaration '_last7Dots' isn't referenced - lib\features\habits\habits_screen.dart:727:16 - unused_element
+   info - Unnecessary braces in a string interpolation - lib\features\habits\habits_screen.dart:820:23 - unnecessary_brace_in_string_interps
+   info - 'value' is deprecated and shouldn't be used. Use component accessors like .r or .g, or toARGB32 for an explicit conversion - lib\features\habits\habits_screen.dart:1143:28 - deprecated_member_use
+   info - Unnecessary use of multiple underscores - lib\features\habits\habits_screen.dart:1297:49 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\habits\habits_screen.dart:1346:49 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\habits\habits_screen.dart:1432:49 - unnecessary_underscores
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\features\habits\habits_screen.dart:1931:11 - use_null_aware_elements
+warning - The '!' will have no effect because the receiver can't be null - lib\features\home\home_screen.dart:175:25 - unnecessary_non_null_assertion
+   info - Unnecessary use of multiple underscores - lib\features\home\home_screen.dart:649:33 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\home\home_screen.dart:757:33 - unnecessary_underscores
+   info - The import of 'dart:ui' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/material.dart' - lib\features\pomodoro\pomodoro_screen.dart:2:8 - unnecessary_import
+   info - Unnecessary use of multiple underscores - lib\features\pomodoro\pomodoro_screen.dart:597:40 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\pomodoro\pomodoro_screen.dart:636:54 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\profile\profile_screen.dart:435:37 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\profile\profile_screen.dart:587:25 - unnecessary_underscores
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\features\profile\profile_screen.dart:830:15 - use_null_aware_elements
+   info - Unnecessary use of multiple underscores - lib\features\statistics\statistics_screen.dart:915:43 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\statistics\statistics_screen.dart:972:31 - unnecessary_underscores
+   info - The member 'shouldRepaint' overrides an inherited member but isn't annotated with '@override' - lib\features\statistics\statistics_screen.dart:1081:8 - annotate_overrides
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\tasks\tasks_screen.dart:244:43 - use_build_context_synchronously
+   info - Unnecessary use of multiple underscores - lib\features\tasks\tasks_screen.dart:947:42 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\tasks\tasks_screen.dart:1032:57 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\features\tasks\tasks_screen.dart:1771:49 - unnecessary_underscores
+warning - A value for optional parameter 'gradient' isn't ever given - lib\features\tasks\tasks_screen.dart:2342:10 - unused_element_parameter
+   info - Use the null-aware marker '?' rather than a null check via an 'if' - lib\features\tasks\tasks_screen.dart:2468:11 - use_null_aware_elements
+   info - 'parent' is deprecated and shouldn't be used. Will be removed in 3.0.0. See https://github.com/rrousselGit/riverpod/issues/3261#issuecomment-1973514033 - lib\main.dart:25:24 - deprecated_member_use
+warning - The asset directory 'assets/images/' doesn't exist - pubspec.yaml:63:7 - asset_directory_does_not_exist
+warning - The asset directory 'assets/icons/' doesn't exist - pubspec.yaml:64:7 - asset_directory_does_not_exist
+
+flutter : 56 issues found. 
+(ran in 4.1s)
+строка:1 знак:1
++ flutter analyze 2>&1 | Ou
+t-File -FilePath "analyze_o
+utput2.txt" -Enco ...
++ ~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo         
+     : NotSpecified: (56   
+  issues found. (ran in    
+ 4.1s):String) [], Remo    
+teException
+    + FullyQualifiedErrorI 
+   d : NativeCommandError
+ 

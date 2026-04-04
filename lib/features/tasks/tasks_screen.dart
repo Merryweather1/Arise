@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/models/app_models.dart';
 import '../../core/providers/app_providers.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/app_toast.dart';
 
 // ─── SORT OPTIONS ─────────────────────────────────────────────────────────
 enum SortMode { date, priority }
@@ -142,11 +143,12 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
   }
 
   Future<void> _complete(TaskModel t) async {
-    // Auto-clear pending flag when task is completed
     final toComplete = t.pending ? t.copyWith(pending: false) : t;
     await ref.read(taskActionsProvider.notifier).setDone(toComplete, true);
     HapticFeedback.mediumImpact();
     _playTick();
+    if (!mounted) return;
+    AToast.show(context, 'Task completed!', icon: Icons.check_circle_rounded);
   }
 
   Future<void> _undo(TaskModel t) async {
@@ -159,15 +161,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
     HapticFeedback.heavyImpact();
 
     if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Task deleted'),
-        backgroundColor: AColors.bgElevated,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: ARadius.md),
-      ),
-    );
+    AToast.show(context, 'Task deleted', icon: Icons.delete_rounded, iconColor: AColors.error);
   }
 
   void _playTick() {
@@ -198,8 +192,12 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
 
     if (existing != null) {
       await ref.read(taskActionsProvider.notifier).save(result);
+      if (!mounted) return;
+      AToast.show(context, 'Task updated');
     } else {
       await ref.read(taskActionsProvider.notifier).create(result);
+      if (!mounted) return;
+      AToast.show(context, 'Task created', icon: Icons.add_task_rounded);
     }
   }
 
@@ -1572,7 +1570,7 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
       child: Container(
         decoration: const BoxDecoration(
           color: AColors.bgElevated,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
         ),
         child: DraggableScrollableSheet(
           expand: false,
@@ -1584,7 +1582,7 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
               const SizedBox(height: 12),
               Center(
                 child: Container(
-                  width: 36,
+                  width: 40,
                   height: 4,
                   decoration: BoxDecoration(
                     color: AColors.border,
@@ -1593,55 +1591,52 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
                 ),
               ),
               Padding(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                 child: Row(
                   children: [
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
-                      child: const Text(
-                        'Cancel',
-                        style: TextStyle(
-                          color: AColors.textMuted,
-                          fontSize: 16,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                        decoration: BoxDecoration(
+                          color: AColors.bgCard,
+                          borderRadius: ARadius.full,
+                          border: Border.all(color: AColors.border),
                         ),
+                        child: Text('Cancel', style: AText.bodyMedium.copyWith(color: AColors.textMuted)),
                       ),
                     ),
                     const Spacer(),
                     Text(
                       widget.existing == null ? 'New Task' : 'Edit Task',
-                      style: AText.titleMedium,
+                      style: AText.titleSmall,
                     ),
                     const Spacer(),
                     GestureDetector(
                       onTap: _save,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 18,
-                          vertical: 8,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                         decoration: BoxDecoration(
                           gradient: AColors.gradientPrimary,
                           borderRadius: ARadius.full,
+                          boxShadow: [
+                            BoxShadow(
+                              color: AColors.primary.withValues(alpha: 0.3),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
-                        child: const Text(
-                          'Save',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 15,
-                          ),
-                        ),
+                        child: Text('Save', style: AText.labelLarge.copyWith(color: Colors.white)),
                       ),
                     ),
                   ],
                 ),
               ),
-              const Divider(color: AColors.border, height: 1),
               Expanded(
                 child: ListView(
                   controller: ctrl,
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
                   children: [
                     TextField(
                       controller: _titleCtrl,
@@ -1766,79 +1761,73 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
 
                     // ── XP Sphere selector ─────────────────────────────
                     _Sec(
-                      label: 'XP Sphere  •  ${XpSphereExt.xpForPriority(_priority)} XP on completion',
+                      label: 'XP Sphere  ·  ${XpSphereExt.xpForPriority(_priority)} XP on completion',
                       icon: Icons.auto_awesome_rounded,
-                      child: Row(
-                        children: XpSphere.values.map((sphere) {
-                          final isSelected = _effectiveSphere == sphere;
-                          final isAuto = !_sphereManuallyOverridden &&
-                              sphere == XpSphereExt.sphereForCategory(_category ?? '');
-                          return Expanded(
-                            child: Padding(
-                              padding: EdgeInsets.only(
-                                right: sphere != XpSphere.health ? 8 : 0,
-                              ),
-                              child: GestureDetector(
-                                onTap: () {
-                                  HapticFeedback.selectionClick();
-                                  setState(() {
-                                    _xpSphereOverride = sphere;
-                                    _sphereManuallyOverridden = true;
-                                  });
-                                },
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 150),
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 10,
+                      child: SizedBox(
+                        height: 72,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: XpSphere.values.length,
+                          separatorBuilder: (_, __) => const SizedBox(width: 8),
+                          itemBuilder: (_, i) {
+                            final sphere = XpSphere.values[i];
+                            final isSelected = _effectiveSphere == sphere;
+                            final isAuto = !_sphereManuallyOverridden &&
+                                sphere == XpSphereExt.sphereForCategory(_category ?? '');
+                            return GestureDetector(
+                              onTap: () {
+                                HapticFeedback.selectionClick();
+                                setState(() {
+                                  _xpSphereOverride = sphere;
+                                  _sphereManuallyOverridden = true;
+                                });
+                              },
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                curve: Curves.easeOutCubic,
+                                width: 80,
+                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? sphere.color.withValues(alpha: 0.15)
+                                      : AColors.bgCard,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: isSelected ? sphere.color : AColors.border,
+                                    width: isSelected ? 1.5 : 1,
                                   ),
-                                  decoration: BoxDecoration(
-                                    color: isSelected
-                                        ? sphere.color.withValues(alpha: 0.15)
-                                        : AColors.bgCard,
-                                    borderRadius: ARadius.md,
-                                    border: Border.all(
-                                      color: isSelected
-                                          ? sphere.color
-                                          : AColors.border,
-                                      width: isSelected ? 1.5 : 1,
+                                  boxShadow: isSelected ? [
+                                    BoxShadow(
+                                      color: sphere.color.withValues(alpha: 0.15),
+                                      blurRadius: 8,
                                     ),
-                                  ),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(sphere.emoji,
-                                          style: const TextStyle(fontSize: 18)),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        sphere.label,
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w700,
-                                          color: isSelected
-                                              ? sphere.color
-                                              : AColors.textMuted,
-                                        ),
+                                  ] : null,
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(sphere.emoji, style: const TextStyle(fontSize: 18)),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      sphere.label,
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w700,
+                                        color: isSelected ? sphere.color : AColors.textMuted,
                                       ),
-                                      if (isAuto)
-                                        Padding(
-                                          padding: const EdgeInsets.only(top: 2),
-                                          child: Text(
-                                            'auto',
-                                            style: TextStyle(
-                                              fontSize: 9,
-                                              color: sphere.color
-                                                  .withValues(alpha: 0.7),
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ),
-                                    ],
-                                  ),
+                                    ),
+                                    if (isAuto)
+                                      Text('auto', style: TextStyle(
+                                        fontSize: 9,
+                                        color: sphere.color.withValues(alpha: 0.7),
+                                        fontWeight: FontWeight.w600,
+                                      )),
+                                  ],
                                 ),
                               ),
-                            ),
-                          );
-                        }).toList(),
+                            );
+                          },
+                        ),
                       ),
                     ),
                     const SizedBox(height: 20),
