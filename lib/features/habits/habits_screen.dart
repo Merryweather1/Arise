@@ -605,7 +605,7 @@ class _HabitCard extends StatelessWidget {
                 borderRadius: ARadius.md,
               ),
               child: Center(
-                child: Text(habit.emoji, style: const TextStyle(fontSize: 22)),
+                child: AIconMapper.iconWidget(habit.emoji, size: 22, color: habit.color),
               ),
             ),
             const SizedBox(width: 14),
@@ -1126,7 +1126,10 @@ class _HabitEditorSheetState extends State<_HabitEditorSheet> {
   }
 
   void _save() {
-    if (_nameCtrl.text.trim().isEmpty) return;
+    if (_nameCtrl.text.trim().isEmpty) {
+      AToast.show(context, 'Please enter a name for your habit');
+      return;
+    }
     HapticFeedback.mediumImpact();
 
     final e = widget.existing;
@@ -1165,531 +1168,386 @@ class _HabitEditorSheetState extends State<_HabitEditorSheet> {
       child: Container(
         decoration: const BoxDecoration(
           color: AColors.bgElevated,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
         child: DraggableScrollableSheet(
           expand: false,
-          initialChildSize: 0.9,
+          initialChildSize: 0.88,
           minChildSize: 0.5,
           maxChildSize: 0.95,
           builder: (_, ctrl) => Column(
             children: [
-              const SizedBox(height: 12),
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: AColors.border,
-                    borderRadius: ARadius.full,
-                  ),
-                ),
-              ),
+              // ── Handle + header ──────────────────────────────
+              const SizedBox(height: 10),
+              Center(child: Container(
+                width: 36, height: 4,
+                decoration: BoxDecoration(color: AColors.border, borderRadius: ARadius.full),
+              )),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
                 child: Row(
                   children: [
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-                        decoration: BoxDecoration(
-                          color: AColors.bgCard,
-                          borderRadius: ARadius.full,
-                          border: Border.all(color: AColors.border),
-                        ),
-                        child: Text('Cancel', style: AText.bodyMedium.copyWith(color: AColors.textMuted)),
-                      ),
+                      child: const Icon(Icons.close_rounded, color: AColors.textMuted, size: 24),
                     ),
                     const Spacer(),
                     Text(
                       widget.existing == null ? 'New Habit' : 'Edit Habit',
-                      style: AText.titleSmall,
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AColors.textPrimary, letterSpacing: -0.3),
                     ),
                     const Spacer(),
                     GestureDetector(
                       onTap: _save,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 7),
                         decoration: BoxDecoration(
                           gradient: AColors.gradientPrimary,
-                          borderRadius: ARadius.full,
-                          boxShadow: [
-                            BoxShadow(
-                              color: AColors.primary.withValues(alpha: 0.3),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
+                          borderRadius: BorderRadius.circular(20),
                         ),
-                        child: Text('Save', style: AText.labelLarge.copyWith(color: Colors.white)),
+                        child: const Text('Save', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14)),
                       ),
                     ),
                   ],
                 ),
               ),
+
+              // ── Scrollable body ─────────────────────────────
               Expanded(
                 child: ListView(
                   controller: ctrl,
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
                   children: [
-                    // ── Hero Card ──────────────────────────────────────
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            _color.withValues(alpha: 0.12),
-                            AColors.bgCard,
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: _color.withValues(alpha: 0.15)),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 56,
-                            height: 56,
-                            decoration: BoxDecoration(
-                              color: _color.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(18),
-                              border: Border.all(color: _color.withValues(alpha: 0.25)),
-                            ),
-                            child: Center(
-                              child: iconData != null
-                                  ? Icon(iconData, size: 28, color: _color)
-                                  : Text(_emoji, style: const TextStyle(fontSize: 28)),
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: TextField(
-                              controller: _nameCtrl,
-                              autofocus: widget.existing == null,
-                              style: AText.titleMedium,
-                              decoration: InputDecoration(
-                                hintText: 'Habit name',
-                                hintStyle: AText.titleMedium.copyWith(color: AColors.textMuted),
-                                border: InputBorder.none,
-                                enabledBorder: InputBorder.none,
-                                focusedBorder: InputBorder.none,
-                                fillColor: Colors.transparent,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
 
-                    // ── Icon Selector ────────────────────────────────
-                    _Sec(
-                      label: 'Icon',
-                      icon: Icons.grid_view_rounded,
-                      child: SizedBox(
-                        height: 52,
-                        child: ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: _emojis.length,
-                          separatorBuilder: (_, __) => const SizedBox(width: 8),
-                          itemBuilder: (_, i) {
-                            final e = _emojis[i];
-                            final sel = _emoji == e;
-                            final mappedIcon = AIconMapper.resolve(e);
-                            return GestureDetector(
-                              onTap: () { setState(() => _emoji = e); HapticFeedback.selectionClick(); },
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
-                                curve: Curves.easeOutCubic,
-                                width: 48,
-                                height: 48,
-                                decoration: BoxDecoration(
-                                  color: sel ? _color.withValues(alpha: 0.18) : AColors.bgCard,
-                                  borderRadius: BorderRadius.circular(14),
-                                  border: Border.all(
-                                    color: sel ? _color : AColors.border,
-                                    width: sel ? 1.5 : 1,
-                                  ),
-                                  boxShadow: sel ? [
-                                    BoxShadow(
-                                      color: _color.withValues(alpha: 0.2),
-                                      blurRadius: 8,
-                                      spreadRadius: 1,
-                                    ),
-                                  ] : null,
-                                ),
-                                child: Center(
-                                  child: mappedIcon != null
-                                      ? Icon(mappedIcon, size: 22, color: sel ? _color : AColors.textSecondary)
-                                      : Text(e, style: const TextStyle(fontSize: 22)),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // ── Color Selector ───────────────────────────────
-                    _Sec(
-                      label: 'Color',
-                      icon: Icons.palette_rounded,
-                      child: SizedBox(
-                        height: 38,
-                        child: ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: _colors.length,
-                          separatorBuilder: (_, __) => const SizedBox(width: 8),
-                          itemBuilder: (_, i) {
-                            final c = _colors[i];
-                            final sel = _color.toARGB32() == c.toARGB32();
-                            return GestureDetector(
-                              onTap: () { setState(() => _color = c); HapticFeedback.selectionClick(); },
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
-                                curve: Curves.easeOutCubic,
-                                width: sel ? 56 : 38,
-                                height: 38,
-                                decoration: BoxDecoration(
-                                  color: sel ? c.withValues(alpha: 0.2) : AColors.bgCard,
-                                  borderRadius: ARadius.full,
-                                  border: Border.all(
-                                    color: sel ? c : AColors.border,
-                                    width: sel ? 1.5 : 1,
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Container(
-                                      width: 14,
-                                      height: 14,
-                                      decoration: BoxDecoration(color: c, shape: BoxShape.circle),
-                                    ),
-                                    if (sel) ...[
-                                      const SizedBox(width: 4),
-                                      Icon(Icons.check_rounded, size: 14, color: c),
-                                    ],
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // ── Category ─────────────────────────────────────
-                    _Sec(
-                      label: 'Category',
-                      icon: Icons.folder_rounded,
-                      child: _HScrollSelector(
-                        items: [
-                          ...widget.categories.map((c) => _HScrollItem(
-                            label: c,
-                            selected: _category == c,
-                            onTap: () => setState(() {
-                              _category = c;
-                              if (!_sphereManuallyOverridden) {
-                                _xpSphereOverride = null;
-                              }
-                            }),
-                          )),
-                        ],
-                        trailing: _category != null
-                            ? GestureDetector(
-                                onTap: () => setState(() => _category = null),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                                  decoration: BoxDecoration(
-                                    color: AColors.bgCard,
-                                    borderRadius: ARadius.full,
-                                    border: Border.all(color: AColors.error.withValues(alpha: 0.4)),
-                                  ),
-                                  child: const Icon(Icons.close_rounded, size: 14, color: AColors.error),
-                                ),
-                              )
-                            : null,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // ── XP Sphere ────────────────────────────────────
-                    _Sec(
-                      label: 'XP Sphere  ·  15 XP on completion',
-                      icon: Icons.auto_awesome_rounded,
-                      child: SizedBox(
-                        height: 72,
-                        child: ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: XpSphere.values.length,
-                          separatorBuilder: (_, __) => const SizedBox(width: 8),
-                          itemBuilder: (_, i) {
-                            final sphere = XpSphere.values[i];
-                            final isSelected = _effectiveSphere == sphere;
-                            final isAuto = !_sphereManuallyOverridden &&
-                                sphere == XpSphereExt.sphereForCategory(_category ?? '');
-                            return GestureDetector(
-                              onTap: () {
-                                HapticFeedback.selectionClick();
-                                setState(() {
-                                  _xpSphereOverride = sphere;
-                                  _sphereManuallyOverridden = true;
-                                });
-                              },
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
-                                curve: Curves.easeOutCubic,
-                                width: 80,
-                                padding: const EdgeInsets.symmetric(vertical: 10),
-                                decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? sphere.color.withValues(alpha: 0.15)
-                                      : AColors.bgCard,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: isSelected ? sphere.color : AColors.border,
-                                    width: isSelected ? 1.5 : 1,
-                                  ),
-                                  boxShadow: isSelected ? [
-                                    BoxShadow(
-                                      color: sphere.color.withValues(alpha: 0.15),
-                                      blurRadius: 8,
-                                    ),
-                                  ] : null,
-                                ),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(sphere.emoji, style: const TextStyle(fontSize: 18)),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      sphere.label,
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w700,
-                                        color: isSelected ? sphere.color : AColors.textMuted,
-                                      ),
-                                    ),
-                                    if (isAuto)
-                                      Text('auto', style: TextStyle(
-                                        fontSize: 9,
-                                        color: sphere.color.withValues(alpha: 0.7),
-                                        fontWeight: FontWeight.w600,
-                                      )),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-      const SizedBox(height: 20),
-
-      _Sec(
-        label: 'Schedule',
-        icon: Icons.calendar_month_rounded,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Repeat on (empty = every day)',
-              style: AText.bodyMedium,
-            ),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: List.generate(7, (i) {
-                final day = i + 1;
-                final sel = _scheduleDays.contains(day);
-                return GestureDetector(
-                  onTap: () {
-                    setState(() => sel
-                        ? _scheduleDays.remove(day)
-                        : _scheduleDays.add(day));
-                    HapticFeedback.selectionClick();
-                  },
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 150),
-                    width: 38,
-                    height: 38,
-                    decoration: BoxDecoration(
-                      color: sel ? _color : AColors.bgCard,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: sel ? _color : AColors.border,
-                      ),
-                    ),
-                    child: Center(
-                      child: Text(
-                        _dayLabels[i],
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: sel ? Colors.white : AColors.textMuted,
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              }),
-            ),
-          ],
-        ),
-      ),
-      const SizedBox(height: 20),
-
-      _Sec(
-        label: 'Duration',
-        icon: Icons.timelapse_rounded,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            GestureDetector(
-              onTap: () {
-                setState(() => _isUnlimited = !_isUnlimited);
-                HapticFeedback.selectionClick();
-              },
-              child: Row(
-                children: [
-                  const Expanded(
-                    child: Column(
+                    // ━━ CARD 1: Name + Appearance ━━━━━━━━━━━━━━━
+                    _card(child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Unlimited habit', style: AText.bodyLarge),
-                        Text(
-                          'Turn off to set a fixed number of days',
-                          style: AText.bodySmall,
+                        // Name row with icon preview
+                        Row(children: [
+                          GestureDetector(
+                            onTap: () {}, // icon already selectable below
+                            child: Container(
+                              width: 48, height: 48,
+                              decoration: BoxDecoration(
+                                color: _color.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: Center(
+                                child: iconData != null
+                                    ? Icon(iconData, size: 24, color: _color)
+                                    : Text(_emoji, style: const TextStyle(fontSize: 24)),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(child: TextField(
+                            controller: _nameCtrl,
+                            autofocus: widget.existing == null,
+                            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AColors.textPrimary),
+                            decoration: InputDecoration(
+                              hintText: 'Habit name',
+                              hintStyle: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AColors.textMuted.withValues(alpha: 0.5)),
+                              border: InputBorder.none, enabledBorder: InputBorder.none, focusedBorder: InputBorder.none,
+                              fillColor: Colors.transparent, isDense: true,
+                              contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                            ),
+                          )),
+                        ]),
+
+                        const SizedBox(height: 16),
+
+                        // Icon strip
+                        _label('ICON'),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          height: 42,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: _emojis.length,
+                            separatorBuilder: (_, __) => const SizedBox(width: 6),
+                            itemBuilder: (_, i) {
+                              final e = _emojis[i];
+                              final sel = _emoji == e;
+                              final mapped = AIconMapper.resolve(e);
+                              return GestureDetector(
+                                onTap: () { setState(() => _emoji = e); HapticFeedback.selectionClick(); },
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 180),
+                                  curve: Curves.easeOutCubic,
+                                  width: 42, height: 42,
+                                  decoration: BoxDecoration(
+                                    color: sel ? _color.withValues(alpha: 0.15) : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: sel ? _color : AColors.border.withValues(alpha: 0.4), width: sel ? 1.5 : 1),
+                                  ),
+                                  child: Center(child: mapped != null
+                                      ? Icon(mapped, size: 19, color: sel ? _color : AColors.textMuted)
+                                      : Text(e, style: const TextStyle(fontSize: 19))),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+
+                        const SizedBox(height: 14),
+
+                        // Color strip
+                        _label('COLOR'),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          height: 28,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: _colors.length,
+                            separatorBuilder: (_, __) => const SizedBox(width: 8),
+                            itemBuilder: (_, i) {
+                              final c = _colors[i];
+                              final sel = _color.toARGB32() == c.toARGB32();
+                              return GestureDetector(
+                                onTap: () { setState(() => _color = c); HapticFeedback.selectionClick(); },
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 180),
+                                  width: 28, height: 28,
+                                  decoration: BoxDecoration(
+                                    color: c,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: sel ? Colors.white : Colors.transparent, width: 2.5),
+                                    boxShadow: sel ? [BoxShadow(color: c.withValues(alpha: 0.45), blurRadius: 10, spreadRadius: 1)] : null,
+                                  ),
+                                  child: sel ? const Icon(Icons.check_rounded, size: 14, color: Colors.white) : null,
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       ],
-                    ),
-                  ),
-                  _Toggle(
-                    value: _isUnlimited,
-                    color: AColors.primary,
-                    onTap: () {
-                      setState(() => _isUnlimited = !_isUnlimited);
-                    },
-                  ),
-                ],
-              ),
-            ),
-            if (!_isUnlimited) ...[
-              const SizedBox(height: 12),
-              TextField(
-                controller: _durationCtrl,
-                keyboardType: TextInputType.number,
-                style: AText.bodyMedium,
-                decoration: const InputDecoration(
-                  hintText: 'Number of days',
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 12,
-                  ),
+                    )),
+
+                    const SizedBox(height: 10),
+
+                    // ━━ CARD 2: Category + XP ━━━━━━━━━━━━━━━━━━
+                    _card(child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _label('CATEGORY'),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          height: 34,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: widget.categories.length + (_category != null ? 1 : 0),
+                            separatorBuilder: (_, __) => const SizedBox(width: 6),
+                            itemBuilder: (_, i) {
+                              // Clear button at the end
+                              if (_category != null && i == widget.categories.length) {
+                                return GestureDetector(
+                                  onTap: () => setState(() => _category = null),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(color: AColors.error.withValues(alpha: 0.3)),
+                                    ),
+                                    child: const Center(child: Icon(Icons.close_rounded, size: 14, color: AColors.error)),
+                                  ),
+                                );
+                              }
+                              final c = widget.categories[i];
+                              final sel = _category == c;
+                              return GestureDetector(
+                                onTap: () => setState(() {
+                                  _category = c;
+                                  if (!_sphereManuallyOverridden) { _xpSphereOverride = null; }
+                                }),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 180),
+                                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                                  decoration: BoxDecoration(
+                                    color: sel ? _color.withValues(alpha: 0.12) : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(color: sel ? _color : AColors.border.withValues(alpha: 0.4)),
+                                  ),
+                                  child: Center(child: Text(c, style: TextStyle(
+                                    fontSize: 13, fontWeight: FontWeight.w600,
+                                    color: sel ? _color : AColors.textMuted,
+                                  ))),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+
+                        const SizedBox(height: 14),
+
+                        // XP Sphere — inline compact chips
+                        Row(children: [
+                          _label('XP SPHERE'),
+                          const Spacer(),
+                          Text('${15} XP', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AColors.primary.withValues(alpha: 0.7))),
+                        ]),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          height: 34,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: XpSphere.values.length,
+                            separatorBuilder: (_, __) => const SizedBox(width: 6),
+                            itemBuilder: (_, i) {
+                              final s = XpSphere.values[i];
+                              final sel = _effectiveSphere == s;
+                              return GestureDetector(
+                                onTap: () { HapticFeedback.selectionClick(); setState(() { _xpSphereOverride = s; _sphereManuallyOverridden = true; }); },
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 180),
+                                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                                  decoration: BoxDecoration(
+                                    color: sel ? s.color.withValues(alpha: 0.15) : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(color: sel ? s.color : AColors.border.withValues(alpha: 0.4)),
+                                  ),
+                                  child: Center(child: Row(mainAxisSize: MainAxisSize.min, children: [
+                                    Text(s.emoji, style: const TextStyle(fontSize: 14)),
+                                    const SizedBox(width: 5),
+                                    Text(s.label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: sel ? s.color : AColors.textMuted)),
+                                  ])),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    )),
+
+                    const SizedBox(height: 10),
+
+                    // ━━ CARD 3: Schedule ━━━━━━━━━━━━━━━━━━━━━━━━
+                    _card(child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _label('REPEAT'),
+                        const SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: List.generate(7, (i) {
+                            final day = i + 1;
+                            final sel = _scheduleDays.contains(day);
+                            return GestureDetector(
+                              onTap: () { setState(() => sel ? _scheduleDays.remove(day) : _scheduleDays.add(day)); HapticFeedback.selectionClick(); },
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 150),
+                                width: 38, height: 38,
+                                decoration: BoxDecoration(
+                                  color: sel ? _color : Colors.transparent,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: sel ? _color : AColors.border.withValues(alpha: 0.4)),
+                                ),
+                                child: Center(child: Text(_dayLabels[i], style: TextStyle(
+                                  fontSize: 13, fontWeight: FontWeight.w700,
+                                  color: sel ? Colors.white : AColors.textMuted,
+                                ))),
+                              ),
+                            );
+                          }),
+                        ),
+
+                        const SizedBox(height: 14),
+                        const Divider(color: AColors.border, height: 1),
+                        const SizedBox(height: 12),
+
+                        // Duration toggle
+                        GestureDetector(
+                          onTap: () { setState(() => _isUnlimited = !_isUnlimited); HapticFeedback.selectionClick(); },
+                          child: Row(children: [
+                            const Expanded(child: Text('Unlimited', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AColors.textSecondary))),
+                            _Toggle(value: _isUnlimited, color: _color, onTap: () => setState(() => _isUnlimited = !_isUnlimited)),
+                          ]),
+                        ),
+                        if (!_isUnlimited) ...[
+                          const SizedBox(height: 10),
+                          TextField(
+                            controller: _durationCtrl,
+                            keyboardType: TextInputType.number,
+                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AColors.textPrimary),
+                            decoration: InputDecoration(
+                              hintText: 'Number of days',
+                              hintStyle: TextStyle(color: AColors.textMuted.withValues(alpha: 0.5)),
+                              filled: true, fillColor: AColors.bg,
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                              isDense: true,
+                            ),
+                          ),
+                        ],
+
+                        const SizedBox(height: 12),
+                        const Divider(color: AColors.border, height: 1),
+                        const SizedBox(height: 12),
+
+                        // Reminder
+                        GestureDetector(
+                          onTap: _pickTime,
+                          child: Row(children: [
+                            Icon(Icons.notifications_none_rounded, size: 18, color: _reminderTime != null ? _color : AColors.textMuted),
+                            const SizedBox(width: 8),
+                            Text(
+                              _reminderTime != null ? _reminderTime!.format(context) : 'Reminder',
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: _reminderTime != null ? _color : AColors.textMuted),
+                            ),
+                            const Spacer(),
+                            if (_reminderTime != null)
+                              GestureDetector(
+                                onTap: () => setState(() => _reminderTime = null),
+                                child: const Icon(Icons.close_rounded, size: 16, color: AColors.textMuted),
+                              )
+                            else
+                              Icon(Icons.chevron_right_rounded, size: 18, color: AColors.textMuted.withValues(alpha: 0.5)),
+                          ]),
+                        ),
+                      ],
+                    )),
+
+                    const SizedBox(height: 10),
+
+                    // ━━ CARD 4: Note ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    _card(child: TextField(
+                      controller: _noteCtrl,
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AColors.textSecondary),
+                      maxLines: 3, minLines: 1,
+                      decoration: InputDecoration(
+                        hintText: 'Add a note...',
+                        hintStyle: TextStyle(color: AColors.textMuted.withValues(alpha: 0.4)),
+                        border: InputBorder.none, enabledBorder: InputBorder.none, focusedBorder: InputBorder.none,
+                        fillColor: Colors.transparent, isDense: true,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    )),
+
+                    const SizedBox(height: 32),
+                  ],
                 ),
               ),
             ],
-          ],
-        ),
-      ),
-      const SizedBox(height: 20),
-
-      _Sec(
-        label: 'Reminder',
-        icon: Icons.notifications_rounded,
-        child: GestureDetector(
-          onTap: _pickTime,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 13,
-            ),
-            decoration: BoxDecoration(
-              color: _reminderTime != null
-                  ? AColors.primaryGlow
-                  : AColors.bgCard,
-              borderRadius: ARadius.md,
-              border: Border.all(
-                color: _reminderTime != null
-                    ? AColors.primary
-                    : AColors.border,
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.access_time_rounded,
-                  color: _reminderTime != null
-                      ? AColors.primary
-                      : AColors.textMuted,
-                  size: 18,
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  _reminderTime != null
-                      ? _reminderTime!.format(context)
-                      : 'Set daily reminder',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: _reminderTime != null
-                        ? AColors.primary
-                        : AColors.textMuted,
-                  ),
-                ),
-                const Spacer(),
-                if (_reminderTime != null)
-                  GestureDetector(
-                    onTap: () => setState(() => _reminderTime = null),
-                    child: const Icon(
-                      Icons.close_rounded,
-                      color: AColors.textMuted,
-                      size: 18,
-                    ),
-                  ),
-              ],
-            ),
           ),
         ),
       ),
-      const SizedBox(height: 20),
-
-      _Sec(
-        label: 'Note',
-        icon: Icons.notes_rounded,
-        child: TextField(
-          controller: _noteCtrl,
-          style: AText.bodyMedium,
-          maxLines: 3,
-          minLines: 1,
-          decoration: const InputDecoration(
-            hintText: 'Why does this habit matter?',
-            border: InputBorder.none,
-            enabledBorder: InputBorder.none,
-            focusedBorder: InputBorder.none,
-            fillColor: Colors.transparent,
-            contentPadding: EdgeInsets.zero,
-          ),
-        ),
-      ),
-      const SizedBox(height: 40),
-      ],
-    ),
-    ),
-    ],
-    ),
-    ),
-    ),
     );
   }
+
+  Widget _card({required Widget child}) => Container(
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: AColors.bgCard,
+      borderRadius: BorderRadius.circular(18),
+      border: Border.all(color: AColors.border.withValues(alpha: 0.35)),
+    ),
+    child: child,
+  );
+
+  Widget _label(String text) => Text(
+    text,
+    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1.1, color: AColors.textMuted.withValues(alpha: 0.55)),
+  );
 }
 
 // ─── SHARED HELPERS ───────────────────────────────────────────────────────

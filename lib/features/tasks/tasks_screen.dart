@@ -1533,7 +1533,10 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
     final title = _titleCtrl.text.trim();
     final note = _noteCtrl.text.trim();
 
-    if (title.isEmpty) return;
+    if (title.isEmpty) {
+      AToast.show(context, 'Please enter a title for your task');
+      return;
+    }
 
     HapticFeedback.mediumImpact();
 
@@ -1570,624 +1573,260 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
       child: Container(
         decoration: const BoxDecoration(
           color: AColors.bgElevated,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
         child: DraggableScrollableSheet(
           expand: false,
-          initialChildSize: 0.92,
+          initialChildSize: 0.88,
           minChildSize: 0.5,
           maxChildSize: 0.95,
           builder: (_, ctrl) => Column(
             children: [
-              const SizedBox(height: 12),
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: AColors.border,
-                    borderRadius: ARadius.full,
-                  ),
-                ),
-              ),
+              const SizedBox(height: 10),
+              Center(child: Container(width: 36, height: 4, decoration: BoxDecoration(color: AColors.border, borderRadius: ARadius.full))),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                child: Row(
-                  children: [
-                    GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-                        decoration: BoxDecoration(
-                          color: AColors.bgCard,
-                          borderRadius: ARadius.full,
-                          border: Border.all(color: AColors.border),
-                        ),
-                        child: Text('Cancel', style: AText.bodyMedium.copyWith(color: AColors.textMuted)),
-                      ),
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                child: Row(children: [
+                  GestureDetector(onTap: () => Navigator.pop(context), child: const Icon(Icons.close_rounded, color: AColors.textMuted, size: 24)),
+                  const Spacer(),
+                  Text(widget.existing == null ? 'New Task' : 'Edit Task', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AColors.textPrimary, letterSpacing: -0.3)),
+                  const Spacer(),
+                  GestureDetector(
+                    onTap: _save,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 7),
+                      decoration: BoxDecoration(gradient: AColors.gradientPrimary, borderRadius: BorderRadius.circular(20)),
+                      child: const Text('Save', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14)),
                     ),
-                    const Spacer(),
-                    Text(
-                      widget.existing == null ? 'New Task' : 'Edit Task',
-                      style: AText.titleSmall,
-                    ),
-                    const Spacer(),
-                    GestureDetector(
-                      onTap: _save,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                        decoration: BoxDecoration(
-                          gradient: AColors.gradientPrimary,
-                          borderRadius: ARadius.full,
-                          boxShadow: [
-                            BoxShadow(
-                              color: AColors.primary.withValues(alpha: 0.3),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Text('Save', style: AText.labelLarge.copyWith(color: Colors.white)),
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ]),
               ),
               Expanded(
                 child: ListView(
                   controller: ctrl,
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
                   children: [
-                    TextField(
-                      controller: _titleCtrl,
-                      autofocus: widget.existing == null,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                        color: AColors.textPrimary,
-                      ),
-                      maxLines: 2,
-                      minLines: 1,
-                      decoration: const InputDecoration(
-                        hintText: 'What needs to be done?',
-                        hintStyle: TextStyle(
-                          color: AColors.textMuted,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                        ),
-                        border: InputBorder.none,
-                        enabledBorder: InputBorder.none,
-                        focusedBorder: InputBorder.none,
-                        fillColor: Colors.transparent,
-                      ),
-                    ),
-                    const Divider(color: AColors.border),
-                    const SizedBox(height: 16),
 
-                    _Sec(
-                      label: 'Note',
-                      icon: Icons.notes_rounded,
-                      child: TextField(
+                    // ━━ CARD 1: Title + Note ━━━━━━━━━━━━━━━━━━
+                    _card(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      TextField(
+                        controller: _titleCtrl, autofocus: widget.existing == null,
+                        style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AColors.textPrimary),
+                        maxLines: 2, minLines: 1,
+                        decoration: InputDecoration(
+                          hintText: 'What needs to be done?',
+                          hintStyle: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AColors.textMuted.withValues(alpha: 0.5)),
+                          border: InputBorder.none, enabledBorder: InputBorder.none, focusedBorder: InputBorder.none,
+                          fillColor: Colors.transparent, isDense: true, contentPadding: EdgeInsets.zero,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Divider(color: AColors.border, height: 1),
+                      const SizedBox(height: 8),
+                      TextField(
                         controller: _noteCtrl,
-                        style: AText.bodyMedium,
-                        maxLines: 3,
-                        minLines: 1,
-                        decoration: const InputDecoration(
+                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AColors.textSecondary),
+                        maxLines: 3, minLines: 1,
+                        decoration: InputDecoration(
                           hintText: 'Add a note...',
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                          fillColor: Colors.transparent,
-                          contentPadding: EdgeInsets.zero,
+                          hintStyle: TextStyle(color: AColors.textMuted.withValues(alpha: 0.4)),
+                          border: InputBorder.none, enabledBorder: InputBorder.none, focusedBorder: InputBorder.none,
+                          fillColor: Colors.transparent, isDense: true, contentPadding: EdgeInsets.zero,
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 20),
+                    ])),
 
-                    _Sec(
-                      label: 'Priority  •  $_priority / 10',
-                      icon: Icons.flag_rounded,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SliderTheme(
-                            data: SliderTheme.of(context).copyWith(
-                              activeTrackColor: _pColor(_priority),
-                              thumbColor: _pColor(_priority),
-                              inactiveTrackColor: AColors.border,
-                              overlayColor:
-                              _pColor(_priority).withValues(alpha: 0.15),
-                              trackHeight: 6,
-                              thumbShape: const RoundSliderThumbShape(
-                                enabledThumbRadius: 11,
-                              ),
-                            ),
-                            child: Slider(
-                              value: _priority.toDouble(),
-                              min: 1,
-                              max: 10,
-                              divisions: 9,
-                              onChanged: (v) {
-                                setState(() => _priority = v.round());
-                              },
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 4),
-                            child: Row(
-                              mainAxisAlignment:
-                              MainAxisAlignment.spaceBetween,
-                              children: ['Low', 'Medium', 'High', 'Urgent']
-                                  .map((l) => Text(l, style: AText.bodySmall))
-                                  .toList(),
-                            ),
-                          ),
-                        ],
+                    const SizedBox(height: 10),
+
+                    // ━━ CARD 2: Priority ━━━━━━━━━━━━━━━━━━━━━
+                    _card(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Row(children: [
+                        _label('PRIORITY'),
+                        const Spacer(),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(color: _pColor(_priority).withValues(alpha: 0.15), borderRadius: BorderRadius.circular(8)),
+                          child: Text('$_priority / 10', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: _pColor(_priority))),
+                        ),
+                      ]),
+                      SliderTheme(
+                        data: SliderTheme.of(context).copyWith(
+                          activeTrackColor: _pColor(_priority),
+                          thumbColor: _pColor(_priority),
+                          inactiveTrackColor: AColors.border,
+                          overlayColor: _pColor(_priority).withValues(alpha: 0.15),
+                          trackHeight: 4,
+                          thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 9),
+                        ),
+                        child: Slider(value: _priority.toDouble(), min: 1, max: 10, divisions: 9,
+                          onChanged: (v) => setState(() => _priority = v.round())),
                       ),
-                    ),
-                    const SizedBox(height: 20),
+                    ])),
 
-                    _Sec(
-                      label: 'Category',
-                      icon: Icons.folder_rounded,
-                      child: _HScrollSelector(
-                        items: [
-                          ...widget.categories.map((c) => _HScrollItem(
-                            label: c,
-                            selected: _category == c,
-                            onTap: () => setState(() {
-                              _category = c;
-                              if (!_sphereManuallyOverridden) _xpSphereOverride = null;
-                            }),
-                          )),
-                        ],
-                        trailing: _category != null
-                            ? GestureDetector(
-                          onTap: () => setState(() => _category = null),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                            decoration: BoxDecoration(
-                              color: AColors.bgCard,
-                              borderRadius: ARadius.full,
-                              border: Border.all(color: AColors.error.withValues(alpha: 0.4)),
-                            ),
-                            child: const Icon(Icons.close_rounded, size: 14, color: AColors.error),
-                          ),
-                        )
-                            : null,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 10),
 
-                    // ── XP Sphere selector ─────────────────────────────
-                    _Sec(
-                      label: 'XP Sphere  ·  ${XpSphereExt.xpForPriority(_priority)} XP on completion',
-                      icon: Icons.auto_awesome_rounded,
-                      child: SizedBox(
-                        height: 72,
-                        child: ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: XpSphere.values.length,
-                          separatorBuilder: (_, __) => const SizedBox(width: 8),
-                          itemBuilder: (_, i) {
-                            final sphere = XpSphere.values[i];
-                            final isSelected = _effectiveSphere == sphere;
-                            final isAuto = !_sphereManuallyOverridden &&
-                                sphere == XpSphereExt.sphereForCategory(_category ?? '');
-                            return GestureDetector(
-                              onTap: () {
-                                HapticFeedback.selectionClick();
-                                setState(() {
-                                  _xpSphereOverride = sphere;
-                                  _sphereManuallyOverridden = true;
-                                });
-                              },
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
-                                curve: Curves.easeOutCubic,
-                                width: 80,
-                                padding: const EdgeInsets.symmetric(vertical: 10),
-                                decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? sphere.color.withValues(alpha: 0.15)
-                                      : AColors.bgCard,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: isSelected ? sphere.color : AColors.border,
-                                    width: isSelected ? 1.5 : 1,
-                                  ),
-                                  boxShadow: isSelected ? [
-                                    BoxShadow(
-                                      color: sphere.color.withValues(alpha: 0.15),
-                                      blurRadius: 8,
-                                    ),
-                                  ] : null,
-                                ),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(sphere.emoji, style: const TextStyle(fontSize: 18)),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      sphere.label,
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w700,
-                                        color: isSelected ? sphere.color : AColors.textMuted,
-                                      ),
-                                    ),
-                                    if (isAuto)
-                                      Text('auto', style: TextStyle(
-                                        fontSize: 9,
-                                        color: sphere.color.withValues(alpha: 0.7),
-                                        fontWeight: FontWeight.w600,
-                                      )),
-                                  ],
-                                ),
+                    // ━━ CARD 3: Category + XP ━━━━━━━━━━━━━━━━
+                    _card(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      _label('CATEGORY'),
+                      const SizedBox(height: 8),
+                      SizedBox(height: 34, child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: widget.categories.length + (_category != null ? 1 : 0),
+                        separatorBuilder: (_, __) => const SizedBox(width: 6),
+                        itemBuilder: (_, i) {
+                          if (_category != null && i == widget.categories.length) {
+                            return GestureDetector(onTap: () => setState(() => _category = null),
+                              child: Container(padding: const EdgeInsets.symmetric(horizontal: 10),
+                                decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), border: Border.all(color: AColors.error.withValues(alpha: 0.3))),
+                                child: const Center(child: Icon(Icons.close_rounded, size: 14, color: AColors.error)),
                               ),
                             );
-                          },
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    _Sec(
-                      label: 'Due Date',
-                      icon: Icons.calendar_month_rounded,
-                      child: GestureDetector(
-                        onTap: _pickDate,
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 150),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 13,
-                          ),
-                          decoration: BoxDecoration(
-                            color: _dueDate != null
-                                ? AColors.primaryGlow
-                                : AColors.bgCard,
-                            borderRadius: ARadius.md,
-                            border: Border.all(
-                              color: _dueDate != null
-                                  ? AColors.primary
-                                  : AColors.border,
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.calendar_today_rounded,
-                                color: _dueDate != null
-                                    ? AColors.primary
-                                    : AColors.textMuted,
-                                size: 18,
-                              ),
-                              const SizedBox(width: 10),
-                              Text(
-                                _dueDate != null
-                                    ? DateFormat('EEE, MMM d yyyy')
-                                    .format(_dueDate!)
-                                    : 'Choose a date',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: _dueDate != null
-                                      ? AColors.primary
-                                      : AColors.textMuted,
-                                ),
-                              ),
-                              const Spacer(),
-                              if (_dueDate != null)
-                                GestureDetector(
-                                  onTap: () => setState(() => _dueDate = null),
-                                  child: const Icon(
-                                    Icons.close_rounded,
-                                    color: AColors.textMuted,
-                                    size: 18,
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    _Sec(
-                      label: 'Reminder',
-                      icon: Icons.notifications_rounded,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          GestureDetector(
-                            onTap: _pickTime,
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 150),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 13,
-                              ),
+                          }
+                          final c = widget.categories[i]; final sel = _category == c;
+                          return GestureDetector(
+                            onTap: () => setState(() { _category = c; if (!_sphereManuallyOverridden) _xpSphereOverride = null; }),
+                            child: AnimatedContainer(duration: const Duration(milliseconds: 180), padding: const EdgeInsets.symmetric(horizontal: 14),
                               decoration: BoxDecoration(
-                                color: _reminderTime != null
-                                    ? AColors.primaryGlow
-                                    : AColors.bgCard,
-                                borderRadius: ARadius.md,
-                                border: Border.all(
-                                  color: _reminderTime != null
-                                      ? AColors.primary
-                                      : AColors.border,
-                                ),
+                                color: sel ? AColors.primary.withValues(alpha: 0.12) : Colors.transparent,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: sel ? AColors.primary : AColors.border.withValues(alpha: 0.4)),
                               ),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.access_time_rounded,
-                                    color: _reminderTime != null
-                                        ? AColors.primary
-                                        : AColors.textMuted,
-                                    size: 18,
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Text(
-                                    _reminderTime != null
-                                        ? _reminderTime!.format(context)
-                                        : 'Set reminder time',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      color: _reminderTime != null
-                                          ? AColors.primary
-                                          : AColors.textMuted,
-                                    ),
-                                  ),
-                                  const Spacer(),
-                                  if (_reminderTime != null)
-                                    GestureDetector(
-                                      onTap: () => setState(() {
-                                        _reminderTime = null;
-                                        _reminderDays = [];
-                                      }),
-                                      child: const Icon(
-                                        Icons.close_rounded,
-                                        color: AColors.textMuted,
-                                        size: 18,
-                                      ),
-                                    ),
-                                ],
-                              ),
+                              child: Center(child: Text(c, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: sel ? AColors.primary : AColors.textMuted))),
                             ),
-                          ),
-                          if (_reminderTime != null) ...[
-                            const SizedBox(height: 12),
-                            const Text('Repeat on days', style: AText.bodyMedium),
-                            const SizedBox(height: 8),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: List.generate(7, (i) {
-                                final day = i + 1;
-                                final sel = _reminderDays.contains(day);
-
-                                return GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      if (sel) {
-                                        _reminderDays.remove(day);
-                                      } else {
-                                        _reminderDays.add(day);
-                                      }
-                                    });
-                                    HapticFeedback.selectionClick();
-                                  },
-                                  child: AnimatedContainer(
-                                    duration: const Duration(milliseconds: 150),
-                                    width: 38,
-                                    height: 38,
-                                    decoration: BoxDecoration(
-                                      color: sel
-                                          ? AColors.primary
-                                          : AColors.bgCard,
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: sel
-                                            ? AColors.primary
-                                            : AColors.border,
-                                      ),
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                        _dayLabels[i],
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w700,
-                                          color: sel
-                                              ? Colors.white
-                                              : AColors.textMuted,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              }),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              _reminderDays.isEmpty
-                                  ? 'One-time on due date'
-                                  : 'Repeats on selected days',
-                              style: AText.bodySmall,
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    _Sec(
-                      label: 'Subtasks',
-                      icon: Icons.checklist_rounded,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          ..._subtasks.asMap().entries.map(
-                                (entry) => Padding(
-                              padding: const EdgeInsets.only(bottom: 10),
-                              child: Row(
-                                children: [
-                                  GestureDetector(
-                                    onTap: () => _toggleSubtask(entry.key),
-                                    child: AnimatedContainer(
-                                      duration: const Duration(milliseconds: 180),
-                                      width: 22,
-                                      height: 22,
-                                      decoration: BoxDecoration(
-                                        color: entry.value.done
-                                            ? AColors.primary
-                                            : Colors.transparent,
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: entry.value.done
-                                              ? AColors.primary
-                                              : AColors.border,
-                                          width: 1.5,
-                                        ),
-                                      ),
-                                      child: entry.value.done
-                                          ? const Icon(
-                                        Icons.check_rounded,
-                                        color: Colors.white,
-                                        size: 13,
-                                      )
-                                          : null,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: Text(
-                                      entry.value.title,
-                                      style: AText.bodyMedium.copyWith(
-                                        color: entry.value.done
-                                            ? AColors.textMuted
-                                            : AColors.textSecondary,
-                                      ),
-                                    ),
-                                  ),
-                                  GestureDetector(
-                                    onTap: () {
-                                      setState(
-                                            () => _subtasks.removeAt(entry.key),
-                                      );
-                                    },
-                                    child: const Icon(
-                                      Icons.close_rounded,
-                                      color: AColors.textMuted,
-                                      size: 18,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: TextField(
-                                  controller: _subtaskCtrl,
-                                  style: AText.bodyMedium,
-                                  onSubmitted: (_) => _addSubtask(),
-                                  decoration: const InputDecoration(
-                                    hintText: 'Add a subtask...',
-                                    contentPadding: EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 10,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              GestureDetector(
-                                onTap: _addSubtask,
-                                child: Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    color: AColors.primaryGlow,
-                                    borderRadius: ARadius.md,
-                                  ),
-                                  child: const Icon(
-                                    Icons.add_rounded,
-                                    color: AColors.primary,
-                                    size: 22,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    _Sec(
-                      label: 'Options',
-                      icon: Icons.tune_rounded,
-                      child: GestureDetector(
-                        onTap: () {
-                          setState(() => _pending = !_pending);
-                          HapticFeedback.lightImpact();
+                          );
                         },
-                        child: Row(
-                          children: [
-                            const Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('Mark as Pending', style: AText.bodyLarge),
-                                  Text(
-                                    'Task is blocked or waiting',
-                                    style: AText.bodySmall,
-                                  ),
-                                ],
-                              ),
+                      )),
+                      const SizedBox(height: 14),
+                      Row(children: [_label('XP SPHERE'), const Spacer(),
+                        Text('${XpSphereExt.xpForPriority(_priority)} XP', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AColors.primary.withValues(alpha: 0.7)))]),
+                      const SizedBox(height: 8),
+                      SizedBox(height: 34, child: ListView.separated(
+                        scrollDirection: Axis.horizontal, itemCount: XpSphere.values.length,
+                        separatorBuilder: (_, __) => const SizedBox(width: 6),
+                        itemBuilder: (_, i) {
+                          final s = XpSphere.values[i]; final sel = _effectiveSphere == s;
+                          return GestureDetector(
+                            onTap: () { HapticFeedback.selectionClick(); setState(() { _xpSphereOverride = s; _sphereManuallyOverridden = true; }); },
+                            child: AnimatedContainer(duration: const Duration(milliseconds: 180), padding: const EdgeInsets.symmetric(horizontal: 12),
+                              decoration: BoxDecoration(color: sel ? s.color.withValues(alpha: 0.15) : Colors.transparent,
+                                borderRadius: BorderRadius.circular(10), border: Border.all(color: sel ? s.color : AColors.border.withValues(alpha: 0.4))),
+                              child: Center(child: Row(mainAxisSize: MainAxisSize.min, children: [
+                                Text(s.emoji, style: const TextStyle(fontSize: 14)), const SizedBox(width: 5),
+                                Text(s.label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: sel ? s.color : AColors.textMuted)),
+                              ])),
                             ),
-                            AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              curve: Curves.easeOutCubic,
-                              width: 50,
-                              height: 28,
-                              decoration: BoxDecoration(
-                                color: _pending
-                                    ? AColors.warning
-                                    : AColors.bgCard,
-                                borderRadius: ARadius.full,
-                                border: Border.all(
-                                  color: _pending
-                                      ? AColors.warning
-                                      : AColors.border,
-                                ),
-                              ),
-                              child: AnimatedAlign(
-                                duration: const Duration(milliseconds: 200),
-                                curve: Curves.easeOutCubic,
-                                alignment: _pending
-                                    ? Alignment.centerRight
-                                    : Alignment.centerLeft,
-                                child: Container(
-                                  margin: const EdgeInsets.all(3),
-                                  width: 22,
-                                  height: 22,
-                                  decoration: const BoxDecoration(
-                                    color: Colors.white,
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                              ),
+                          );
+                        },
+                      )),
+                    ])),
+
+                    const SizedBox(height: 10),
+
+                    // ━━ CARD 4: Schedule ━━━━━━━━━━━━━━━━━━━━━
+                    _card(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      // Due date
+                      GestureDetector(onTap: _pickDate, child: Row(children: [
+                        Icon(Icons.calendar_today_rounded, size: 18, color: _dueDate != null ? AColors.primary : AColors.textMuted),
+                        const SizedBox(width: 8),
+                        Text(_dueDate != null ? DateFormat('EEE, MMM d yyyy').format(_dueDate!) : 'Due date',
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: _dueDate != null ? AColors.primary : AColors.textMuted)),
+                        const Spacer(),
+                        if (_dueDate != null) GestureDetector(onTap: () => setState(() => _dueDate = null), child: const Icon(Icons.close_rounded, size: 16, color: AColors.textMuted))
+                        else Icon(Icons.chevron_right_rounded, size: 18, color: AColors.textMuted.withValues(alpha: 0.5)),
+                      ])),
+
+                      const SizedBox(height: 12), const Divider(color: AColors.border, height: 1), const SizedBox(height: 12),
+
+                      // Reminder
+                      GestureDetector(onTap: _pickTime, child: Row(children: [
+                        Icon(Icons.notifications_none_rounded, size: 18, color: _reminderTime != null ? AColors.primary : AColors.textMuted),
+                        const SizedBox(width: 8),
+                        Text(_reminderTime != null ? _reminderTime!.format(context) : 'Reminder',
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: _reminderTime != null ? AColors.primary : AColors.textMuted)),
+                        const Spacer(),
+                        if (_reminderTime != null) GestureDetector(
+                          onTap: () => setState(() { _reminderTime = null; _reminderDays = []; }),
+                          child: const Icon(Icons.close_rounded, size: 16, color: AColors.textMuted))
+                        else Icon(Icons.chevron_right_rounded, size: 18, color: AColors.textMuted.withValues(alpha: 0.5)),
+                      ])),
+                      if (_reminderTime != null) ...[
+                        const SizedBox(height: 12),
+                        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: List.generate(7, (i) {
+                          final day = i + 1; final sel = _reminderDays.contains(day);
+                          return GestureDetector(
+                            onTap: () { setState(() => sel ? _reminderDays.remove(day) : _reminderDays.add(day)); HapticFeedback.selectionClick(); },
+                            child: AnimatedContainer(duration: const Duration(milliseconds: 150), width: 34, height: 34,
+                              decoration: BoxDecoration(color: sel ? AColors.primary : Colors.transparent, shape: BoxShape.circle,
+                                border: Border.all(color: sel ? AColors.primary : AColors.border.withValues(alpha: 0.4))),
+                              child: Center(child: Text(_dayLabels[i], style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: sel ? Colors.white : AColors.textMuted))),
                             ),
-                          ],
-                        ),
+                          );
+                        })),
+                      ],
+
+                      const SizedBox(height: 12), const Divider(color: AColors.border, height: 1), const SizedBox(height: 12),
+
+                      // Pending toggle
+                      GestureDetector(
+                        onTap: () { setState(() => _pending = !_pending); HapticFeedback.lightImpact(); },
+                        child: Row(children: [
+                          const Expanded(child: Text('Pending', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AColors.textSecondary))),
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 200), curve: Curves.easeOutCubic, width: 50, height: 28,
+                            decoration: BoxDecoration(color: _pending ? AColors.warning : AColors.bgCard, borderRadius: ARadius.full,
+                              border: Border.all(color: _pending ? AColors.warning : AColors.border)),
+                            child: AnimatedAlign(duration: const Duration(milliseconds: 200), curve: Curves.easeOutCubic,
+                              alignment: _pending ? Alignment.centerRight : Alignment.centerLeft,
+                              child: Container(margin: const EdgeInsets.all(3), width: 22, height: 22,
+                                decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle))),
+                          ),
+                        ]),
                       ),
-                    ),
-                    const SizedBox(height: 40),
+                    ])),
+
+                    const SizedBox(height: 10),
+
+                    // ━━ CARD 5: Subtasks ━━━━━━━━━━━━━━━━━━━━━
+                    _card(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      _label('SUBTASKS'),
+                      const SizedBox(height: 10),
+                      ..._subtasks.asMap().entries.map((e) => Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Row(children: [
+                          GestureDetector(
+                            onTap: () => _toggleSubtask(e.key),
+                            child: AnimatedContainer(duration: const Duration(milliseconds: 180), width: 20, height: 20,
+                              decoration: BoxDecoration(color: e.value.done ? AColors.primary : Colors.transparent, shape: BoxShape.circle,
+                                border: Border.all(color: e.value.done ? AColors.primary : AColors.border, width: 1.5)),
+                              child: e.value.done ? const Icon(Icons.check_rounded, color: Colors.white, size: 12) : null,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(child: Text(e.value.title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500,
+                            color: e.value.done ? AColors.textMuted : AColors.textSecondary,
+                            decoration: e.value.done ? TextDecoration.lineThrough : null))),
+                          GestureDetector(onTap: () => setState(() => _subtasks.removeAt(e.key)),
+                            child: const Icon(Icons.close_rounded, color: AColors.textMuted, size: 16)),
+                        ]),
+                      )),
+                      Row(children: [
+                        Expanded(child: TextField(controller: _subtaskCtrl,
+                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AColors.textPrimary),
+                          onSubmitted: (_) => _addSubtask(),
+                          decoration: InputDecoration(hintText: 'Add a subtask...',
+                            hintStyle: TextStyle(color: AColors.textMuted.withValues(alpha: 0.5)),
+                            filled: true, fillColor: AColors.bg,
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10), isDense: true),
+                        )),
+                        const SizedBox(width: 8),
+                        GestureDetector(onTap: _addSubtask, child: Container(width: 36, height: 36,
+                          decoration: BoxDecoration(color: AColors.primary.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10)),
+                          child: const Icon(Icons.add_rounded, color: AColors.primary, size: 20))),
+                      ]),
+                    ])),
+
+                    const SizedBox(height: 32),
                   ],
                 ),
               ),
@@ -2197,6 +1836,16 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
       ),
     );
   }
+
+  Widget _card({required Widget child}) => Container(
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(color: AColors.bgCard, borderRadius: BorderRadius.circular(18),
+      border: Border.all(color: AColors.border.withValues(alpha: 0.35))),
+    child: child,
+  );
+
+  Widget _label(String text) => Text(text,
+    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1.1, color: AColors.textMuted.withValues(alpha: 0.55)));
 }
 
 Color _pColor(int p) {
@@ -2212,34 +1861,21 @@ class _Sec extends StatelessWidget {
   final IconData icon;
   final Widget child;
 
-  const _Sec({
-    required this.label,
-    required this.icon,
-    required this.child,
-  });
+  const _Sec({required this.label, required this.icon, required this.child});
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(icon, size: 15, color: AColors.primary),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: AText.labelLarge.copyWith(
-                color: AColors.textSecondary,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        child,
-      ],
-    );
-  }
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Row(children: [
+        Icon(icon, size: 15, color: AColors.primary),
+        const SizedBox(width: 6),
+        Text(label, style: AText.labelLarge.copyWith(color: AColors.textSecondary)),
+      ]),
+      const SizedBox(height: 10),
+      child,
+    ],
+  );
 }
 
 class _MiniTag extends StatelessWidget {
@@ -2247,39 +1883,26 @@ class _MiniTag extends StatelessWidget {
   final Color color;
   final IconData? icon;
 
-  const _MiniTag({
-    required this.label,
-    required this.color,
-    this.icon,
-  });
+  const _MiniTag({required this.label, required this.color, this.icon});
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: ARadius.full,
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (icon != null) ...[
-            Icon(icon, size: 9, color: color),
-            const SizedBox(width: 3),
-          ],
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              color: color,
-            ),
-          ),
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+    decoration: BoxDecoration(
+      color: color.withValues(alpha: 0.12),
+      borderRadius: ARadius.full,
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (icon != null) ...[
+          Icon(icon, size: 9, color: color),
+          const SizedBox(width: 3),
         ],
-      ),
-    );
-  }
+        Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: color)),
+      ],
+    ),
+  );
 }
 
 class _CategoryChip extends StatelessWidget {
@@ -2288,47 +1911,26 @@ class _CategoryChip extends StatelessWidget {
   final bool isAdd;
   final VoidCallback onTap;
 
-  const _CategoryChip({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-    this.isAdd = false,
-  });
+  const _CategoryChip({required this.label, required this.selected, required this.onTap, this.isAdd = false});
 
   @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        onTap();
-        HapticFeedback.selectionClick();
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        margin: const EdgeInsets.only(right: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: selected
-              ? AColors.primaryGlow
-              : (isAdd ? Colors.transparent : AColors.bgCard),
-          borderRadius: ARadius.full,
-          border: Border.all(
-            color: selected ? AColors.primary : AColors.border,
-            width: selected ? 1.5 : 1,
-          ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: selected
-                ? AColors.primary
-                : (isAdd ? AColors.textMuted : AColors.textSecondary),
-          ),
-        ),
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: () { onTap(); HapticFeedback.selectionClick(); },
+    child: AnimatedContainer(
+      duration: const Duration(milliseconds: 150),
+      margin: const EdgeInsets.only(right: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: selected ? AColors.primaryGlow : (isAdd ? Colors.transparent : AColors.bgCard),
+        borderRadius: ARadius.full,
+        border: Border.all(color: selected ? AColors.primary : AColors.border, width: selected ? 1.5 : 1),
       ),
-    );
-  }
+      child: Text(label, style: TextStyle(
+        fontSize: 13, fontWeight: FontWeight.w600,
+        color: selected ? AColors.primary : (isAdd ? AColors.textMuted : AColors.textSecondary),
+      )),
+    ),
+  );
 }
 
 class _IconBtn extends StatelessWidget {
@@ -2336,91 +1938,50 @@ class _IconBtn extends StatelessWidget {
   final VoidCallback onTap;
   final bool gradient;
 
-  const _IconBtn({
-    required this.icon,
-    required this.onTap,
-    this.gradient = false,
-  });
+  const _IconBtn({required this.icon, required this.onTap, this.gradient = false});
 
   @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        width: 42,
-        height: 42,
-        decoration: BoxDecoration(
-          gradient: gradient ? AColors.gradientPrimary : null,
-          color: gradient ? null : AColors.bgCard,
-          borderRadius: ARadius.md,
-          border: gradient ? null : Border.all(color: AColors.border),
-          boxShadow: gradient
-              ? [
-            BoxShadow(
-              color: AColors.primary.withValues(alpha: 0.3),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ]
-              : null,
-        ),
-        child: Icon(
-          icon,
-          color: gradient ? Colors.white : AColors.textPrimary,
-          size: 22,
-        ),
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: onTap,
+    child: AnimatedContainer(
+      duration: const Duration(milliseconds: 150),
+      width: 42, height: 42,
+      decoration: BoxDecoration(
+        gradient: gradient ? AColors.gradientPrimary : null,
+        color: gradient ? null : AColors.bgCard,
+        borderRadius: ARadius.md,
+        border: gradient ? null : Border.all(color: AColors.border),
+        boxShadow: gradient ? [BoxShadow(color: AColors.primary.withValues(alpha: 0.3), blurRadius: 12, offset: const Offset(0, 4))] : null,
       ),
-    );
-  }
+      child: Icon(icon, color: gradient ? Colors.white : AColors.textPrimary, size: 22),
+    ),
+  );
 }
 
-// ─── ANIMATIONS ────────────────────────────────────────────────────────
 class _AnimatedEntrance extends StatelessWidget {
   final Widget child;
   final int delay;
   final bool play;
 
-  const _AnimatedEntrance({
-    required this.child,
-    required this.delay,
-    required this.play,
-  });
+  const _AnimatedEntrance({required this.child, required this.delay, required this.play});
 
   @override
-  Widget build(BuildContext context) {
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 500),
-      switchInCurve: Curves.easeOutCubic,
-      transitionBuilder: (w, anim) {
-        final slideAnim = Tween<Offset>(
-          begin: const Offset(0, 0.1),
-          end: Offset.zero,
-        ).animate(anim);
-        return FadeTransition(
-          opacity: anim,
-          child: SlideTransition(
-            position: slideAnim,
-            child: w,
-          ),
-        );
-      },
-      child: play
-          ? FutureBuilder(
-        future: Future.delayed(Duration(milliseconds: delay)),
-        builder: (ctx, snap) {
-          if (snap.connectionState != ConnectionState.done) {
-            return const SizedBox();
-          }
-          return child;
-        },
-      )
-          : const SizedBox(),
-    );
-  }
+  Widget build(BuildContext context) => AnimatedSwitcher(
+    duration: const Duration(milliseconds: 500),
+    switchInCurve: Curves.easeOutCubic,
+    transitionBuilder: (w, anim) {
+      final slideAnim = Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(anim);
+      return FadeTransition(opacity: anim, child: SlideTransition(position: slideAnim, child: w));
+    },
+    child: play
+        ? FutureBuilder(
+          future: Future.delayed(Duration(milliseconds: delay)),
+          builder: (ctx, snap) => snap.connectionState == ConnectionState.done ? child : const SizedBox(),
+        )
+        : const SizedBox(),
+  );
 }
 
-// ─── SHARED HORIZONTAL SCROLL SELECTOR ───────────────────────────────────
 class _HScrollItem {
   final String label;
   final bool selected;
@@ -2434,40 +1995,28 @@ class _HScrollSelector extends StatelessWidget {
   const _HScrollSelector({required this.items, this.trailing});
 
   @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 36,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        children: [
-          ...items.map((item) => GestureDetector(
-            onTap: () { item.onTap(); HapticFeedback.selectionClick(); },
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              curve: Curves.easeOutCubic,
-              margin: const EdgeInsets.only(right: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              decoration: BoxDecoration(
-                color: item.selected ? AColors.primaryGlow : AColors.bgCard,
-                borderRadius: ARadius.full,
-                border: Border.all(
-                  color: item.selected ? AColors.primary : AColors.border,
-                  width: item.selected ? 1.5 : 1,
-                ),
-              ),
-              child: Text(
-                item.label,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: item.selected ? AColors.primary : AColors.textMuted,
-                ),
-              ),
+  Widget build(BuildContext context) => SizedBox(
+    height: 36,
+    child: ListView(
+      scrollDirection: Axis.horizontal,
+      children: [
+        ...items.map((item) => GestureDetector(
+          onTap: () { item.onTap(); HapticFeedback.selectionClick(); },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOutCubic,
+            margin: const EdgeInsets.only(right: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: item.selected ? AColors.primaryGlow : AColors.bgCard,
+              borderRadius: ARadius.full,
+              border: Border.all(color: item.selected ? AColors.primary : AColors.border, width: item.selected ? 1.5 : 1),
             ),
-          )),
-          if (trailing != null) trailing!,
-        ],
-      ),
-    );
-  }
+            child: Text(item.label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: item.selected ? AColors.primary : AColors.textMuted)),
+          ),
+        )),
+        if (trailing != null) trailing!,
+      ],
+    ),
+  );
 }
