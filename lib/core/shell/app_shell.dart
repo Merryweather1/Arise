@@ -270,8 +270,13 @@ class _XpPillOverlayState extends State<_XpPillOverlay>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(sphere.emoji,
-                        style: const TextStyle(fontSize: 16)),
+                    Text(
+                      sphere.emoji,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        decoration: TextDecoration.none,
+                      ),
+                    ),
                     const SizedBox(width: 8),
                     Text(
                       '+${widget.event.amount} XP',
@@ -279,6 +284,8 @@ class _XpPillOverlayState extends State<_XpPillOverlay>
                         color: sphere.color,
                         fontWeight: FontWeight.w800,
                         fontSize: 15,
+                        decoration: TextDecoration.none,
+                        letterSpacing: 0.5,
                       ),
                     ),
                   ],

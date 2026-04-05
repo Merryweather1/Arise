@@ -9,12 +9,12 @@ class AToast {
 
   /// Show a premium floating toast.
   static void show(
-    BuildContext context,
-    String message, {
-    IconData? icon,
-    Color? iconColor,
-    Duration duration = const Duration(milliseconds: 2200),
-  }) {
+      BuildContext context,
+      String message, {
+        IconData? icon,
+        Color? iconColor,
+        Duration duration = const Duration(milliseconds: 2200),
+      }) {
     _current?.remove();
     _current = null;
 
@@ -142,6 +142,7 @@ class _ToastState extends State<_Toast> with SingleTickerProviderStateMixin {
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                           letterSpacing: 0.1,
+                          decoration: TextDecoration.none,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
