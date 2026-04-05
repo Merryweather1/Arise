@@ -64,7 +64,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen>
     if (g.customReward != null && g.customReward!.trim().isNotEmpty) {
       return g.customReward!.trim();
     }
-    if (g.xpReward > 0) return 'в­ђ ${g.xpReward} XP';
+    if (g.xpReward > 0) return '${g.xpReward} XP';
     return '';
   }
 
