@@ -366,25 +366,66 @@ class GoalNotifier extends AsyncNotifier<void> {
   }
 
   Future<void> markComplete(GoalModel goal) async {
-    final updated = goal.copyWith(manuallyComplete: true);
+    final xp = goal.computedXpReward;
+    final updated = goal.copyWith(manuallyComplete: true, xpReward: xp);
     await GoalRepository.update(_uid, updated);
-    // Cancel deadline notification — goal is done
     await NotificationService.instance.cancelGoal(goal.id);
     final profileBefore = ref.read(userProfileProvider).valueOrNull;
     final levelBefore = profileBefore?.levelForSphere(goal.xpSphere) ?? 1;
-    await UserRepository.addXp(_uid, goal.xpSphere, goal.xpReward);
+    await UserRepository.addXp(_uid, goal.xpSphere, xp);
     final profileAfter = await UserRepository.get(_uid);
     final levelAfter = profileAfter?.levelForSphere(goal.xpSphere) ?? levelBefore;
     ref.read(xpEventProvider.notifier).state = XpEvent(
       sphere: goal.xpSphere,
-      amount: goal.xpReward,
+      amount: xp,
       isLevelUp: levelAfter > levelBefore,
       newLevel: levelAfter,
     );
   }
+
+  /// Add a check-in journal entry. If delta is provided and the goal is measurable,
+  /// also advances measureCurrent. Returns true if this check-in completed the goal.
+  Future<bool> addCheckIn(GoalModel goal, String note, double? delta) async {
+    final checkIn = GoalCheckInModel(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      note: note,
+      date: DateTime.now(),
+      progressDelta: delta,
+    );
+
+    double newCurrent = goal.measureCurrent;
+    if (delta != null && goal.measureTarget != null) {
+      newCurrent = (goal.measureCurrent + delta).clamp(0.0, goal.measureTarget! * 10);
+    }
+
+    final updated = goal.copyWith(
+      checkIns: [...goal.checkIns, checkIn],
+      measureCurrent: newCurrent,
+    );
+    await GoalRepository.update(_uid, updated);
+
+    // Auto-complete if measurable goal just hit 100%
+    if (!goal.isComplete && updated.isComplete) {
+      await markComplete(updated);
+      return true;
+    }
+    return false;
+  }
+
+  /// Directly set measureCurrent value (e.g., absolute entry mode).
+  Future<bool> logMeasureProgress(GoalModel goal, double newValue) async {
+    final updated = goal.copyWith(measureCurrent: newValue.clamp(0.0, double.infinity));
+    await GoalRepository.update(_uid, updated);
+    if (!goal.isComplete && updated.isComplete) {
+      await markComplete(updated);
+      return true;
+    }
+    return false;
+  }
 }
 
 final goalActionsProvider = AsyncNotifierProvider<GoalNotifier, void>(GoalNotifier.new);
+
 
 // ─── POMODORO ACTIONS ──────────────────────────────────────────────────────
 class PomodoroNotifier extends AsyncNotifier<void> {

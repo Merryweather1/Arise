@@ -508,16 +508,75 @@ class HabitModel {
 }
 
 // ─── GOAL ─────────────────────────────────────────────────────────────────
+
+/// A timestamped note the user writes to record effort toward a goal.
+class GoalCheckInModel {
+  final String id;
+  final String note;
+  final DateTime date;
+  /// For measurable goals: how much progress was added in this check-in.
+  final double? progressDelta;
+
+  const GoalCheckInModel({
+    required this.id,
+    required this.note,
+    required this.date,
+    this.progressDelta,
+  });
+
+  factory GoalCheckInModel.fromMap(Map<String, dynamic> m) => GoalCheckInModel(
+    id: m['id'] ?? '',
+    note: m['note'] ?? '',
+    date: m['date'] is int
+        ? DateTime.fromMillisecondsSinceEpoch(m['date'] as int)
+        : (m['date'] as Timestamp?)?.toDate() ?? DateTime.now(),
+    progressDelta: (m['progressDelta'] as num?)?.toDouble(),
+  );
+
+  Map<String, dynamic> toMap() => {
+    'id': id,
+    'note': note,
+    'date': Timestamp.fromDate(date),
+    'progressDelta': progressDelta,
+  };
+}
+
+/// A milestone toward a goal, with an effort weight (1 = small, 2 = medium, 3 = large).
 class GoalStepModel {
   final String id;
   final String title;
   final bool done;
-  const GoalStepModel({required this.id, required this.title, this.done = false});
-  factory GoalStepModel.fromMap(Map<String, dynamic> m) =>
-      GoalStepModel(id: m['id'] ?? '', title: m['title'] ?? '', done: m['done'] ?? false);
-  Map<String, dynamic> toMap() => {'id': id, 'title': title, 'done': done};
-  GoalStepModel copyWith({String? title, bool? done}) =>
-      GoalStepModel(id: id, title: title ?? this.title, done: done ?? this.done);
+  /// Effort weight: 1 (small), 2 (medium), 3 (large). Defaults to 1.
+  final int weight;
+
+  const GoalStepModel({
+    required this.id,
+    required this.title,
+    this.done = false,
+    this.weight = 1,
+  });
+
+  factory GoalStepModel.fromMap(Map<String, dynamic> m) => GoalStepModel(
+    id: m['id'] ?? '',
+    title: m['title'] ?? '',
+    done: m['done'] ?? false,
+    weight: (m['weight'] as int?) ?? 1,
+  );
+
+  Map<String, dynamic> toMap() => {
+    'id': id,
+    'title': title,
+    'done': done,
+    'weight': weight,
+  };
+
+  GoalStepModel copyWith({String? title, bool? done, int? weight}) =>
+      GoalStepModel(
+        id: id,
+        title: title ?? this.title,
+        done: done ?? this.done,
+        weight: weight ?? this.weight,
+      );
 }
 
 class GoalModel {
@@ -539,6 +598,8 @@ class GoalModel {
   final double measureCurrent;
   final XpSphere xpSphere;
   final DateTime createdAt;
+  /// Journal entries — timestamped notes of effort logged by the user.
+  final List<GoalCheckInModel> checkIns;
 
   const GoalModel({
     required this.id,
@@ -559,18 +620,48 @@ class GoalModel {
     this.measureCurrent = 0,
     this.xpSphere = XpSphere.willpower,
     required this.createdAt,
+    this.checkIns = const [],
   });
 
+  /// Weighted progress: done milestone weights / total milestone weights.
   double get progress {
     if (manuallyComplete) return 1.0;
     if (measureTarget != null && measureTarget! > 0) {
       return (measureCurrent / measureTarget!).clamp(0.0, 1.0);
     }
     if (steps.isEmpty) return 0.0;
-    return steps.where((s) => s.done).length / steps.length;
+    final totalWeight = steps.fold(0, (sum, s) => sum + s.weight);
+    if (totalWeight == 0) return 0.0;
+    final doneWeight = steps.where((s) => s.done).fold(0, (sum, s) => sum + s.weight);
+    return (doneWeight / totalWeight).clamp(0.0, 1.0);
   }
 
+  /// Number of done milestones (for display).
+  int get doneMilestones => steps.where((s) => s.done).length;
+
   bool get isComplete => manuallyComplete || progress >= 1.0;
+
+  /// Compute XP reward at completion based on effort.
+  /// - Base: 50 XP
+  /// - Measurable goal: +25 XP
+  /// - Total milestone weight (sum of all weights): +5 XP per weight unit
+  /// - Had deadline and met it: +30 XP
+  /// - Check-in bonus: +2 XP per check-in (up to 50 extra max)
+  int get computedXpReward {
+    int xp = 50;
+    if (measureTarget != null) xp += 25;
+    final totalWeight = steps.fold(0, (sum, s) => sum + s.weight);
+    xp += totalWeight * 5;
+    final checkInBonus = (checkIns.length * 2).clamp(0, 50);
+    xp += checkInBonus;
+    if (deadline != null) {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final dl = DateTime(deadline!.year, deadline!.month, deadline!.day);
+      if (!today.isAfter(dl)) xp += 30; // completed on time
+    }
+    return xp;
+  }
 
   factory GoalModel.fromFirestore(DocumentSnapshot doc) {
     final d = doc.data() as Map<String, dynamic>;
@@ -591,6 +682,8 @@ class GoalModel {
               (s) => s.name == (d['xpSphere'] ?? 'willpower'),
           orElse: () => XpSphere.willpower),
       createdAt: (d['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      checkIns: (d['checkIns'] as List? ?? [])
+          .map((c) => GoalCheckInModel.fromMap(c as Map<String, dynamic>)).toList(),
     );
   }
 
@@ -604,6 +697,7 @@ class GoalModel {
     'measureTarget': measureTarget, 'measureUnit': measureUnit,
     'measureCurrent': measureCurrent, 'xpSphere': xpSphere.name,
     'createdAt': Timestamp.fromDate(createdAt),
+    'checkIns': checkIns.map((c) => c.toMap()).toList(),
   };
 
   GoalModel copyWith({
@@ -611,7 +705,7 @@ class GoalModel {
     String? note, DateTime? deadline, List<GoalStepModel>? steps,
     bool? archived, bool? manuallyComplete, int? xpReward,
     String? customReward, double? measureTarget, String? measureUnit,
-    double? measureCurrent, XpSphere? xpSphere,
+    double? measureCurrent, XpSphere? xpSphere, List<GoalCheckInModel>? checkIns,
   }) => GoalModel(
     id: id, uid: uid, createdAt: createdAt,
     title: title ?? this.title, category: category ?? this.category,
@@ -624,6 +718,7 @@ class GoalModel {
     measureUnit: measureUnit ?? this.measureUnit,
     measureCurrent: measureCurrent ?? this.measureCurrent,
     xpSphere: xpSphere ?? this.xpSphere,
+    checkIns: checkIns ?? this.checkIns,
   );
 }
 
