@@ -70,43 +70,10 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen>
 
   Color _goalColor(GoalModel g) => Color(g.colorValue);
 
-  GoalModel _copyGoal(
-      GoalModel g, {
-        String? title,
-        String? category,
-        String? emoji,
-        int? colorValue,
-        String? note,
-        DateTime? deadline,
-        List<GoalStepModel>? steps,
-        bool? manuallyComplete,
-        bool? archived,
-        int? xpReward,
-        String? customReward,
-        double? measureTarget,
-        String? measureUnit,
-        XpSphere? xpSphere,
-      }) {
-    return GoalModel(
-      id: g.id,
-      uid: g.uid,
-      title: title ?? g.title,
-      category: category ?? g.category,
-      emoji: emoji ?? g.emoji,
-      colorValue: colorValue ?? g.colorValue,
-      note: note ?? g.note,
-      deadline: deadline ?? g.deadline,
-      steps: steps ?? g.steps,
-      xpSphere: xpSphere ?? g.xpSphere,
-      xpReward: xpReward ?? g.xpReward,
-      customReward: customReward ?? g.customReward,
-      measureTarget: measureTarget ?? g.measureTarget,
-      measureUnit: measureUnit ?? g.measureUnit,
-      archived: archived ?? g.archived,
-      manuallyComplete: manuallyComplete ?? g.manuallyComplete,
-      createdAt: g.createdAt,
-    );
-  }
+  // Just delegate to the model's own copyWith — keeps checkIns/measureCurrent intact
+  GoalModel _copyGoal(GoalModel g, {List<GoalStepModel>? steps, bool? manuallyComplete}) =>
+      g.copyWith(steps: steps, manuallyComplete: manuallyComplete);
+
 
   List<GoalModel> _active(List<GoalModel> goals) =>
       _filter(goals.where((g) => !g.archived && !_goalIsComplete(g)).toList());
@@ -777,7 +744,8 @@ class _GoalCardState extends State<_GoalCard> {
 
                     const SizedBox(height: 14),
 
-                    Row(children: [
+                    // Only show progress bar when there is something to track
+                    if (hasSteps || hasMeasure) Row(children: [
                       Expanded(
                         child: TweenAnimationBuilder<double>(
                           tween: Tween(begin: 0.0, end: prog),
@@ -1351,8 +1319,12 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
         ? double.tryParse(_measureTargetCtrl.text.trim())
         : null;
 
+    final e = widget.existing;
+
+    // When editing, preserve check-in history and measurable progress
+    // so that editing a goal never wipes runtime data
     return GoalModel(
-      id: widget.existing?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
+      id: e?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
       uid: widget.uid,
       title: _titleCtrl.text.trim(),
       category: _category?.trim() ?? '',
@@ -1370,9 +1342,12 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
       measureUnit: _useMeasure && _measureUnitCtrl.text.trim().isNotEmpty
           ? _measureUnitCtrl.text.trim()
           : null,
-      archived: widget.existing?.archived ?? false,
-      manuallyComplete: widget.existing?.manuallyComplete ?? false,
-      createdAt: widget.existing?.createdAt ?? DateTime.now(),
+      archived: e?.archived ?? false,
+      manuallyComplete: e?.manuallyComplete ?? false,
+      createdAt: e?.createdAt ?? DateTime.now(),
+      // ↓ Always carry over runtime data that the editor doesn't touch
+      checkIns: e?.checkIns ?? const [],
+      measureCurrent: e?.measureCurrent ?? 0,
     );
   }
 
@@ -1668,7 +1643,7 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
                         Expanded(child: TextField(controller: _stepCtrl,
                           style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AColors.textPrimary),
                           onSubmitted: (_) => _addStep(),
-                          decoration: InputDecoration(hintText: 'Add a step...',
+                          decoration: InputDecoration(hintText: 'Add a milestone...',
                             hintStyle: TextStyle(color: AColors.textMuted.withValues(alpha: 0.5)),
                             filled: true, fillColor: AColors.bg,
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
