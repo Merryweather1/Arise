@@ -17,18 +17,24 @@ enum DisplayMode { cards, calendar }
 // ─── PERSISTENT SETTINGS NOTIFIERS ────────────────────────────────────────
 class _SortModeNotifier extends Notifier<SortMode> {
   static const _key = 'tasks_sort_mode';
+
   @override
   SortMode build() {
     _load();
     return SortMode.date;
   }
+
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
     final v = prefs.getString(_key);
     if (v != null) {
-      state = SortMode.values.firstWhere((e) => e.name == v, orElse: () => SortMode.date);
+      state = SortMode.values.firstWhere(
+            (e) => e.name == v,
+        orElse: () => SortMode.date,
+      );
     }
   }
+
   void set(SortMode mode) async {
     state = mode;
     final prefs = await SharedPreferences.getInstance();
@@ -38,18 +44,24 @@ class _SortModeNotifier extends Notifier<SortMode> {
 
 class _DisplayModeNotifier extends Notifier<DisplayMode> {
   static const _key = 'tasks_display_mode';
+
   @override
   DisplayMode build() {
     _load();
     return DisplayMode.cards;
   }
+
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
     final v = prefs.getString(_key);
     if (v != null) {
-      state = DisplayMode.values.firstWhere((e) => e.name == v, orElse: () => DisplayMode.cards);
+      state = DisplayMode.values.firstWhere(
+            (e) => e.name == v,
+        orElse: () => DisplayMode.cards,
+      );
     }
   }
+
   void set(DisplayMode mode) async {
     state = mode;
     final prefs = await SharedPreferences.getInstance();
@@ -59,20 +71,24 @@ class _DisplayModeNotifier extends Notifier<DisplayMode> {
 
 class _HideCompletedNotifier extends Notifier<bool> {
   static const _key = 'tasks_hide_completed';
+
   @override
   bool build() {
     _load();
     return false;
   }
+
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
     state = prefs.getBool(_key) ?? false;
   }
+
   void toggle() async {
     state = !state;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_key, state);
   }
+
   void set(bool value) async {
     state = value;
     final prefs = await SharedPreferences.getInstance();
@@ -80,9 +96,16 @@ class _HideCompletedNotifier extends Notifier<bool> {
   }
 }
 
-final tasksSortModeProvider = NotifierProvider<_SortModeNotifier, SortMode>(_SortModeNotifier.new);
-final tasksDisplayModeProvider = NotifierProvider<_DisplayModeNotifier, DisplayMode>(_DisplayModeNotifier.new);
-final tasksHideCompletedProvider = NotifierProvider<_HideCompletedNotifier, bool>(_HideCompletedNotifier.new);
+final tasksSortModeProvider =
+NotifierProvider<_SortModeNotifier, SortMode>(_SortModeNotifier.new);
+final tasksDisplayModeProvider =
+NotifierProvider<_DisplayModeNotifier, DisplayMode>(
+  _DisplayModeNotifier.new,
+);
+final tasksHideCompletedProvider =
+NotifierProvider<_HideCompletedNotifier, bool>(
+  _HideCompletedNotifier.new,
+);
 
 // ─── SCREEN ───────────────────────────────────────────────────────────────
 class TasksScreen extends ConsumerStatefulWidget {
@@ -100,13 +123,15 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
     final hideCompleted = ref.watch(tasksHideCompletedProvider);
     final sortMode = ref.watch(tasksSortModeProvider);
 
-    final list = src.where((t) {
+    final list =
+    src.where((t) {
       final category = t.category.trim();
 
       if (hideCompleted && t.done) return false;
-      // Special filter for pending tasks
       if (_filterCategory == '⏳ Pending') return t.pending && !t.done;
-      if (_filterCategory != 'All' && category != _filterCategory) return false;
+      if (_filterCategory != 'All' && category != _filterCategory) {
+        return false;
+      }
 
       return true;
     }).toList();
@@ -148,7 +173,11 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
     HapticFeedback.mediumImpact();
     _playTick();
     if (!mounted) return;
-    AToast.show(context, 'Task completed!', icon: Icons.check_circle_rounded);
+    AToast.show(
+      context,
+      'Task completed!',
+      icon: Icons.check_circle_rounded,
+    );
   }
 
   Future<void> _undo(TaskModel t) async {
@@ -161,7 +190,12 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
     HapticFeedback.heavyImpact();
 
     if (!mounted) return;
-    AToast.show(context, 'Task deleted', icon: Icons.delete_rounded, iconColor: AColors.error);
+    AToast.show(
+      context,
+      'Task deleted',
+      icon: Icons.delete_rounded,
+      iconColor: AColors.error,
+    );
   }
 
   void _playTick() {
@@ -181,7 +215,8 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => _TaskEditorSheet(
+      builder:
+          (_) => _TaskEditorSheet(
         existing: existing,
         categories: ref.read(allCategoriesProvider),
         uid: uid,
@@ -197,7 +232,11 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
     } else {
       await ref.read(taskActionsProvider.notifier).create(result);
       if (!mounted) return;
-      AToast.show(context, 'Task created', icon: Icons.add_task_rounded);
+      AToast.show(
+        context,
+        'Task created',
+        icon: Icons.add_task_rounded,
+      );
     }
   }
 
@@ -214,7 +253,8 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
 
     showDialog(
       context: context,
-      builder: (dCtx) => AlertDialog(
+      builder:
+          (dCtx) => AlertDialog(
         backgroundColor: AColors.bgElevated,
         shape: const RoundedRectangleBorder(borderRadius: ARadius.xl),
         title: const Text('New Category', style: AText.titleMedium),
@@ -222,7 +262,9 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
           controller: ctrl,
           autofocus: true,
           style: AText.bodyLarge,
-          decoration: const InputDecoration(hintText: 'Category name'),
+          decoration: const InputDecoration(
+            hintText: 'Category name',
+          ),
         ),
         actions: [
           TextButton(
@@ -237,7 +279,9 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
               final text = ctrl.text.trim();
               if (text.isNotEmpty) {
                 try {
-                  await ref.read(userActionsProvider.notifier).addCustomCategory(text);
+                  await ref
+                      .read(userActionsProvider.notifier)
+                      .addCustomCategory(text);
                 } catch (e) {
                   debugPrint('Error saving category: $e');
                 }
@@ -258,7 +302,8 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (_) => Container(
+      builder:
+          (_) => Container(
         decoration: const BoxDecoration(
           color: AColors.bgElevated,
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
@@ -288,38 +333,60 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
             const SizedBox(height: 20),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.edit_rounded, color: AColors.primary),
-              title: const Text('Edit task', style: AText.bodyLarge),
+              leading: const Icon(
+                Icons.edit_rounded,
+                color: AColors.primary,
+              ),
+              title: const Text(
+                'Edit task',
+                style: AText.bodyLarge,
+              ),
               onTap: () {
                 Navigator.pop(context);
                 _openTask(existing: task);
               },
             ),
-            // Quick pending toggle
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: Icon(
-                task.pending ? Icons.check_circle_outline_rounded : Icons.hourglass_empty_rounded,
-                color: task.pending ? AColors.primary : AColors.warning,
+                task.pending
+                    ? Icons.check_circle_outline_rounded
+                    : Icons.hourglass_empty_rounded,
+                color:
+                task.pending
+                    ? AColors.primary
+                    : AColors.warning,
               ),
               title: Text(
-                task.pending ? 'Unmark Pending' : 'Mark as Pending',
+                task.pending
+                    ? 'Unmark Pending'
+                    : 'Mark as Pending',
                 style: AText.bodyLarge,
               ),
               subtitle: Text(
-                task.pending ? 'Task is no longer blocked' : 'Task is blocked or waiting',
+                task.pending
+                    ? 'Task is no longer blocked'
+                    : 'Task is blocked or waiting',
                 style: AText.bodySmall,
               ),
               onTap: () async {
                 Navigator.pop(context);
-                final updated = task.copyWith(pending: !task.pending);
+                final updated = task.copyWith(
+                  pending: !task.pending,
+                );
                 await ref.read(taskActionsProvider.notifier).save(updated);
               },
             ),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.delete_rounded, color: AColors.error),
-              title: const Text('Delete task', style: AText.bodyLarge),
+              leading: const Icon(
+                Icons.delete_rounded,
+                color: AColors.error,
+              ),
+              title: const Text(
+                'Delete task',
+                style: AText.bodyLarge,
+              ),
               onTap: () async {
                 Navigator.pop(context);
                 await _delete(task);
@@ -358,7 +425,10 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
                       ],
                     ),
                   ),
-                  _IconBtn(icon: Icons.tune_rounded, onTap: _showSettings),
+                  _IconBtn(
+                    icon: Icons.tune_rounded,
+                    onTap: _showSettings,
+                  ),
                 ],
               ),
             ),
@@ -378,7 +448,10 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
                   _CategoryChip(
                     label: '⏳ Pending',
                     selected: _filterCategory == '⏳ Pending',
-                    onTap: () => setState(() => _filterCategory = '⏳ Pending'),
+                    onTap:
+                        () => setState(
+                          () => _filterCategory = '⏳ Pending',
+                    ),
                   ),
                   ...categories.map(
                         (c) => _CategoryChip(
@@ -399,7 +472,8 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
 
             const SizedBox(height: 16),
 
-            if (ref.watch(tasksDisplayModeProvider) == DisplayMode.calendar) ...[
+            if (ref.watch(tasksDisplayModeProvider) ==
+                DisplayMode.calendar) ...[
               _CalendarStrip(
                 selected: _calendarDate,
                 onSelect: (d) => setState(() => _calendarDate = d),
@@ -409,10 +483,14 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
 
             Expanded(
               child: tasksAsync.when(
-                loading: () => const Center(
-                  child: CircularProgressIndicator(color: AColors.primary),
+                loading:
+                    () => const Center(
+                  child: CircularProgressIndicator(
+                    color: AColors.primary,
+                  ),
                 ),
-                error: (error, _) => Center(
+                error:
+                    (error, _) => Center(
                   child: Padding(
                     padding: const EdgeInsets.all(24),
                     child: Text(
@@ -423,7 +501,8 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
                   ),
                 ),
                 data: (_) {
-                  return ref.watch(tasksDisplayModeProvider) == DisplayMode.cards
+                  return ref.watch(tasksDisplayModeProvider) ==
+                      DisplayMode.cards
                       ? _TaskList(
                     tasks: _cardsFiltered,
                     onComplete: _complete,
@@ -475,9 +554,10 @@ class _CalendarStripState extends State<_CalendarStrip> {
 
   final List<DateTime> _dates = List.generate(
     60,
-        (i) => DateTime.now()
-        .subtract(const Duration(days: 7))
-        .add(Duration(days: i)),
+        (i) =>
+        DateTime.now()
+            .subtract(const Duration(days: 7))
+            .add(Duration(days: i)),
   );
 
   @override
@@ -518,14 +598,20 @@ class _CalendarStripState extends State<_CalendarStrip> {
               margin: const EdgeInsets.only(right: 8),
               decoration: BoxDecoration(
                 gradient: isSelected ? AColors.gradientPrimary : null,
-                color: isSelected
+                color:
+                isSelected
                     ? null
-                    : (isToday ? AColors.primaryGlow : AColors.bgCard),
+                    : (isToday
+                    ? AColors.primaryGlow
+                    : AColors.bgCard),
                 borderRadius: ARadius.lg,
                 border: Border.all(
-                  color: isSelected
+                  color:
+                  isSelected
                       ? Colors.transparent
-                      : (isToday ? AColors.primary : AColors.border),
+                      : (isToday
+                      ? AColors.primary
+                      : AColors.border),
                   width: isToday && !isSelected ? 1.5 : 1,
                 ),
               ),
@@ -537,7 +623,8 @@ class _CalendarStripState extends State<_CalendarStrip> {
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
-                      color: isSelected
+                      color:
+                      isSelected
                           ? Colors.white70
                           : AColors.textMuted,
                     ),
@@ -548,9 +635,12 @@ class _CalendarStripState extends State<_CalendarStrip> {
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w800,
-                      color: isSelected
+                      color:
+                      isSelected
                           ? Colors.white
-                          : (isToday ? AColors.primary : AColors.textPrimary),
+                          : (isToday
+                          ? AColors.primary
+                          : AColors.textPrimary),
                     ),
                   ),
                 ],
@@ -587,26 +677,30 @@ class _TaskList extends StatefulWidget {
 
 class _TaskListState extends State<_TaskList> {
   late List<TaskModel> _visible;
-  bool _hasAnimated = false;
 
-  /// Optimistic overrides: taskId → done value shown immediately on swipe.
-  /// Cleared when Firestore streams back and replaces the list.
+  /// taskId -> locally rendered done state
   final Map<String, bool> _localDone = {};
 
   @override
   void initState() {
     super.initState();
     _visible = List<TaskModel>.from(widget.tasks);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) setState(() => _hasAnimated = true);
-    });
   }
 
   @override
   void didUpdateWidget(covariant _TaskList oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Firestore has returned updated data — clear overrides and adopt new list
-    _localDone.clear();
+
+    final incomingDoneById = <String, bool>{
+      for (final task in widget.tasks) task.id: task.done,
+    };
+
+    _localDone.removeWhere((id, localDoneValue) {
+      final incomingValue = incomingDoneById[id];
+      if (incomingValue == null) return true;
+      return incomingValue == localDoneValue;
+    });
+
     _visible = List<TaskModel>.from(widget.tasks);
   }
 
@@ -617,14 +711,15 @@ class _TaskListState extends State<_TaskList> {
     });
   }
 
-  /// Instantly flips done state in the UI, then calls Firestore.
   Future<void> _toggleDoneInstant(TaskModel task) async {
-    // Read the current effective done value (local override takes priority)
-    final currentDone = _localDone.containsKey(task.id)
+    final currentDone =
+    _localDone.containsKey(task.id)
         ? _localDone[task.id]!
         : task.done;
     final newDone = !currentDone;
+
     setState(() => _localDone[task.id] = newDone);
+
     if (newDone) {
       await widget.onComplete(task);
     } else {
@@ -639,7 +734,11 @@ class _TaskListState extends State<_TaskList> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.check_circle_outline_rounded, size: 52, color: AColors.primary),
+            Icon(
+              Icons.check_circle_outline_rounded,
+              size: 52,
+              color: AColors.primary,
+            ),
             SizedBox(height: 16),
             Text('All clear!', style: AText.titleMedium),
             SizedBox(height: 6),
@@ -649,69 +748,69 @@ class _TaskListState extends State<_TaskList> {
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      physics: const BouncingScrollPhysics(),
-      itemCount: _visible.length + 1,
-      itemBuilder: (_, i) {
-        if (i == _visible.length) {
-          return const SizedBox(height: 120);
-        }
-        final task = _visible[i];
-        // Apply optimistic override if we have one
-        final optimisticDone = _localDone.containsKey(task.id)
+    final bottomPadding =
+        MediaQuery.viewPaddingOf(context).bottom +
+            kBottomNavigationBarHeight +
+            56 +
+            kFloatingActionButtonMargin +
+            20;
+
+    return ListView(
+      padding: EdgeInsets.fromLTRB(20, 0, 20, bottomPadding),
+      physics: const BouncingScrollPhysics(
+        parent: AlwaysScrollableScrollPhysics(),
+      ),
+      children:
+      _visible.asMap().entries.map((entry) {
+        final task = entry.value;
+        final optimisticDone =
+        _localDone.containsKey(task.id)
             ? _localDone[task.id]!
             : task.done;
+
         return Padding(
           padding: const EdgeInsets.only(bottom: 10),
-          child: _AnimatedEntrance(
-            delay: i * 50, // Staggered delay based on index
-            play: _hasAnimated,
-            child: _SwipeableTaskTile(
-              // Include done state in key so that after a dismiss+re-insert the
-              // toggled card gets a brand-new Slidable (avoiding the
-              // "dismissed widget still in tree" error from flutter_slidable).
-              key: ValueKey('${task.id}_$optimisticDone'),
-              task: task,
-              optimisticDone: optimisticDone,
-              // Right swipe full-dismiss: must remove from tree (Slidable contract),
-              // but immediately re-insert a toggled copy so there's no visual gap.
-              onDismissComplete: () async {
-                final idx = _visible.indexWhere((t) => t.id == task.id);
-                final currentDone = _localDone.containsKey(task.id)
-                    ? _localDone[task.id]!
-                    : task.done;
-                final newDone = !currentDone;
-                final toggled = task.copyWith(done: newDone);
-                setState(() {
-                  _localDone[task.id] = newDone;
-                  _visible.removeWhere((t) => t.id == task.id);
-                  // Re-insert at same position so card reappears instantly
-                  _visible.insert(idx.clamp(0, _visible.length), toggled);
-                });
-                if (newDone) {
-                  await widget.onComplete(task);
-                } else {
-                  await widget.onUndo(task);
-                }
-              },
-              // Left swipe: always delete (remove immediately)
-              onDismissDelete: () async {
-                _removeLocalById(task.id);
-                await widget.onDelete(task);
-              },
-              onCompleteTap: () => _toggleDoneInstant(task),
-              onUndoTap: () => _toggleDoneInstant(task),
-              onDeleteTap: () async {
-                _removeLocalById(task.id);
-                await widget.onDelete(task);
-              },
-              onTap: () => widget.onTap(task),
-              onLongPress: () => widget.onLongPress(task),
-            ),
+          child: _SwipeableTaskTile(
+            key: ValueKey('${task.id}_$optimisticDone'),
+            task: task,
+            optimisticDone: optimisticDone,
+            onDismissComplete: () async {
+              final idx = _visible.indexWhere((t) => t.id == task.id);
+              final currentDone =
+              _localDone.containsKey(task.id)
+                  ? _localDone[task.id]!
+                  : task.done;
+              final newDone = !currentDone;
+              final toggled = task.copyWith(done: newDone);
+
+              setState(() {
+                _localDone[task.id] = newDone;
+                _visible.removeWhere((t) => t.id == task.id);
+                final insertIndex = idx.clamp(0, _visible.length);
+                _visible.insert(insertIndex, toggled);
+              });
+
+              if (newDone) {
+                await widget.onComplete(task);
+              } else {
+                await widget.onUndo(task);
+              }
+            },
+            onDismissDelete: () async {
+              _removeLocalById(task.id);
+              await widget.onDelete(task);
+            },
+            onCompleteTap: () => _toggleDoneInstant(task),
+            onUndoTap: () => _toggleDoneInstant(task),
+            onDeleteTap: () async {
+              _removeLocalById(task.id);
+              await widget.onDelete(task);
+            },
+            onTap: () => widget.onTap(task),
+            onLongPress: () => widget.onLongPress(task),
           ),
         );
-      },
+      }).toList(),
     );
   }
 }
@@ -719,8 +818,6 @@ class _TaskListState extends State<_TaskList> {
 // ─── SWIPEABLE TASK TILE ─────────────────────────────────────────────────
 class _SwipeableTaskTile extends StatefulWidget {
   final TaskModel task;
-
-  /// Optimistic done override — the value to render right now, regardless of task.done
   final bool optimisticDone;
 
   final Future<void> Function() onDismissComplete;
@@ -761,21 +858,24 @@ class _SwipeableTaskTileState extends State<_SwipeableTaskTile>
     super.initState();
     _strikeCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 600), // Slower, smoother sweep
+      duration: const Duration(milliseconds: 600),
     );
     _strikeAnim = CurvedAnimation(
       parent: _strikeCtrl,
-      curve: Curves.easeOutQuart, // More dramatic ease out
+      curve: Curves.easeOutQuart,
     );
-    if (widget.task.done) _strikeCtrl.value = 1.0;
+    if (widget.optimisticDone) _strikeCtrl.value = 1.0;
   }
 
   @override
   void didUpdateWidget(covariant _SwipeableTaskTile oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Drive the strike animation from optimisticDone so it reacts immediately
-    if (widget.optimisticDone && !oldWidget.optimisticDone) _strikeCtrl.forward();
-    if (!widget.optimisticDone && oldWidget.optimisticDone) _strikeCtrl.reverse();
+    if (widget.optimisticDone && !oldWidget.optimisticDone) {
+      _strikeCtrl.forward();
+    }
+    if (!widget.optimisticDone && oldWidget.optimisticDone) {
+      _strikeCtrl.reverse();
+    }
   }
 
   @override
@@ -795,13 +895,13 @@ class _SwipeableTaskTileState extends State<_SwipeableTaskTile>
   @override
   Widget build(BuildContext context) {
     final task = widget.task;
-    final isDone = widget.optimisticDone; // use optimistic value throughout
+    final isDone = widget.optimisticDone;
     final hasSubs = task.subtasks.isNotEmpty;
     final subDone = task.subtasks.where((s) => s.done).length;
     final subProgress = hasSubs ? subDone / task.subtasks.length : 0.0;
 
     return Slidable(
-      key: ValueKey(task.id),
+      key: ValueKey('${task.id}_$isDone'),
       closeOnScroll: true,
       startActionPane: ActionPane(
         motion: const BehindMotion(),
@@ -809,7 +909,7 @@ class _SwipeableTaskTileState extends State<_SwipeableTaskTile>
         dragDismissible: true,
         dismissible: DismissiblePane(
           closeOnCancel: true,
-          dismissThreshold: 0.20, // smoother, shorter swipe
+          dismissThreshold: 0.20,
           onDismissed: () async {
             await widget.onDismissComplete();
           },
@@ -829,7 +929,9 @@ class _SwipeableTaskTileState extends State<_SwipeableTaskTile>
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  isDone ? Icons.refresh_rounded : Icons.check_rounded,
+                  isDone
+                      ? Icons.refresh_rounded
+                      : Icons.check_rounded,
                   color: Colors.white,
                   size: 26,
                 ),
@@ -853,7 +955,7 @@ class _SwipeableTaskTileState extends State<_SwipeableTaskTile>
         dragDismissible: true,
         dismissible: DismissiblePane(
           closeOnCancel: true,
-          dismissThreshold: 0.20, // smoother, shorter swipe
+          dismissThreshold: 0.20,
           onDismissed: () async {
             await widget.onDismissDelete();
           },
@@ -866,7 +968,11 @@ class _SwipeableTaskTileState extends State<_SwipeableTaskTile>
             child: const Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.delete_rounded, color: Colors.white, size: 26),
+                Icon(
+                  Icons.delete_rounded,
+                  color: Colors.white,
+                  size: 26,
+                ),
                 SizedBox(height: 4),
                 Text(
                   'Delete',
@@ -891,7 +997,8 @@ class _SwipeableTaskTileState extends State<_SwipeableTaskTile>
             color: isDone ? AColors.bgElevated : AColors.bgCard,
             borderRadius: ARadius.lg,
             border: Border.all(
-              color: task.pending
+              color:
+              task.pending
                   ? AColors.warning.withValues(alpha: 0.5)
                   : (isDone
                   ? AColors.border.withValues(alpha: 0.5)
@@ -912,7 +1019,8 @@ class _SwipeableTaskTileState extends State<_SwipeableTaskTile>
                       width: 3,
                       height: hasSubs ? 58 : 40,
                       decoration: BoxDecoration(
-                        color: isDone
+                        color:
+                        isDone
                             ? AColors.textMuted.withValues(alpha: 0.3)
                             : (task.pending
                             ? AColors.warning
@@ -923,7 +1031,8 @@ class _SwipeableTaskTileState extends State<_SwipeableTaskTile>
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment:
+                        CrossAxisAlignment.start,
                         children: [
                           if (task.pending)
                             Container(
@@ -933,7 +1042,9 @@ class _SwipeableTaskTileState extends State<_SwipeableTaskTile>
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: AColors.warning.withValues(alpha: 0.15),
+                                color: AColors.warning.withValues(
+                                  alpha: 0.15,
+                                ),
                                 borderRadius: ARadius.full,
                               ),
                               child: const Text(
@@ -947,13 +1058,15 @@ class _SwipeableTaskTileState extends State<_SwipeableTaskTile>
                             ),
                           AnimatedBuilder(
                             animation: _strikeAnim,
-                            builder: (_, __) => Stack(
+                            builder:
+                                (_, __) => Stack(
                               clipBehavior: Clip.none,
                               children: [
                                 Text(
                                   task.title,
                                   style: AText.bodyLarge.copyWith(
-                                    color: isDone
+                                    color:
+                                    isDone
                                         ? AColors.textMuted
                                         : AColors.textPrimary,
                                   ),
@@ -962,17 +1075,21 @@ class _SwipeableTaskTileState extends State<_SwipeableTaskTile>
                                   Positioned(
                                     left: 0,
                                     right: 0,
-                                    top: 13, // Slightly lower, like an underline edit
+                                    top: 13,
                                     child: FractionallySizedBox(
                                       widthFactor: _strikeAnim.value,
-                                      alignment: Alignment.centerLeft,
+                                      alignment:
+                                      Alignment.centerLeft,
                                       child: Container(
-                                        height: 2.5, // Thicker neon sweep
+                                        height: 2.5,
                                         decoration: BoxDecoration(
                                           color: AColors.primary,
                                           boxShadow: [
                                             BoxShadow(
-                                              color: AColors.primary.withValues(alpha: 0.8),
+                                              color: AColors.primary
+                                                  .withValues(
+                                                alpha: 0.8,
+                                              ),
                                               blurRadius: 6,
                                               spreadRadius: 1,
                                             ),
@@ -1000,16 +1117,21 @@ class _SwipeableTaskTileState extends State<_SwipeableTaskTile>
                               ),
                               if (task.dueDate != null)
                                 _MiniTag(
-                                  label:
-                                  DateFormat('MMM d').format(task.dueDate!),
+                                  label: DateFormat(
+                                    'MMM d',
+                                  ).format(task.dueDate!),
                                   color: AColors.textMuted,
-                                  icon: Icons.calendar_today_rounded,
+                                  icon:
+                                  Icons.calendar_today_rounded,
                                 ),
                               if (task.reminderTime != null)
                                 _MiniTag(
-                                  label: task.reminderTime!.format(context),
+                                  label: task.reminderTime!.format(
+                                    context,
+                                  ),
                                   color: AColors.info,
-                                  icon: Icons.notifications_rounded,
+                                  icon:
+                                  Icons.notifications_rounded,
                                 ),
                               if (task.note != null &&
                                   task.note!.trim().isNotEmpty)
@@ -1028,17 +1150,26 @@ class _SwipeableTaskTileState extends State<_SwipeableTaskTile>
                                   child: ClipRRect(
                                     borderRadius: ARadius.full,
                                     child: TweenAnimationBuilder<double>(
-                                      tween: Tween(begin: 0, end: subProgress),
-                                      duration:
-                                      const Duration(milliseconds: 500),
+                                      tween: Tween(
+                                        begin: 0,
+                                        end: subProgress,
+                                      ),
+                                      duration: const Duration(
+                                        milliseconds: 500,
+                                      ),
                                       curve: Curves.easeOutCubic,
-                                      builder: (_, val, __) =>
+                                      builder:
+                                          (_, val, __) =>
                                           LinearProgressIndicator(
                                             value: val,
-                                            backgroundColor: AColors.border,
-                                            valueColor: AlwaysStoppedAnimation(
-                                              subProgress == 1.0
-                                                  ? AColors.primary
+                                            backgroundColor:
+                                            AColors.border,
+                                            valueColor:
+                                            AlwaysStoppedAnimation(
+                                              subProgress ==
+                                                  1.0
+                                                  ? AColors
+                                                  .primary
                                                   : _priorityColor,
                                             ),
                                             minHeight: 4,
@@ -1081,7 +1212,7 @@ class _SwipeableTaskTileState extends State<_SwipeableTaskTile>
                       ),
                     GestureDetector(
                       onTap: () async {
-                        task.done
+                        isDone
                             ? await widget.onUndoTap()
                             : await widget.onCompleteTap();
                       },
@@ -1091,18 +1222,21 @@ class _SwipeableTaskTileState extends State<_SwipeableTaskTile>
                         width: 26,
                         height: 26,
                         decoration: BoxDecoration(
-                          color: task.done
+                          color:
+                          isDone
                               ? AColors.primary
                               : Colors.transparent,
                           borderRadius: ARadius.sm,
                           border: Border.all(
-                            color: task.done
+                            color:
+                            isDone
                                 ? AColors.primary
                                 : AColors.border,
                             width: 1.5,
                           ),
                         ),
-                        child: task.done
+                        child:
+                        isDone
                             ? const Icon(
                           Icons.check_rounded,
                           color: Colors.white,
@@ -1117,10 +1251,14 @@ class _SwipeableTaskTileState extends State<_SwipeableTaskTile>
               AnimatedSize(
                 duration: const Duration(milliseconds: 280),
                 curve: Curves.easeOutCubic,
-                child: _expanded && hasSubs
+                child:
+                _expanded && hasSubs
                     ? Column(
                   children: [
-                    const Divider(height: 1, color: AColors.border),
+                    const Divider(
+                      height: 1,
+                      color: AColors.border,
+                    ),
                     ...task.subtasks.map(
                           (s) => _SubtaskRow(
                         subtask: s,
@@ -1166,14 +1304,21 @@ class _SubtaskRow extends StatelessWidget {
               width: 20,
               height: 20,
               decoration: BoxDecoration(
-                color: subtask.done ? AColors.primary : Colors.transparent,
+                color:
+                subtask.done
+                    ? AColors.primary
+                    : Colors.transparent,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: subtask.done ? AColors.primary : AColors.border,
+                  color:
+                  subtask.done
+                      ? AColors.primary
+                      : AColors.border,
                   width: 1.5,
                 ),
               ),
-              child: subtask.done
+              child:
+              subtask.done
                   ? const Icon(
                 Icons.check_rounded,
                 color: Colors.white,
@@ -1186,7 +1331,8 @@ class _SubtaskRow extends StatelessWidget {
               child: Text(
                 subtask.title,
                 style: AText.bodyMedium.copyWith(
-                  color: subtask.done
+                  color:
+                  subtask.done
                       ? AColors.textMuted
                       : AColors.textSecondary,
                 ),
@@ -1208,6 +1354,7 @@ class _SettingsSheet extends ConsumerWidget {
     final sortMode = ref.watch(tasksSortModeProvider);
     final displayMode = ref.watch(tasksDisplayModeProvider);
     final hideCompleted = ref.watch(tasksHideCompletedProvider);
+
     return Container(
       decoration: const BoxDecoration(
         color: AColors.bgElevated,
@@ -1240,7 +1387,9 @@ class _SettingsSheet extends ConsumerWidget {
                 label: '⏰  Date',
                 selected: sortMode == SortMode.date,
                 onTap: () {
-                  ref.read(tasksSortModeProvider.notifier).set(SortMode.date);
+                  ref
+                      .read(tasksSortModeProvider.notifier)
+                      .set(SortMode.date);
                   Navigator.pop(context);
                 },
               ),
@@ -1249,7 +1398,9 @@ class _SettingsSheet extends ConsumerWidget {
                 label: 'Priority',
                 selected: sortMode == SortMode.priority,
                 onTap: () {
-                  ref.read(tasksSortModeProvider.notifier).set(SortMode.priority);
+                  ref
+                      .read(tasksSortModeProvider.notifier)
+                      .set(SortMode.priority);
                   Navigator.pop(context);
                 },
               ),
@@ -1265,7 +1416,9 @@ class _SettingsSheet extends ConsumerWidget {
                 label: 'Cards',
                 selected: displayMode == DisplayMode.cards,
                 onTap: () {
-                  ref.read(tasksDisplayModeProvider.notifier).set(DisplayMode.cards);
+                  ref
+                      .read(tasksDisplayModeProvider.notifier)
+                      .set(DisplayMode.cards);
                   Navigator.pop(context);
                 },
               ),
@@ -1274,7 +1427,9 @@ class _SettingsSheet extends ConsumerWidget {
                 label: 'Calendar',
                 selected: displayMode == DisplayMode.calendar,
                 onTap: () {
-                  ref.read(tasksDisplayModeProvider.notifier).set(DisplayMode.calendar);
+                  ref
+                      .read(tasksDisplayModeProvider.notifier)
+                      .set(DisplayMode.calendar);
                   Navigator.pop(context);
                 },
               ),
@@ -1291,10 +1446,17 @@ class _SettingsSheet extends ConsumerWidget {
               children: [
                 const Expanded(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment:
+                    CrossAxisAlignment.start,
                     children: [
-                      Text('Hide completed tasks', style: AText.bodyLarge),
-                      Text('Only show active tasks', style: AText.bodySmall),
+                      Text(
+                        'Hide completed tasks',
+                        style: AText.bodyLarge,
+                      ),
+                      Text(
+                        'Only show active tasks',
+                        style: AText.bodySmall,
+                      ),
                     ],
                   ),
                 ),
@@ -1304,10 +1466,14 @@ class _SettingsSheet extends ConsumerWidget {
                   width: 50,
                   height: 28,
                   decoration: BoxDecoration(
-                    color: hideCompleted ? AColors.primary : AColors.bgCard,
+                    color:
+                    hideCompleted
+                        ? AColors.primary
+                        : AColors.bgCard,
                     borderRadius: ARadius.full,
                     border: Border.all(
-                      color: hideCompleted
+                      color:
+                      hideCompleted
                           ? AColors.primary
                           : AColors.border,
                     ),
@@ -1315,7 +1481,8 @@ class _SettingsSheet extends ConsumerWidget {
                   child: AnimatedAlign(
                     duration: const Duration(milliseconds: 200),
                     curve: Curves.easeOutCubic,
-                    alignment: hideCompleted
+                    alignment:
+                    hideCompleted
                         ? Alignment.centerRight
                         : Alignment.centerLeft,
                     child: Container(
@@ -1358,7 +1525,10 @@ class _SettingChip extends StatelessWidget {
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 18,
+          vertical: 12,
+        ),
         decoration: BoxDecoration(
           color: selected ? AColors.primaryGlow : AColors.bgCard,
           borderRadius: ARadius.md,
@@ -1372,7 +1542,10 @@ class _SettingChip extends StatelessWidget {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: selected ? AColors.primary : AColors.textMuted,
+            color:
+            selected
+                ? AColors.primary
+                : AColors.textMuted,
           ),
         ),
       ),
@@ -1404,10 +1577,9 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
   late int _priority;
   String? _category;
   late bool _pending;
-  XpSphere? _xpSphereOverride;   // null = auto-route; non-null = user override
+  XpSphere? _xpSphereOverride;
   bool _sphereManuallyOverridden = false;
 
-  // Derived: the sphere currently in effect
   XpSphere get _effectiveSphere =>
       _xpSphereOverride ?? XpSphereExt.sphereForCategory(_category ?? '');
 
@@ -1427,12 +1599,12 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
     _subtaskCtrl = TextEditingController();
 
     _priority = e?.priority ?? 5;
-    _category = (e?.category != null && e!.category.trim().isNotEmpty)
+    _category =
+    (e?.category != null && e!.category.trim().isNotEmpty)
         ? e.category
         : null;
     _pending = e?.pending ?? false;
-    // If editing an existing task, pre-select its sphere only if it differs
-    // from the auto-routed default (i.e. was manually overridden previously)
+
     if (e != null) {
       final autoSphere = XpSphereExt.sphereForCategory(e.category);
       if (e.xpSphere != autoSphere) {
@@ -1440,6 +1612,7 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
         _sphereManuallyOverridden = true;
       }
     }
+
     _dueDate = e?.dueDate ?? DateTime.now();
     _reminderTime = e?.reminderTime;
     _reminderDays = List<int>.from(e?.reminderDays ?? []);
@@ -1464,7 +1637,8 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
       initialDate: _dueDate ?? DateTime.now(),
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 730)),
-      builder: (ctx, child) => Theme(
+      builder:
+          (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
           colorScheme: const ColorScheme.dark(
             primary: AColors.primary,
@@ -1485,7 +1659,8 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
     final p = await showTimePicker(
       context: context,
       initialTime: _reminderTime ?? TimeOfDay.now(),
-      builder: (ctx, child) => Theme(
+      builder:
+          (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
           colorScheme: const ColorScheme.dark(
             primary: AColors.primary,
@@ -1547,7 +1722,8 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
       context,
       TaskModel(
         id: widget.existing?.id ?? '',
-        uid: widget.existing?.uid.isNotEmpty == true
+        uid:
+        widget.existing?.uid.isNotEmpty == true
             ? widget.existing!.uid
             : widget.uid,
         title: title,
@@ -1583,251 +1759,820 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
           initialChildSize: 0.88,
           minChildSize: 0.5,
           maxChildSize: 0.95,
-          builder: (_, ctrl) => Column(
+          builder:
+              (_, ctrl) => Column(
             children: [
               const SizedBox(height: 10),
-              Center(child: Container(width: 36, height: 4, decoration: BoxDecoration(color: AColors.border, borderRadius: ARadius.full))),
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AColors.border,
+                    borderRadius: ARadius.full,
+                  ),
+                ),
+              ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-                child: Row(children: [
-                  GestureDetector(onTap: () => Navigator.pop(context), child: const Icon(Icons.close_rounded, color: AColors.textMuted, size: 24)),
-                  const Spacer(),
-                  Text(widget.existing == null ? 'New Task' : 'Edit Task', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AColors.textPrimary, letterSpacing: -0.3)),
-                  const Spacer(),
-                  GestureDetector(
-                    onTap: _save,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 7),
-                      decoration: BoxDecoration(gradient: AColors.gradientPrimary, borderRadius: BorderRadius.circular(20)),
-                      child: const Text('Save', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14)),
+                child: Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: const Icon(
+                        Icons.close_rounded,
+                        color: AColors.textMuted,
+                        size: 24,
+                      ),
                     ),
-                  ),
-                ]),
+                    const Spacer(),
+                    Text(
+                      widget.existing == null
+                          ? 'New Task'
+                          : 'Edit Task',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: AColors.textPrimary,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                    const Spacer(),
+                    GestureDetector(
+                      onTap: _save,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 7,
+                        ),
+                        decoration: BoxDecoration(
+                          gradient: AColors.gradientPrimary,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Text(
+                          'Save',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               Expanded(
                 child: ListView(
                   controller: ctrl,
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
                   children: [
-
-                    // ━━ CARD 1: Title + Note ━━━━━━━━━━━━━━━━━━
-                    _card(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      TextField(
-                        controller: _titleCtrl, autofocus: widget.existing == null,
-                        style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AColors.textPrimary),
-                        maxLines: 2, minLines: 1,
-                        decoration: InputDecoration(
-                          hintText: 'What needs to be done?',
-                          hintStyle: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AColors.textMuted.withValues(alpha: 0.5)),
-                          border: InputBorder.none, enabledBorder: InputBorder.none, focusedBorder: InputBorder.none,
-                          fillColor: Colors.transparent, isDense: true, contentPadding: EdgeInsets.zero,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      const Divider(color: AColors.border, height: 1),
-                      const SizedBox(height: 8),
-                      TextField(
-                        controller: _noteCtrl,
-                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AColors.textSecondary),
-                        maxLines: 3, minLines: 1,
-                        decoration: InputDecoration(
-                          hintText: 'Add a note...',
-                          hintStyle: TextStyle(color: AColors.textMuted.withValues(alpha: 0.4)),
-                          border: InputBorder.none, enabledBorder: InputBorder.none, focusedBorder: InputBorder.none,
-                          fillColor: Colors.transparent, isDense: true, contentPadding: EdgeInsets.zero,
-                        ),
-                      ),
-                    ])),
-
-                    const SizedBox(height: 10),
-
-                    // ━━ CARD 2: Priority ━━━━━━━━━━━━━━━━━━━━━
-                    _card(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Row(children: [
-                        _label('PRIORITY'),
-                        const Spacer(),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(color: _pColor(_priority).withValues(alpha: 0.15), borderRadius: BorderRadius.circular(8)),
-                          child: Text('$_priority / 10', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: _pColor(_priority))),
-                        ),
-                      ]),
-                      SliderTheme(
-                        data: SliderTheme.of(context).copyWith(
-                          activeTrackColor: _pColor(_priority),
-                          thumbColor: _pColor(_priority),
-                          inactiveTrackColor: AColors.border,
-                          overlayColor: _pColor(_priority).withValues(alpha: 0.15),
-                          trackHeight: 4,
-                          thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 9),
-                        ),
-                        child: Slider(value: _priority.toDouble(), min: 1, max: 10, divisions: 9,
-                          onChanged: (v) => setState(() => _priority = v.round())),
-                      ),
-                    ])),
-
-                    const SizedBox(height: 10),
-
-                    // ━━ CARD 3: Category + XP ━━━━━━━━━━━━━━━━
-                    _card(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      _label('CATEGORY'),
-                      const SizedBox(height: 8),
-                      SizedBox(height: 34, child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: widget.categories.length + (_category != null ? 1 : 0),
-                        separatorBuilder: (_, __) => const SizedBox(width: 6),
-                        itemBuilder: (_, i) {
-                          if (_category != null && i == widget.categories.length) {
-                            return GestureDetector(onTap: () => setState(() => _category = null),
-                              child: Container(padding: const EdgeInsets.symmetric(horizontal: 10),
-                                decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), border: Border.all(color: AColors.error.withValues(alpha: 0.3))),
-                                child: const Center(child: Icon(Icons.close_rounded, size: 14, color: AColors.error)),
+                    _card(
+                      child: Column(
+                        crossAxisAlignment:
+                        CrossAxisAlignment.start,
+                        children: [
+                          TextField(
+                            controller: _titleCtrl,
+                            autofocus: widget.existing == null,
+                            style: const TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w600,
+                              color: AColors.textPrimary,
+                            ),
+                            maxLines: 2,
+                            minLines: 1,
+                            decoration: InputDecoration(
+                              hintText: 'What needs to be done?',
+                              hintStyle: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w600,
+                                color: AColors.textMuted.withValues(
+                                  alpha: 0.5,
+                                ),
                               ),
-                            );
-                          }
-                          final c = widget.categories[i]; final sel = _category == c;
-                          return GestureDetector(
-                            onTap: () => setState(() { _category = c; if (!_sphereManuallyOverridden) _xpSphereOverride = null; }),
-                            child: AnimatedContainer(duration: const Duration(milliseconds: 180), padding: const EdgeInsets.symmetric(horizontal: 14),
-                              decoration: BoxDecoration(
-                                color: sel ? AColors.primary.withValues(alpha: 0.12) : Colors.transparent,
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: sel ? AColors.primary : AColors.border.withValues(alpha: 0.4)),
-                              ),
-                              child: Center(child: Text(c, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: sel ? AColors.primary : AColors.textMuted))),
+                              border: InputBorder.none,
+                              enabledBorder: InputBorder.none,
+                              focusedBorder: InputBorder.none,
+                              fillColor: Colors.transparent,
+                              isDense: true,
+                              contentPadding: EdgeInsets.zero,
                             ),
-                          );
-                        },
-                      )),
-                      const SizedBox(height: 14),
-                      Row(children: [_label('XP SPHERE'), const Spacer(),
-                        Text('${XpSphereExt.xpForPriority(_priority)} XP', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AColors.primary.withValues(alpha: 0.7)))]),
-                      const SizedBox(height: 8),
-                      SizedBox(height: 34, child: ListView.separated(
-                        scrollDirection: Axis.horizontal, itemCount: XpSphere.values.length,
-                        separatorBuilder: (_, __) => const SizedBox(width: 6),
-                        itemBuilder: (_, i) {
-                          final s = XpSphere.values[i]; final sel = _effectiveSphere == s;
-                          return GestureDetector(
-                            onTap: () { HapticFeedback.selectionClick(); setState(() { _xpSphereOverride = s; _sphereManuallyOverridden = true; }); },
-                            child: AnimatedContainer(duration: const Duration(milliseconds: 180), padding: const EdgeInsets.symmetric(horizontal: 12),
-                              decoration: BoxDecoration(color: sel ? s.color.withValues(alpha: 0.15) : Colors.transparent,
-                                borderRadius: BorderRadius.circular(10), border: Border.all(color: sel ? s.color : AColors.border.withValues(alpha: 0.4))),
-                              child: Center(child: Row(mainAxisSize: MainAxisSize.min, children: [
-                                Text(s.emoji, style: const TextStyle(fontSize: 14)), const SizedBox(width: 5),
-                                Text(s.label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: sel ? s.color : AColors.textMuted)),
-                              ])),
-                            ),
-                          );
-                        },
-                      )),
-                    ])),
-
-                    const SizedBox(height: 10),
-
-                    // ━━ CARD 4: Schedule ━━━━━━━━━━━━━━━━━━━━━
-                    _card(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      // Due date
-                      GestureDetector(onTap: _pickDate, child: Row(children: [
-                        Icon(Icons.calendar_today_rounded, size: 18, color: _dueDate != null ? AColors.primary : AColors.textMuted),
-                        const SizedBox(width: 8),
-                        Text(_dueDate != null ? DateFormat('EEE, MMM d yyyy').format(_dueDate!) : 'Due date',
-                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: _dueDate != null ? AColors.primary : AColors.textMuted)),
-                        const Spacer(),
-                        if (_dueDate != null) GestureDetector(onTap: () => setState(() => _dueDate = null), child: const Icon(Icons.close_rounded, size: 16, color: AColors.textMuted))
-                        else Icon(Icons.chevron_right_rounded, size: 18, color: AColors.textMuted.withValues(alpha: 0.5)),
-                      ])),
-
-                      const SizedBox(height: 12), const Divider(color: AColors.border, height: 1), const SizedBox(height: 12),
-
-                      // Reminder
-                      GestureDetector(onTap: _pickTime, child: Row(children: [
-                        Icon(Icons.notifications_none_rounded, size: 18, color: _reminderTime != null ? AColors.primary : AColors.textMuted),
-                        const SizedBox(width: 8),
-                        Text(_reminderTime != null ? _reminderTime!.format(context) : 'Reminder',
-                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: _reminderTime != null ? AColors.primary : AColors.textMuted)),
-                        const Spacer(),
-                        if (_reminderTime != null) GestureDetector(
-                          onTap: () => setState(() { _reminderTime = null; _reminderDays = []; }),
-                          child: const Icon(Icons.close_rounded, size: 16, color: AColors.textMuted))
-                        else Icon(Icons.chevron_right_rounded, size: 18, color: AColors.textMuted.withValues(alpha: 0.5)),
-                      ])),
-                      if (_reminderTime != null) ...[
-                        const SizedBox(height: 12),
-                        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: List.generate(7, (i) {
-                          final day = i + 1; final sel = _reminderDays.contains(day);
-                          return GestureDetector(
-                            onTap: () { setState(() => sel ? _reminderDays.remove(day) : _reminderDays.add(day)); HapticFeedback.selectionClick(); },
-                            child: AnimatedContainer(duration: const Duration(milliseconds: 150), width: 34, height: 34,
-                              decoration: BoxDecoration(color: sel ? AColors.primary : Colors.transparent, shape: BoxShape.circle,
-                                border: Border.all(color: sel ? AColors.primary : AColors.border.withValues(alpha: 0.4))),
-                              child: Center(child: Text(_dayLabels[i], style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: sel ? Colors.white : AColors.textMuted))),
-                            ),
-                          );
-                        })),
-                      ],
-
-                      const SizedBox(height: 12), const Divider(color: AColors.border, height: 1), const SizedBox(height: 12),
-
-                      // Pending toggle
-                      GestureDetector(
-                        onTap: () { setState(() => _pending = !_pending); HapticFeedback.lightImpact(); },
-                        child: Row(children: [
-                          const Expanded(child: Text('Pending', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AColors.textSecondary))),
-                          AnimatedContainer(
-                            duration: const Duration(milliseconds: 200), curve: Curves.easeOutCubic, width: 50, height: 28,
-                            decoration: BoxDecoration(color: _pending ? AColors.warning : AColors.bgCard, borderRadius: ARadius.full,
-                              border: Border.all(color: _pending ? AColors.warning : AColors.border)),
-                            child: AnimatedAlign(duration: const Duration(milliseconds: 200), curve: Curves.easeOutCubic,
-                              alignment: _pending ? Alignment.centerRight : Alignment.centerLeft,
-                              child: Container(margin: const EdgeInsets.all(3), width: 22, height: 22,
-                                decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle))),
                           ),
-                        ]),
+                          const SizedBox(height: 8),
+                          const Divider(
+                            color: AColors.border,
+                            height: 1,
+                          ),
+                          const SizedBox(height: 8),
+                          TextField(
+                            controller: _noteCtrl,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: AColors.textSecondary,
+                            ),
+                            maxLines: 3,
+                            minLines: 1,
+                            decoration: InputDecoration(
+                              hintText: 'Add a note...',
+                              hintStyle: TextStyle(
+                                color: AColors.textMuted.withValues(
+                                  alpha: 0.4,
+                                ),
+                              ),
+                              border: InputBorder.none,
+                              enabledBorder: InputBorder.none,
+                              focusedBorder: InputBorder.none,
+                              fillColor: Colors.transparent,
+                              isDense: true,
+                              contentPadding: EdgeInsets.zero,
+                            ),
+                          ),
+                        ],
                       ),
-                    ])),
+                    ),
 
                     const SizedBox(height: 10),
 
-                    // ━━ CARD 5: Subtasks ━━━━━━━━━━━━━━━━━━━━━
-                    _card(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      _label('SUBTASKS'),
-                      const SizedBox(height: 10),
-                      ..._subtasks.asMap().entries.map((e) => Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Row(children: [
+                    _card(
+                      child: Column(
+                        crossAxisAlignment:
+                        CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              _label('PRIORITY'),
+                              const Spacer(),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 3,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: _pColor(
+                                    _priority,
+                                  ).withValues(alpha: 0.15),
+                                  borderRadius:
+                                  BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  '$_priority / 10',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    color: _pColor(_priority),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SliderTheme(
+                            data: SliderTheme.of(context).copyWith(
+                              activeTrackColor: _pColor(_priority),
+                              thumbColor: _pColor(_priority),
+                              inactiveTrackColor: AColors.border,
+                              overlayColor: _pColor(
+                                _priority,
+                              ).withValues(alpha: 0.15),
+                              trackHeight: 4,
+                              thumbShape:
+                              const RoundSliderThumbShape(
+                                enabledThumbRadius: 9,
+                              ),
+                            ),
+                            child: Slider(
+                              value: _priority.toDouble(),
+                              min: 1,
+                              max: 10,
+                              divisions: 9,
+                              onChanged:
+                                  (v) => setState(
+                                    () => _priority = v.round(),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    _card(
+                      child: Column(
+                        crossAxisAlignment:
+                        CrossAxisAlignment.start,
+                        children: [
+                          _label('CATEGORY'),
+                          const SizedBox(height: 8),
+                          SizedBox(
+                            height: 34,
+                            child: ListView.separated(
+                              scrollDirection: Axis.horizontal,
+                              itemCount:
+                              widget.categories.length +
+                                  (_category != null ? 1 : 0),
+                              separatorBuilder:
+                                  (_, __) => const SizedBox(width: 6),
+                              itemBuilder: (_, i) {
+                                if (_category != null &&
+                                    i == widget.categories.length) {
+                                  return GestureDetector(
+                                    onTap:
+                                        () => setState(
+                                          () => _category = null,
+                                    ),
+                                    child: Container(
+                                      padding:
+                                      const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        borderRadius:
+                                        BorderRadius.circular(
+                                          10,
+                                        ),
+                                        border: Border.all(
+                                          color: AColors.error
+                                              .withValues(
+                                            alpha: 0.3,
+                                          ),
+                                        ),
+                                      ),
+                                      child: const Center(
+                                        child: Icon(
+                                          Icons.close_rounded,
+                                          size: 14,
+                                          color: AColors.error,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }
+
+                                final c = widget.categories[i];
+                                final sel = _category == c;
+
+                                return GestureDetector(
+                                  onTap:
+                                      () => setState(() {
+                                    _category = c;
+                                    if (!_sphereManuallyOverridden) {
+                                      _xpSphereOverride = null;
+                                    }
+                                  }),
+                                  child: AnimatedContainer(
+                                    duration: const Duration(
+                                      milliseconds: 180,
+                                    ),
+                                    padding:
+                                    const EdgeInsets.symmetric(
+                                      horizontal: 14,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color:
+                                      sel
+                                          ? AColors.primary
+                                          .withValues(
+                                        alpha: 0.12,
+                                      )
+                                          : Colors.transparent,
+                                      borderRadius:
+                                      BorderRadius.circular(10),
+                                      border: Border.all(
+                                        color:
+                                        sel
+                                            ? AColors.primary
+                                            : AColors.border
+                                            .withValues(
+                                          alpha: 0.4,
+                                        ),
+                                      ),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        c,
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                          color:
+                                          sel
+                                              ? AColors.primary
+                                              : AColors.textMuted,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          Row(
+                            children: [
+                              _label('XP SPHERE'),
+                              const Spacer(),
+                              Text(
+                                '${XpSphereExt.xpForPriority(_priority)} XP',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: AColors.primary.withValues(
+                                    alpha: 0.7,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          SizedBox(
+                            height: 34,
+                            child: ListView.separated(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: XpSphere.values.length,
+                              separatorBuilder:
+                                  (_, __) => const SizedBox(width: 6),
+                              itemBuilder: (_, i) {
+                                final s = XpSphere.values[i];
+                                final sel = _effectiveSphere == s;
+
+                                return GestureDetector(
+                                  onTap: () {
+                                    HapticFeedback.selectionClick();
+                                    setState(() {
+                                      _xpSphereOverride = s;
+                                      _sphereManuallyOverridden = true;
+                                    });
+                                  },
+                                  child: AnimatedContainer(
+                                    duration: const Duration(
+                                      milliseconds: 180,
+                                    ),
+                                    padding:
+                                    const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color:
+                                      sel
+                                          ? s.color.withValues(
+                                        alpha: 0.15,
+                                      )
+                                          : Colors.transparent,
+                                      borderRadius:
+                                      BorderRadius.circular(10),
+                                      border: Border.all(
+                                        color:
+                                        sel
+                                            ? s.color
+                                            : AColors.border
+                                            .withValues(
+                                          alpha: 0.4,
+                                        ),
+                                      ),
+                                    ),
+                                    child: Center(
+                                      child: Row(
+                                        mainAxisSize:
+                                        MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            s.emoji,
+                                            style: const TextStyle(
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 5),
+                                          Text(
+                                            s.label,
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              fontWeight:
+                                              FontWeight.w600,
+                                              color:
+                                              sel
+                                                  ? s.color
+                                                  : AColors
+                                                  .textMuted,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    _card(
+                      child: Column(
+                        crossAxisAlignment:
+                        CrossAxisAlignment.start,
+                        children: [
                           GestureDetector(
-                            onTap: () => _toggleSubtask(e.key),
-                            child: AnimatedContainer(duration: const Duration(milliseconds: 180), width: 20, height: 20,
-                              decoration: BoxDecoration(color: e.value.done ? AColors.primary : Colors.transparent, shape: BoxShape.circle,
-                                border: Border.all(color: e.value.done ? AColors.primary : AColors.border, width: 1.5)),
-                              child: e.value.done ? const Icon(Icons.check_rounded, color: Colors.white, size: 12) : null,
+                            onTap: _pickDate,
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.calendar_today_rounded,
+                                  size: 18,
+                                  color:
+                                  _dueDate != null
+                                      ? AColors.primary
+                                      : AColors.textMuted,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  _dueDate != null
+                                      ? DateFormat(
+                                    'EEE, MMM d yyyy',
+                                  ).format(_dueDate!)
+                                      : 'Due date',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color:
+                                    _dueDate != null
+                                        ? AColors.primary
+                                        : AColors.textMuted,
+                                  ),
+                                ),
+                                const Spacer(),
+                                if (_dueDate != null)
+                                  GestureDetector(
+                                    onTap:
+                                        () => setState(
+                                          () => _dueDate = null,
+                                    ),
+                                    child: const Icon(
+                                      Icons.close_rounded,
+                                      size: 16,
+                                      color: AColors.textMuted,
+                                    ),
+                                  )
+                                else
+                                  Icon(
+                                    Icons.chevron_right_rounded,
+                                    size: 18,
+                                    color: AColors.textMuted
+                                        .withValues(alpha: 0.5),
+                                  ),
+                              ],
                             ),
                           ),
-                          const SizedBox(width: 10),
-                          Expanded(child: Text(e.value.title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500,
-                            color: e.value.done ? AColors.textMuted : AColors.textSecondary,
-                            decoration: e.value.done ? TextDecoration.lineThrough : null))),
-                          GestureDetector(onTap: () => setState(() => _subtasks.removeAt(e.key)),
-                            child: const Icon(Icons.close_rounded, color: AColors.textMuted, size: 16)),
-                        ]),
-                      )),
-                      Row(children: [
-                        Expanded(child: TextField(controller: _subtaskCtrl,
-                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AColors.textPrimary),
-                          onSubmitted: (_) => _addSubtask(),
-                          decoration: InputDecoration(hintText: 'Add a subtask...',
-                            hintStyle: TextStyle(color: AColors.textMuted.withValues(alpha: 0.5)),
-                            filled: true, fillColor: AColors.bg,
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10), isDense: true),
-                        )),
-                        const SizedBox(width: 8),
-                        GestureDetector(onTap: _addSubtask, child: Container(width: 36, height: 36,
-                          decoration: BoxDecoration(color: AColors.primary.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10)),
-                          child: const Icon(Icons.add_rounded, color: AColors.primary, size: 20))),
-                      ]),
-                    ])),
+
+                          const SizedBox(height: 12),
+                          const Divider(
+                            color: AColors.border,
+                            height: 1,
+                          ),
+                          const SizedBox(height: 12),
+
+                          GestureDetector(
+                            onTap: _pickTime,
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.notifications_none_rounded,
+                                  size: 18,
+                                  color:
+                                  _reminderTime != null
+                                      ? AColors.primary
+                                      : AColors.textMuted,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  _reminderTime != null
+                                      ? _reminderTime!.format(
+                                    context,
+                                  )
+                                      : 'Reminder',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color:
+                                    _reminderTime != null
+                                        ? AColors.primary
+                                        : AColors.textMuted,
+                                  ),
+                                ),
+                                const Spacer(),
+                                if (_reminderTime != null)
+                                  GestureDetector(
+                                    onTap:
+                                        () => setState(() {
+                                      _reminderTime = null;
+                                      _reminderDays = [];
+                                    }),
+                                    child: const Icon(
+                                      Icons.close_rounded,
+                                      size: 16,
+                                      color: AColors.textMuted,
+                                    ),
+                                  )
+                                else
+                                  Icon(
+                                    Icons.chevron_right_rounded,
+                                    size: 18,
+                                    color: AColors.textMuted
+                                        .withValues(alpha: 0.5),
+                                  ),
+                              ],
+                            ),
+                          ),
+                          if (_reminderTime != null) ...[
+                            const SizedBox(height: 12),
+                            Row(
+                              mainAxisAlignment:
+                              MainAxisAlignment.spaceBetween,
+                              children: List.generate(7, (i) {
+                                final day = i + 1;
+                                final sel = _reminderDays.contains(
+                                  day,
+                                );
+
+                                return GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      sel
+                                          ? _reminderDays.remove(
+                                        day,
+                                      )
+                                          : _reminderDays.add(day);
+                                    });
+                                    HapticFeedback.selectionClick();
+                                  },
+                                  child: AnimatedContainer(
+                                    duration: const Duration(
+                                      milliseconds: 150,
+                                    ),
+                                    width: 34,
+                                    height: 34,
+                                    decoration: BoxDecoration(
+                                      color:
+                                      sel
+                                          ? AColors.primary
+                                          : Colors.transparent,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color:
+                                        sel
+                                            ? AColors.primary
+                                            : AColors.border
+                                            .withValues(
+                                          alpha: 0.4,
+                                        ),
+                                      ),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        _dayLabels[i],
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight:
+                                          FontWeight.w700,
+                                          color:
+                                          sel
+                                              ? Colors.white
+                                              : AColors
+                                              .textMuted,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }),
+                            ),
+                          ],
+
+                          const SizedBox(height: 12),
+                          const Divider(
+                            color: AColors.border,
+                            height: 1,
+                          ),
+                          const SizedBox(height: 12),
+
+                          GestureDetector(
+                            onTap: () {
+                              setState(() => _pending = !_pending);
+                              HapticFeedback.lightImpact();
+                            },
+                            child: Row(
+                              children: [
+                                const Expanded(
+                                  child: Text(
+                                    'Pending',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: AColors.textSecondary,
+                                    ),
+                                  ),
+                                ),
+                                AnimatedContainer(
+                                  duration: const Duration(
+                                    milliseconds: 200,
+                                  ),
+                                  curve: Curves.easeOutCubic,
+                                  width: 50,
+                                  height: 28,
+                                  decoration: BoxDecoration(
+                                    color:
+                                    _pending
+                                        ? AColors.warning
+                                        : AColors.bgCard,
+                                    borderRadius: ARadius.full,
+                                    border: Border.all(
+                                      color:
+                                      _pending
+                                          ? AColors.warning
+                                          : AColors.border,
+                                    ),
+                                  ),
+                                  child: AnimatedAlign(
+                                    duration: const Duration(
+                                      milliseconds: 200,
+                                    ),
+                                    curve: Curves.easeOutCubic,
+                                    alignment:
+                                    _pending
+                                        ? Alignment.centerRight
+                                        : Alignment.centerLeft,
+                                    child: Container(
+                                      margin: const EdgeInsets.all(3),
+                                      width: 22,
+                                      height: 22,
+                                      decoration:
+                                      const BoxDecoration(
+                                        color: Colors.white,
+                                        shape:
+                                        BoxShape.circle,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    _card(
+                      child: Column(
+                        crossAxisAlignment:
+                        CrossAxisAlignment.start,
+                        children: [
+                          _label('SUBTASKS'),
+                          const SizedBox(height: 10),
+                          ..._subtasks.asMap().entries.map(
+                                (e) => Padding(
+                              padding: const EdgeInsets.only(
+                                bottom: 8,
+                              ),
+                              child: Row(
+                                children: [
+                                  GestureDetector(
+                                    onTap: () => _toggleSubtask(e.key),
+                                    child: AnimatedContainer(
+                                      duration: const Duration(
+                                        milliseconds: 180,
+                                      ),
+                                      width: 20,
+                                      height: 20,
+                                      decoration: BoxDecoration(
+                                        color:
+                                        e.value.done
+                                            ? AColors.primary
+                                            : Colors
+                                            .transparent,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color:
+                                          e.value.done
+                                              ? AColors
+                                              .primary
+                                              : AColors
+                                              .border,
+                                          width: 1.5,
+                                        ),
+                                      ),
+                                      child:
+                                      e.value.done
+                                          ? const Icon(
+                                        Icons.check_rounded,
+                                        color:
+                                        Colors.white,
+                                        size: 12,
+                                      )
+                                          : null,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      e.value.title,
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight:
+                                        FontWeight.w500,
+                                        color:
+                                        e.value.done
+                                            ? AColors
+                                            .textMuted
+                                            : AColors
+                                            .textSecondary,
+                                        decoration:
+                                        e.value.done
+                                            ? TextDecoration
+                                            .lineThrough
+                                            : null,
+                                      ),
+                                    ),
+                                  ),
+                                  GestureDetector(
+                                    onTap:
+                                        () => setState(
+                                          () => _subtasks
+                                          .removeAt(e.key),
+                                    ),
+                                    child: const Icon(
+                                      Icons.close_rounded,
+                                      color: AColors.textMuted,
+                                      size: 16,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  controller: _subtaskCtrl,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: AColors.textPrimary,
+                                  ),
+                                  onSubmitted: (_) => _addSubtask(),
+                                  decoration: InputDecoration(
+                                    hintText: 'Add a subtask...',
+                                    hintStyle: TextStyle(
+                                      color: AColors.textMuted
+                                          .withValues(alpha: 0.5),
+                                    ),
+                                    filled: true,
+                                    fillColor: AColors.bg,
+                                    border: OutlineInputBorder(
+                                      borderRadius:
+                                      BorderRadius.circular(
+                                        12,
+                                      ),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    contentPadding:
+                                    const EdgeInsets.symmetric(
+                                      horizontal: 14,
+                                      vertical: 10,
+                                    ),
+                                    isDense: true,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              GestureDetector(
+                                onTap: _addSubtask,
+                                child: Container(
+                                  width: 36,
+                                  height: 36,
+                                  decoration: BoxDecoration(
+                                    color: AColors.primary
+                                        .withValues(alpha: 0.12),
+                                    borderRadius:
+                                    BorderRadius.circular(10),
+                                  ),
+                                  child: const Icon(
+                                    Icons.add_rounded,
+                                    color: AColors.primary,
+                                    size: 20,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
 
                     const SizedBox(height: 32),
                   ],
@@ -1842,13 +2587,25 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
 
   Widget _card({required Widget child}) => Container(
     padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(color: AColors.bgCard, borderRadius: BorderRadius.circular(18),
-      border: Border.all(color: AColors.border.withValues(alpha: 0.35))),
+    decoration: BoxDecoration(
+      color: AColors.bgCard,
+      borderRadius: BorderRadius.circular(18),
+      border: Border.all(
+        color: AColors.border.withValues(alpha: 0.35),
+      ),
+    ),
     child: child,
   );
 
-  Widget _label(String text) => Text(text,
-    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1.1, color: AColors.textMuted.withValues(alpha: 0.55)));
+  Widget _label(String text) => Text(
+    text,
+    style: TextStyle(
+      fontSize: 11,
+      fontWeight: FontWeight.w700,
+      letterSpacing: 1.1,
+      color: AColors.textMuted.withValues(alpha: 0.55),
+    ),
+  );
 }
 
 Color _pColor(int p) {
@@ -1864,17 +2621,28 @@ class _Sec extends StatelessWidget {
   final IconData icon;
   final Widget child;
 
-  const _Sec({required this.label, required this.icon, required this.child});
+  const _Sec({
+    required this.label,
+    required this.icon,
+    required this.child,
+  });
 
   @override
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Row(children: [
-        Icon(icon, size: 15, color: AColors.primary),
-        const SizedBox(width: 6),
-        Text(label, style: AText.labelLarge.copyWith(color: AColors.textSecondary)),
-      ]),
+      Row(
+        children: [
+          Icon(icon, size: 15, color: AColors.primary),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: AText.labelLarge.copyWith(
+              color: AColors.textSecondary,
+            ),
+          ),
+        ],
+      ),
       const SizedBox(height: 10),
       child,
     ],
@@ -1886,7 +2654,11 @@ class _MiniTag extends StatelessWidget {
   final Color color;
   final IconData? icon;
 
-  const _MiniTag({required this.label, required this.color, this.icon});
+  const _MiniTag({
+    required this.label,
+    required this.color,
+    this.icon,
+  });
 
   @override
   Widget build(BuildContext context) => Container(
@@ -1902,7 +2674,14 @@ class _MiniTag extends StatelessWidget {
           Icon(icon, size: 9, color: color),
           const SizedBox(width: 3),
         ],
-        Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: color)),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+            color: color,
+          ),
+        ),
       ],
     ),
   );
@@ -1914,24 +2693,50 @@ class _CategoryChip extends StatelessWidget {
   final bool isAdd;
   final VoidCallback onTap;
 
-  const _CategoryChip({required this.label, required this.selected, required this.onTap, this.isAdd = false});
+  const _CategoryChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+    this.isAdd = false,
+  });
 
   @override
   Widget build(BuildContext context) => GestureDetector(
-    onTap: () { onTap(); HapticFeedback.selectionClick(); },
+    onTap: () {
+      onTap();
+      HapticFeedback.selectionClick();
+    },
     child: AnimatedContainer(
       duration: const Duration(milliseconds: 150),
       margin: const EdgeInsets.only(right: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        color: selected ? AColors.primaryGlow : (isAdd ? Colors.transparent : AColors.bgCard),
-        borderRadius: ARadius.full,
-        border: Border.all(color: selected ? AColors.primary : AColors.border, width: selected ? 1.5 : 1),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 8,
       ),
-      child: Text(label, style: TextStyle(
-        fontSize: 13, fontWeight: FontWeight.w600,
-        color: selected ? AColors.primary : (isAdd ? AColors.textMuted : AColors.textSecondary),
-      )),
+      decoration: BoxDecoration(
+        color:
+        selected
+            ? AColors.primaryGlow
+            : (isAdd ? Colors.transparent : AColors.bgCard),
+        borderRadius: ARadius.full,
+        border: Border.all(
+          color: selected ? AColors.primary : AColors.border,
+          width: selected ? 1.5 : 1,
+        ),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color:
+          selected
+              ? AColors.primary
+              : (isAdd
+              ? AColors.textMuted
+              : AColors.textSecondary),
+        ),
+      ),
     ),
   );
 }
@@ -1941,47 +2746,41 @@ class _IconBtn extends StatelessWidget {
   final VoidCallback onTap;
   final bool gradient;
 
-  const _IconBtn({required this.icon, required this.onTap, this.gradient = false});
+  const _IconBtn({
+    required this.icon,
+    required this.onTap,
+    this.gradient = false,
+  });
 
   @override
   Widget build(BuildContext context) => GestureDetector(
     onTap: onTap,
     child: AnimatedContainer(
       duration: const Duration(milliseconds: 150),
-      width: 42, height: 42,
+      width: 42,
+      height: 42,
       decoration: BoxDecoration(
         gradient: gradient ? AColors.gradientPrimary : null,
         color: gradient ? null : AColors.bgCard,
         borderRadius: ARadius.md,
         border: gradient ? null : Border.all(color: AColors.border),
-        boxShadow: gradient ? [BoxShadow(color: AColors.primary.withValues(alpha: 0.3), blurRadius: 12, offset: const Offset(0, 4))] : null,
+        boxShadow:
+        gradient
+            ? [
+          BoxShadow(
+            color: AColors.primary.withValues(alpha: 0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ]
+            : null,
       ),
-      child: Icon(icon, color: gradient ? Colors.white : AColors.textPrimary, size: 22),
+      child: Icon(
+        icon,
+        color: gradient ? Colors.white : AColors.textPrimary,
+        size: 22,
+      ),
     ),
-  );
-}
-
-class _AnimatedEntrance extends StatelessWidget {
-  final Widget child;
-  final int delay;
-  final bool play;
-
-  const _AnimatedEntrance({required this.child, required this.delay, required this.play});
-
-  @override
-  Widget build(BuildContext context) => AnimatedSwitcher(
-    duration: const Duration(milliseconds: 500),
-    switchInCurve: Curves.easeOutCubic,
-    transitionBuilder: (w, anim) {
-      final slideAnim = Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(anim);
-      return FadeTransition(opacity: anim, child: SlideTransition(position: slideAnim, child: w));
-    },
-    child: play
-        ? FutureBuilder(
-          future: Future.delayed(Duration(milliseconds: delay)),
-          builder: (ctx, snap) => snap.connectionState == ConnectionState.done ? child : const SizedBox(),
-        )
-        : const SizedBox(),
   );
 }
 
@@ -1989,13 +2788,22 @@ class _HScrollItem {
   final String label;
   final bool selected;
   final VoidCallback onTap;
-  const _HScrollItem({required this.label, required this.selected, required this.onTap});
+
+  const _HScrollItem({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
 }
 
 class _HScrollSelector extends StatelessWidget {
   final List<_HScrollItem> items;
   final Widget? trailing;
-  const _HScrollSelector({required this.items, this.trailing});
+
+  const _HScrollSelector({
+    required this.items,
+    this.trailing,
+  });
 
   @override
   Widget build(BuildContext context) => SizedBox(
@@ -2003,21 +2811,48 @@ class _HScrollSelector extends StatelessWidget {
     child: ListView(
       scrollDirection: Axis.horizontal,
       children: [
-        ...items.map((item) => GestureDetector(
-          onTap: () { item.onTap(); HapticFeedback.selectionClick(); },
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 180),
-            curve: Curves.easeOutCubic,
-            margin: const EdgeInsets.only(right: 8),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: BoxDecoration(
-              color: item.selected ? AColors.primaryGlow : AColors.bgCard,
-              borderRadius: ARadius.full,
-              border: Border.all(color: item.selected ? AColors.primary : AColors.border, width: item.selected ? 1.5 : 1),
+        ...items.map(
+              (item) => GestureDetector(
+            onTap: () {
+              item.onTap();
+              HapticFeedback.selectionClick();
+            },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOutCubic,
+              margin: const EdgeInsets.only(right: 8),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 8,
+              ),
+              decoration: BoxDecoration(
+                color:
+                item.selected
+                    ? AColors.primaryGlow
+                    : AColors.bgCard,
+                borderRadius: ARadius.full,
+                border: Border.all(
+                  color:
+                  item.selected
+                      ? AColors.primary
+                      : AColors.border,
+                  width: item.selected ? 1.5 : 1,
+                ),
+              ),
+              child: Text(
+                item.label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color:
+                  item.selected
+                      ? AColors.primary
+                      : AColors.textMuted,
+                ),
+              ),
             ),
-            child: Text(item.label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: item.selected ? AColors.primary : AColors.textMuted)),
           ),
-        )),
+        ),
         if (trailing != null) trailing!,
       ],
     ),

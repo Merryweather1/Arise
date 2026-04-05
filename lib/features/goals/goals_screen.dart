@@ -583,31 +583,28 @@ class _GoalList extends StatelessWidget {
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      physics: const BouncingScrollPhysics(),
-      itemCount: goals.length + 1,
-      itemBuilder: (_, i) {
-        if (i == goals.length) {
-          return const SizedBox(height: 120);
-        }
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
+      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+      children: goals.asMap().entries.map((entry) {
+        final i = entry.key;
         return Padding(
-        padding: const EdgeInsets.only(bottom: 14),
-        child: _GoalCard(
-          goal: goals[i],
-          onTap: () => onTap(goals[i]),
-          onDelete: () => onDelete(goals[i]),
-          onToggleStep: (step) => onToggleStep(goals[i], step),
-          onMarkComplete: () => onMarkComplete(goals[i]),
-          progress: progress,
-          doneSteps: doneSteps,
-          isComplete: isComplete,
-          daysLeft: daysLeft,
-          rewardLabel: rewardLabel,
-          color: color,
-        ),
-      );
-      },
+          padding: const EdgeInsets.only(bottom: 14),
+          child: _GoalCard(
+            goal: goals[i],
+            onTap: () => onTap(goals[i]),
+            onDelete: () => onDelete(goals[i]),
+            onToggleStep: (step) => onToggleStep(goals[i], step),
+            onMarkComplete: () => onMarkComplete(goals[i]),
+            progress: progress,
+            doneSteps: doneSteps,
+            isComplete: isComplete,
+            daysLeft: daysLeft,
+            rewardLabel: rewardLabel,
+            color: color,
+          ),
+        );
+      }).toList(),
     );
   }
 }

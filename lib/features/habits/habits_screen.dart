@@ -531,24 +531,21 @@ class _AllTab extends StatelessWidget {
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      physics: const BouncingScrollPhysics(),
-      itemCount: habits.length + 1,
-      itemBuilder: (_, i) {
-        if (i == habits.length) {
-          return const SizedBox(height: 120);
-        }
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
+      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+      children: habits.asMap().entries.map((entry) {
+        final i = entry.key;
         return Padding(
-        padding: const EdgeInsets.only(bottom: 10),
-        child: _HabitCard(
-          habit: habits[i],
-          onToggle: () => onToggle(habits[i]),
-          onEdit: () => onEdit(habits[i]),
-          onDelete: () => onDelete(habits[i]),
-        ),
-      );
-      },
+          padding: const EdgeInsets.only(bottom: 10),
+          child: _HabitCard(
+            habit: habits[i],
+            onToggle: () => onToggle(habits[i]),
+            onEdit: () => onEdit(habits[i]),
+            onDelete: () => onDelete(habits[i]),
+          ),
+        );
+      }).toList(),
     );
   }
 }
