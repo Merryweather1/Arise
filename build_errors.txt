@@ -1,0 +1,24 @@
+﻿Running Gradle task 'assembleDebug'...                          
+flutter : Error: unable to 
+find directory entry in pub
+spec.yaml: D:\install\Andro
+id\arise_test\assets\images
+\
+строка:1 знак:1
++ flutter build apk --debug
+ 2>&1 | Out-File -FilePath 
+"d:\install\Andro ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~
+    + CategoryInfo         
+     : NotSpecified: (Err  
+  or: unable t...\assets   
+ \images\:String) [], R    
+emoteException
+    + FullyQualifiedErrorI 
+   d : NativeCommandError
+ 
+Error: unable to find direc
+tory entry in pubspec.yaml:
+ D:\install\Android\arise_t
+est\assets\icons\

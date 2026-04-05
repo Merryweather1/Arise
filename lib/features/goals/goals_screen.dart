@@ -780,7 +780,8 @@ class _GoalCardState extends State<_GoalCard> {
                     Row(children: [
                       Expanded(
                         child: TweenAnimationBuilder<double>(
-                          tween: Tween(begin: 0, end: prog),
+                          tween: Tween(begin: 0.0, end: prog),
+                          key: ValueKey(prog),
                           duration: const Duration(milliseconds: 600),
                           curve: Curves.easeOutCubic,
                           builder: (_, val, __) => ClipRRect(
@@ -1244,23 +1245,12 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
       _xpSphereOverride ?? XpSphereExt.sphereForCategory(_category ?? '');
 
   final List<GoalStepModel> _steps = [];
+  int _pendingWeight = 1; // 1=Small, 2=Medium, 3=Large
 
-  final _emojis = [
-    'рџЋЇ',
-    'рџ“±',
-    'рџЏѓ',
-    'рџ’°',
-    'рџ“љ',
-    'рџ’Є',
-    'рџљЂ',
-    'рџЋё',
-    'вњ€пёЏ',
-    'рџЏ ',
-    'рџЋ“',
-    'рџ’ј',
-    'рџЊЌ',
-    'рџЏ†',
-    'вќ¤пёЏ',
+  static const List<String> _allEmojis = [
+    '🎯', '📱', '🏃', '💰', '📚',
+    '💪', '🚀', '🎸', '✈️', '🏠',
+    '🎓', '💼', '🌍', '🏆', '❤️',
   ];
 
   final _colors = [
@@ -1288,7 +1278,7 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
     _measureUnitCtrl = TextEditingController(text: e?.measureUnit ?? '');
     _customRewardCtrl = TextEditingController(text: e?.customReward ?? '');
 
-    _emoji = e?.emoji ?? 'рџЋЇ';
+    _emoji = e?.emoji ?? '🎯';
     _color = e != null ? Color(e.colorValue) : AColors.primary;
     _category = (e?.category != null && e!.category.trim().isNotEmpty)
         ? e.category
@@ -1296,7 +1286,7 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
     _deadline = e?.deadline;
     _useMeasure = e?.measureTarget != null;
     _steps.addAll(
-      (e?.steps ?? []).map((s) => GoalStepModel(id: s.id, title: s.title, done: s.done)),
+      (e?.steps ?? []).map((s) => GoalStepModel(id: s.id, title: s.title, done: s.done, weight: s.weight)),
     );
     if (e != null) {
       final autoSphere = XpSphereExt.sphereForCategory(e.category);
@@ -1348,6 +1338,7 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
           id: DateTime.now().millisecondsSinceEpoch.toString(),
           title: value,
           done: false,
+          weight: _pendingWeight,
         ),
       );
       _stepCtrl.clear();
@@ -1460,10 +1451,10 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
                       _label('ICON'),
                       const SizedBox(height: 8),
                       SizedBox(height: 42, child: ListView.separated(
-                        scrollDirection: Axis.horizontal, itemCount: _emojis.length,
+                        scrollDirection: Axis.horizontal, itemCount: _allEmojis.length,
                         separatorBuilder: (_, __) => const SizedBox(width: 6),
                         itemBuilder: (_, i) {
-                          final e = _emojis[i]; final sel = _emoji == e; final mapped = AIconMapper.resolve(e);
+                          final e = _allEmojis[i]; final sel = _emoji == e; final mapped = AIconMapper.resolve(e);
                           return GestureDetector(
                             onTap: () { setState(() => _emoji = e); HapticFeedback.selectionClick(); },
                             child: AnimatedContainer(duration: const Duration(milliseconds: 180), width: 42, height: 42,
@@ -1600,15 +1591,17 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
 
                     const SizedBox(height: 10),
 
-                    // в”Ѓв”Ѓ CARD 4: Steps в”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓ
+                    // Milestones card
                     _card(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      _label('STEPS'),
+                      _label('MILESTONES'),
+                      const SizedBox(height: 4),
+                      Text('Tap a milestone to toggle done. Tap the badge to cycle weight.', style: TextStyle(fontSize: 11, color: AColors.textMuted)),
                       const SizedBox(height: 10),
                       ..._steps.asMap().entries.map((e) => Padding(
                         padding: const EdgeInsets.only(bottom: 8),
                         child: Row(children: [
                           GestureDetector(
-                            onTap: () { setState(() { _steps[e.key] = GoalStepModel(id: e.value.id, title: e.value.title, done: !e.value.done); }); HapticFeedback.selectionClick(); },
+                            onTap: () { setState(() { _steps[e.key] = GoalStepModel(id: e.value.id, title: e.value.title, done: !e.value.done, weight: e.value.weight); }); HapticFeedback.selectionClick(); },
                             child: AnimatedContainer(duration: const Duration(milliseconds: 180), width: 20, height: 20,
                               decoration: BoxDecoration(color: e.value.done ? _color : Colors.transparent, shape: BoxShape.circle,
                                 border: Border.all(color: e.value.done ? _color : AColors.border, width: 1.5)),
@@ -1619,11 +1612,59 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
                           Expanded(child: Text(e.value.title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500,
                             color: e.value.done ? AColors.textMuted : AColors.textSecondary,
                             decoration: e.value.done ? TextDecoration.lineThrough : null))),
+                          // Weight badge — tap to cycle S -> M -> L -> S
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                final next = (e.value.weight % 3) + 1;
+                                _steps[e.key] = e.value.copyWith(weight: next);
+                              });
+                              HapticFeedback.selectionClick();
+                            },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 150),
+                              width: 24, height: 24,
+                              decoration: BoxDecoration(
+                                color: _color.withValues(alpha: 0.15),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Center(child: Text(
+                                e.value.weight == 1 ? 'S' : e.value.weight == 2 ? 'M' : 'L',
+                                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: _color),
+                              )),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
                           GestureDetector(onTap: () => setState(() => _steps.removeAt(e.key)),
                             child: const Icon(Icons.close_rounded, color: AColors.textMuted, size: 16)),
                         ]),
                       )),
+                      const SizedBox(height: 8),
+                      // Weight selector for NEW step
                       Row(children: [
+                        Text('Weight:', style: TextStyle(fontSize: 12, color: AColors.textMuted)),
+                        const SizedBox(width: 8),
+                        ...([1, 2, 3]).map((w) {
+                          final label = w == 1 ? 'S' : w == 2 ? 'M' : 'L';
+                          final sel = _pendingWeight == w;
+                          return GestureDetector(
+                            onTap: () { setState(() => _pendingWeight = w); HapticFeedback.selectionClick(); },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 150),
+                              margin: const EdgeInsets.only(right: 6),
+                              width: 28, height: 28,
+                              decoration: BoxDecoration(
+                                color: sel ? _color.withValues(alpha: 0.15) : Colors.transparent,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: sel ? _color : AColors.border, width: 1.5),
+                              ),
+                              child: Center(child: Text(label,
+                                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800,
+                                  color: sel ? _color : AColors.textMuted))),
+                            ),
+                          );
+                        }),
+                        const SizedBox(width: 4),
                         Expanded(child: TextField(controller: _stepCtrl,
                           style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AColors.textPrimary),
                           onSubmitted: (_) => _addStep(),
