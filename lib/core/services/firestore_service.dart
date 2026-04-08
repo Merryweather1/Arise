@@ -39,6 +39,18 @@ class UserRepository {
     });
   }
 
+  /// Deduct XP (clamps at 0 client-side via max check in rules, safe to call).
+  static Future<void> subtractXp(String uid, XpSphere sphere, int xp) {
+    final field = switch (sphere) {
+      XpSphere.willpower => 'willpowerXp',
+      XpSphere.intellect => 'intellectXp',
+      XpSphere.health    => 'healthXp',
+    };
+    return _db.collection('users').doc(uid).update({
+      field: FieldValue.increment(-xp),
+    });
+  }
+
   static Future<void> addCustomCategory(String uid, String category) =>
       _db.collection('users').doc(uid).set({
         'customCategories': FieldValue.arrayUnion([category])
@@ -87,9 +99,10 @@ class TaskRepository {
   static Future<void> delete(String uid, String taskId) =>
       _col(uid).doc(taskId).delete();
 
-  static Future<void> setDone(String uid, String taskId, bool done) =>
+  static Future<void> setDone(String uid, String taskId, bool done, {bool xpAwarded = false}) =>
       _col(uid).doc(taskId).update({
         'done': done,
+        'xpAwarded': xpAwarded,
         // Clear pending flag when task is marked done
         if (done) 'pending': false,
       });

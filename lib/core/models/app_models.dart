@@ -259,6 +259,8 @@ class TaskModel {
   final List<SubTaskModel> subtasks;
   final XpSphere xpSphere;
   final int xpReward;
+  /// True once XP has been awarded for this task — prevents double-award on undo+redo.
+  final bool xpAwarded;
   final DateTime createdAt;
 
   const TaskModel({
@@ -276,6 +278,7 @@ class TaskModel {
     this.subtasks = const [],
     this.xpSphere = XpSphere.willpower,
     this.xpReward = 10,
+    this.xpAwarded = false,
     required this.createdAt,
   });
 
@@ -303,6 +306,7 @@ class TaskModel {
               (s) => s.name == (d['xpSphere'] ?? 'willpower'),
           orElse: () => XpSphere.willpower),
       xpReward: d['xpReward'] ?? 10,
+      xpAwarded: d['xpAwarded'] ?? false,
       createdAt: (d['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
@@ -318,6 +322,7 @@ class TaskModel {
     'subtasks': subtasks.map((s) => s.toMap()).toList(),
     'xpSphere': xpSphere.name,
     'xpReward': xpReward,
+    'xpAwarded': xpAwarded,
     'createdAt': Timestamp.fromDate(createdAt),
   };
 
@@ -326,6 +331,7 @@ class TaskModel {
     int? priority, String? category, DateTime? dueDate,
     TimeOfDay? reminderTime, List<int>? reminderDays,
     List<SubTaskModel>? subtasks, XpSphere? xpSphere, int? xpReward,
+    bool? xpAwarded,
     bool clearDueDate = false, bool clearReminder = false,
   }) => TaskModel(
     id: id, uid: uid, createdAt: createdAt,
@@ -341,6 +347,7 @@ class TaskModel {
     subtasks: subtasks ?? this.subtasks,
     xpSphere: xpSphere ?? this.xpSphere,
     xpReward: xpReward ?? this.xpReward,
+    xpAwarded: xpAwarded ?? this.xpAwarded,
   );
 }
 

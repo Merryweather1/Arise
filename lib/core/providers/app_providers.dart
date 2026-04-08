@@ -238,27 +238,33 @@ class TaskNotifier extends AsyncNotifier<void> {
   }
 
   Future<void> setDone(TaskModel task, bool done) async {
-    await TaskRepository.setDone(_uid, task.id, done);
     if (done) {
+      // Completing: award XP only if not already awarded for this task
+      await TaskRepository.setDone(_uid, task.id, true, xpAwarded: true);
       await NotificationService.instance.cancelTask(task.id);
-      // Remove fired notification from center — task is complete
       await ref.read(notificationLogProvider.notifier).remove('task-${task.id}');
+
+      if (!task.xpAwarded) {
+        final profileBefore = ref.read(userProfileProvider).valueOrNull;
+        final levelBefore = profileBefore?.levelForSphere(task.xpSphere) ?? 1;
+        await UserRepository.addXp(_uid, task.xpSphere, task.xpReward);
+        final profileAfter = await UserRepository.get(_uid);
+        final levelAfter = profileAfter?.levelForSphere(task.xpSphere) ?? levelBefore;
+        ref.read(xpEventProvider.notifier).state = XpEvent(
+          sphere: task.xpSphere,
+          amount: task.xpReward,
+          isLevelUp: levelAfter > levelBefore,
+          newLevel: levelAfter,
+        );
+      }
     } else {
+      // Undoing: clear done + xpAwarded, and deduct XP if it was previously awarded
+      await TaskRepository.setDone(_uid, task.id, false, xpAwarded: false);
       await NotificationService.instance.scheduleTaskReminder(task);
-    }
-    // Guard: only award XP if transitioning from not-done → done
-    if (done && !task.done) {
-      final profileBefore = ref.read(userProfileProvider).valueOrNull;
-      final levelBefore = profileBefore?.levelForSphere(task.xpSphere) ?? 1;
-      await UserRepository.addXp(_uid, task.xpSphere, task.xpReward);
-      final profileAfter = await UserRepository.get(_uid);
-      final levelAfter = profileAfter?.levelForSphere(task.xpSphere) ?? levelBefore;
-      ref.read(xpEventProvider.notifier).state = XpEvent(
-        sphere: task.xpSphere,
-        amount: task.xpReward,
-        isLevelUp: levelAfter > levelBefore,
-        newLevel: levelAfter,
-      );
+
+      if (task.xpAwarded) {
+        await UserRepository.subtractXp(_uid, task.xpSphere, task.xpReward);
+      }
     }
   }
 }
@@ -317,9 +323,10 @@ class HabitNotifier extends AsyncNotifier<void> {
   Future<void> toggleToday(HabitModel habit) async {
     final wasComplete = habit.isCompletedToday;
     final updated = await HabitRepository.toggleToday(_uid, habit);
+    final nowComplete = updated.isCompletedToday;
 
-    if (!wasComplete && updated.isCompletedToday) {
-      // Habit just completed — remove today's notification center entry
+    if (!wasComplete && nowComplete) {
+      // Habit just completed for today — award XP
       await ref.read(notificationLogProvider.notifier).remove('habit-${habit.id}');
       final profileBefore = ref.read(userProfileProvider).valueOrNull;
       final levelBefore = profileBefore?.levelForSphere(habit.xpSphere) ?? 1;
@@ -332,6 +339,9 @@ class HabitNotifier extends AsyncNotifier<void> {
         isLevelUp: levelAfter > levelBefore,
         newLevel: levelAfter,
       );
+    } else if (wasComplete && !nowComplete) {
+      // Habit un-toggled — deduct the XP that was awarded
+      await UserRepository.subtractXp(_uid, habit.xpSphere, habit.xpReward);
     }
   }
 }
