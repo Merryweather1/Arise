@@ -59,6 +59,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     'Lock in. Let’s go. 🎓',
     'Clarity + action = results. 🎯',
     'Take the shot. You’ll make it. 🏀',
+    'ADAPT',
   ];
 
   String _tagline() {
@@ -223,215 +224,215 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           CustomScrollView(
             physics: const BouncingScrollPhysics(),
-        slivers: [
-          SliverToBoxAdapter(child: _Header(greeting: _greeting(), tagline: _tagline())),
+            slivers: [
+              SliverToBoxAdapter(child: _Header(greeting: _greeting(), tagline: _tagline())),
 
-          SliverToBoxAdapter(
-            child: _AnimatedEntrance(
-              delay: 100,
-              play: _hasAnimated,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                child: _XpCard(),
-              ),
-            ),
-          ),
-
-          SliverToBoxAdapter(
-            child: _AnimatedEntrance(
-              delay: 200,
-              play: _hasAnimated,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-                child: Row(
-                  children: [
-                    _StatCard(
-                      icon: Icons.check_circle_rounded,
-                      label: 'Tasks Done',
-                      value: '$completedTasks',
-                      color: AColors.primary,
-                    ),
-                    const SizedBox(width: 12),
-                    _StatCard(
-                      icon: Icons.local_fire_department_rounded,
-                      label: 'Best Streak',
-                      value: '$bestHabitStreak',
-                      color: AColors.warning,
-                    ),
-                    const SizedBox(width: 12),
-                    _StatCard(
-                      icon: Icons.timer_rounded,
-                      label: 'Focus Time',
-                      value: '${todayFocusMinutes}m',
-                      color: AColors.info,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          SliverToBoxAdapter(
-            child: _AnimatedEntrance(
-              delay: 300,
-              play: _hasAnimated,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _FeatureCard(
-                        onTap: () => context.push(ARoutes.lifeBalance),
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF1A2F26), Color(0xFF0F2420)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        accentColor: AColors.primary,
-                        icon: Icons.balance_rounded,
-                        title: 'Life Balance',
-                        subtitle: hasLifeData
-                            ? 'Overall ${latestLifeAverage.toStringAsFixed(1)}/10'
-                            : 'No snapshots yet',
-                        badge: hasLifeData ? 'Live' : 'Empty',
-                        badgeColor: hasLifeData ? AColors.primary : AColors.textMuted,
-                        child: hasLifeData
-                            ? _FeatureLiveStat(
-                                text: '${lifeSnapshots.length} snapshot${lifeSnapshots.length == 1 ? '' : 's'}',
-                              )
-                            : const _FeaturePlaceholder(text: 'No data yet'),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _FeatureCard(
-                        onTap: () => context.push(ARoutes.statistics),
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF1A2030), Color(0xFF0F1520)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        accentColor: AColors.info,
-                        icon: Icons.bar_chart_rounded,
-                        title: 'Statistics',
-                        subtitle: hasStatsData
-                            ? '$completedTasksTotal tasks • ${totalFocusMinutes}m focus'
-                            : 'No data yet',
-                        badge: hasStatsData ? 'Live' : 'Empty',
-                        badgeColor: hasStatsData ? AColors.info : AColors.textMuted,
-                        child: hasStatsData
-                            ? _FeatureLiveStat(
-                                text: '$totalPomodoroSessions session${totalPomodoroSessions == 1 ? '' : 's'} logged',
-                              )
-                            : const _FeaturePlaceholder(text: 'No stats yet'),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          if (hasDashboardContent) ...[
-            if (dashboardTasks.isNotEmpty) ...[
               SliverToBoxAdapter(
-                child: _SectionHeader(
-                  title: dashboardTaskTitle,
-                  action: 'See all',
-                  onAction: () => context.go(ARoutes.tasks),
-                ),
-              ),
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                        (_, i) {
-                      final task = dashboardTasks[i];
-                      return _AnimatedEntrance(
-                        delay: 300 + (i * 100),
-                        play: _hasAnimated,
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: _TaskDashboardCard(
-                            task: task,
-                            priorityColor: _taskPriorityColor(task.priority),
-                            onTap: () => context.go(ARoutes.tasks),
-                            onToggle: () async {
-                              final notifier = ref.read(taskActionsProvider.notifier);
-                              await notifier.setDone(task, !task.done);
-                              HapticFeedback.lightImpact();
-                            },
-                          ),
-                        ),
-                      );
-                    },
-                    childCount:
-                    dashboardTasks.length > 4 ? 4 : dashboardTasks.length,
+                child: _AnimatedEntrance(
+                  delay: 100,
+                  play: _hasAnimated,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                    child: _XpCard(),
                   ),
                 ),
               ),
-              const SliverToBoxAdapter(child: SizedBox(height: 20)),
-            ],
 
-            if (todayHabits.isNotEmpty) ...[
               SliverToBoxAdapter(
-                child: _SectionHeader(
-                  title: "Today's Habits",
-                  action: 'See all',
-                  onAction: () => context.go(ARoutes.habits),
+                child: _AnimatedEntrance(
+                  delay: 200,
+                  play: _hasAnimated,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                    child: Row(
+                      children: [
+                        _StatCard(
+                          icon: Icons.check_circle_rounded,
+                          label: 'Tasks Done',
+                          value: '$completedTasks',
+                          color: AColors.primary,
+                        ),
+                        const SizedBox(width: 12),
+                        _StatCard(
+                          icon: Icons.local_fire_department_rounded,
+                          label: 'Best Streak',
+                          value: '$bestHabitStreak',
+                          color: AColors.warning,
+                        ),
+                        const SizedBox(width: 12),
+                        _StatCard(
+                          icon: Icons.timer_rounded,
+                          label: 'Focus Time',
+                          value: '${todayFocusMinutes}m',
+                          color: AColors.info,
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
+
               SliverToBoxAdapter(
-                child: SizedBox(
-                  height: 112,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
+                child: _AnimatedEntrance(
+                  delay: 300,
+                  play: _hasAnimated,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: _FeatureCard(
+                            onTap: () => context.push(ARoutes.lifeBalance),
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF1A2F26), Color(0xFF0F2420)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            accentColor: AColors.primary,
+                            icon: Icons.balance_rounded,
+                            title: 'Life Balance',
+                            subtitle: hasLifeData
+                                ? 'Overall ${latestLifeAverage.toStringAsFixed(1)}/10'
+                                : 'No snapshots yet',
+                            badge: hasLifeData ? 'Live' : 'Empty',
+                            badgeColor: hasLifeData ? AColors.primary : AColors.textMuted,
+                            child: hasLifeData
+                                ? _FeatureLiveStat(
+                              text: '${lifeSnapshots.length} snapshot${lifeSnapshots.length == 1 ? '' : 's'}',
+                            )
+                                : const _FeaturePlaceholder(text: 'No data yet'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _FeatureCard(
+                            onTap: () => context.push(ARoutes.statistics),
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF1A2030), Color(0xFF0F1520)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            accentColor: AColors.info,
+                            icon: Icons.bar_chart_rounded,
+                            title: 'Statistics',
+                            subtitle: hasStatsData
+                                ? '$completedTasksTotal tasks • ${totalFocusMinutes}m focus'
+                                : 'No data yet',
+                            badge: hasStatsData ? 'Live' : 'Empty',
+                            badgeColor: hasStatsData ? AColors.info : AColors.textMuted,
+                            child: hasStatsData
+                                ? _FeatureLiveStat(
+                              text: '$totalPomodoroSessions session${totalPomodoroSessions == 1 ? '' : 's'} logged',
+                            )
+                                : const _FeaturePlaceholder(text: 'No stats yet'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              if (hasDashboardContent) ...[
+                if (dashboardTasks.isNotEmpty) ...[
+                  SliverToBoxAdapter(
+                    child: _SectionHeader(
+                      title: dashboardTaskTitle,
+                      action: 'See all',
+                      onAction: () => context.go(ARoutes.tasks),
+                    ),
+                  ),
+                  SliverPadding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
-                    itemCount: todayHabits.length,
-                    itemBuilder: (_, i) {
-                      final habit = todayHabits[i];
-                      return _AnimatedEntrance(
-                        delay: 400 + (i * 100),
-                        play: _hasAnimated,
-                        child: Padding(
-                          padding: const EdgeInsets.only(right: 12),
-                          child: _HabitDashboardChip(
-                            habit: habit,
-                            onTap: () => context.go(ARoutes.habits),
-                            onToggle: () async {
-                              await ref
-                                  .read(habitActionsProvider.notifier)
-                                  .toggleToday(habit);
-                              HapticFeedback.lightImpact();
-                            },
-                          ),
-                        ),
-                      );
-                    },
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                            (_, i) {
+                          final task = dashboardTasks[i];
+                          return _AnimatedEntrance(
+                            delay: 300 + (i * 100),
+                            play: _hasAnimated,
+                            child: Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              child: _TaskDashboardCard(
+                                task: task,
+                                priorityColor: _taskPriorityColor(task.priority),
+                                onTap: () => context.go(ARoutes.tasks),
+                                onToggle: () async {
+                                  final notifier = ref.read(taskActionsProvider.notifier);
+                                  await notifier.setDone(task, !task.done);
+                                  HapticFeedback.lightImpact();
+                                },
+                              ),
+                            ),
+                          );
+                        },
+                        childCount:
+                        dashboardTasks.length > 4 ? 4 : dashboardTasks.length,
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            ],
-          ] else ...[
-            SliverToBoxAdapter(
-              child: _AnimatedEntrance(
-                delay: 400,
-                play: _hasAnimated,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-                  child: _EmptyDashboardMainCard(
-                    onQuickAdd: () => context.go(ARoutes.tasks),
-                    onTasks: () => context.go(ARoutes.tasks),
-                    onHabits: () => context.go(ARoutes.habits),
-                  ),
-                ),
-              ),
-            ),
-          ],
+                  const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                ],
 
-          const SliverToBoxAdapter(child: SizedBox(height: 100)),
-        ],
-      ),
+                if (todayHabits.isNotEmpty) ...[
+                  SliverToBoxAdapter(
+                    child: _SectionHeader(
+                      title: "Today's Habits",
+                      action: 'See all',
+                      onAction: () => context.go(ARoutes.habits),
+                    ),
+                  ),
+                  SliverToBoxAdapter(
+                    child: SizedBox(
+                      height: 112,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        itemCount: todayHabits.length,
+                        itemBuilder: (_, i) {
+                          final habit = todayHabits[i];
+                          return _AnimatedEntrance(
+                            delay: 400 + (i * 100),
+                            play: _hasAnimated,
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 12),
+                              child: _HabitDashboardChip(
+                                habit: habit,
+                                onTap: () => context.go(ARoutes.habits),
+                                onToggle: () async {
+                                  await ref
+                                      .read(habitActionsProvider.notifier)
+                                      .toggleToday(habit);
+                                  HapticFeedback.lightImpact();
+                                },
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ] else ...[
+                SliverToBoxAdapter(
+                  child: _AnimatedEntrance(
+                    delay: 400,
+                    play: _hasAnimated,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                      child: _EmptyDashboardMainCard(
+                        onQuickAdd: () => context.go(ARoutes.tasks),
+                        onTasks: () => context.go(ARoutes.tasks),
+                        onHabits: () => context.go(ARoutes.habits),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+
+              const SliverToBoxAdapter(child: SizedBox(height: 100)),
+            ],
+          ),
         ],
       ),
     );
@@ -567,130 +568,211 @@ class _XpCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final profile = ref.watch(userProfileProvider).valueOrNull;
 
-    // Combined XP and Progress values
-    final totalXp = profile?.totalXp ?? 0;
-    final level = profile?.combinedLevel ?? 1;
-    final progress = profile?.combinedProgress ?? 0.0;
-    
-    final xpForThisLevel = profile?.combinedLevelStartXp ?? 0;
-    final xpForNextLevel = profile?.combinedNextLevelXp ?? 300;
-    
-    final xpIntoLevel = totalXp - xpForThisLevel;
-    final xpNeeded = xpForNextLevel;
-
-    final rankTitle = _rankTitle(level);
+    final totalXp      = profile?.totalXp ?? 0;
+    final level        = profile?.combinedLevel ?? 1;
+    final progress     = profile?.combinedProgress ?? 0.0;
+    final xpForThis    = profile?.combinedLevelStartXp ?? 0;
+    final xpForNext    = profile?.combinedNextLevelXp ?? 300;
+    final xpIntoLevel  = totalXp - xpForThis;
+    final xpNeeded     = xpForNext;
+    final rankTitle    = _rankTitle(level);
 
     return Container(
-      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: AColors.gradientPrimary,
-        borderRadius: ARadius.lg,
+        color: const Color(0xFF0D1A14),
+        borderRadius: ARadius.xl,
+        border: Border.all(
+          color: AColors.primary.withValues(alpha: 0.18),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: AColors.primary.withValues(alpha: 0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 6),
+            color: AColors.primary.withValues(alpha: 0.10),
+            blurRadius: 32,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      child: ClipRRect(
+        borderRadius: ARadius.xl,
+        child: Stack(
+          children: [
+            // Subtle top-left glow orb
+            Positioned(
+              top: -40,
+              left: -30,
+              child: Container(
+                width: 160,
+                height: 160,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: ARadius.full,
-                ),
-                child: Text(
-                  'Level $level',
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      AColors.primary.withValues(alpha: 0.18),
+                      Colors.transparent,
+                    ],
                   ),
                 ),
               ),
-              const Spacer(),
-              Text(
-                '$xpIntoLevel / $xpNeeded XP',
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white70,
-                ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Top row: rank label + XP counter
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Level pill
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AColors.primary.withValues(alpha: 0.15),
+                          borderRadius: ARadius.full,
+                          border: Border.all(
+                            color: AColors.primary.withValues(alpha: 0.35),
+                            width: 1,
+                          ),
+                        ),
+                        child: Text(
+                          'LVL $level',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: AColors.primary,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        '$xpIntoLevel / $xpNeeded XP',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: AColors.textMuted,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  // Rank title (no emoji)
+                  Text(
+                    rankTitle,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                      color: AColors.textPrimary,
+                      letterSpacing: -0.5,
+                      height: 1.1,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${xpNeeded - xpIntoLevel} XP until level ${level + 1}',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: AColors.textMuted,
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Main progress bar
+                  Stack(
+                    children: [
+                      Container(
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: AColors.primary.withValues(alpha: 0.12),
+                          borderRadius: ARadius.full,
+                        ),
+                      ),
+                      TweenAnimationBuilder<double>(
+                        tween: Tween(begin: 0, end: progress),
+                        duration: const Duration(milliseconds: 900),
+                        curve: Curves.easeOutQuart,
+                        builder: (_, val, __) => FractionallySizedBox(
+                          widthFactor: val.clamp(0.0, 1.0),
+                          child: Container(
+                            height: 6,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [
+                                  Color(0xFF00E88A),
+                                  AColors.primary,
+                                ],
+                              ),
+                              borderRadius: ARadius.full,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AColors.primary.withValues(alpha: 0.5),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 1),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Divider
+                  Container(
+                    height: 1,
+                    color: AColors.border.withValues(alpha: 0.5),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // 3 sphere pips
+                  Row(children: [
+                    _SpherePip(
+                      sphere: XpSphere.willpower,
+                      xp: profile?.willpowerXp ?? 0,
+                      level: profile?.willpowerLevel ?? 1,
+                      progress: profile?.willpowerProgress ?? 0,
+                    ),
+                    const SizedBox(width: 10),
+                    _SpherePip(
+                      sphere: XpSphere.intellect,
+                      xp: profile?.intellectXp ?? 0,
+                      level: profile?.intellectLevel ?? 1,
+                      progress: profile?.intellectProgress ?? 0,
+                    ),
+                    const SizedBox(width: 10),
+                    _SpherePip(
+                      sphere: XpSphere.health,
+                      xp: profile?.healthXp ?? 0,
+                      level: profile?.healthLevel ?? 1,
+                      progress: profile?.healthProgress ?? 0,
+                    ),
+                  ]),
+                ],
               ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Text(
-            rankTitle,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
-              color: Colors.white,
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            '${xpNeeded - xpIntoLevel} XP to level ${level + 1}',
-            style: const TextStyle(fontSize: 12, color: Colors.white70),
-          ),
-          const SizedBox(height: 14),
-          ClipRRect(
-            borderRadius: ARadius.full,
-            child: TweenAnimationBuilder<double>(
-              tween: Tween(begin: 0, end: progress),
-              duration: const Duration(milliseconds: 800),
-              curve: Curves.easeOutCubic,
-              builder: (_, val, __) => LinearProgressIndicator(
-                value: val,
-                backgroundColor: Colors.white24,
-                valueColor:
-                const AlwaysStoppedAnimation<Color>(Colors.white),
-                minHeight: 8,
-              ),
-            ),
-          ),
-          const SizedBox(height: 14),
-          // 3-sphere pips with individual progress bars
-          Row(children: [
-            _SpherePip(
-              sphere: XpSphere.willpower,
-              xp: profile?.willpowerXp ?? 0,
-              level: profile?.willpowerLevel ?? 1,
-              progress: profile?.willpowerProgress ?? 0,
-            ),
-            const SizedBox(width: 8),
-            _SpherePip(
-              sphere: XpSphere.intellect,
-              xp: profile?.intellectXp ?? 0,
-              level: profile?.intellectLevel ?? 1,
-              progress: profile?.intellectProgress ?? 0,
-            ),
-            const SizedBox(width: 8),
-            _SpherePip(
-              sphere: XpSphere.health,
-              xp: profile?.healthXp ?? 0,
-              level: profile?.healthLevel ?? 1,
-              progress: profile?.healthProgress ?? 0,
-            ),
-          ]),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   static String _rankTitle(int level) {
-    if (level >= 20) return 'Legendary Achiever 🏆';
-    if (level >= 15) return 'Elite Performer ⚡';
-    if (level >= 10) return 'Productivity Master 🎯';
-    if (level >= 7) return 'Discipline Warrior 🛡️';
-    if (level >= 4) return 'Rising Champion 🌟';
-    return 'Productivity Rookie 🌱';
+    if (level >= 20) return 'Legendary Achiever';
+    if (level >= 15) return 'Elite Performer';
+    if (level >= 10) return 'Productivity Master';
+    if (level >= 7) return 'Discipline Warrior';
+    if (level >= 4) return 'Rising Champion';
+    return 'Productivity Rookie';
   }
 }
 
@@ -706,62 +788,88 @@ class _SpherePip extends StatelessWidget {
     required this.progress,
   });
 
+  // Minimal icon per sphere — no emoji
+  IconData get _icon => switch (sphere) {
+    XpSphere.willpower => Icons.bolt_rounded,
+    XpSphere.intellect => Icons.auto_awesome_rounded,
+    XpSphere.health    => Icons.favorite_rounded,
+  };
+
   @override
   Widget build(BuildContext context) => Expanded(
     child: Container(
-      padding:
-      const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.12),
+        color: sphere.color.withValues(alpha: 0.07),
         borderRadius: ARadius.md,
+        border: Border.all(
+          color: sphere.color.withValues(alpha: 0.14),
+          width: 1,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(children: [
-            Text(sphere.emoji,
-                style: const TextStyle(fontSize: 13)),
-            const SizedBox(width: 5),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    sphere.label,
-                    style: const TextStyle(
-                      fontSize: 9,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white70,
-                    ),
-                  ),
-                  Text(
-                    'L$level · ${xp}xp',
-                    style: const TextStyle(
-                      fontSize: 9,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
+          Row(
+            children: [
+              Icon(_icon, size: 12, color: sphere.color),
+              const SizedBox(width: 5),
+              Text(
+                sphere.label.toUpperCase(),
+                style: TextStyle(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w700,
+                  color: sphere.color.withValues(alpha: 0.8),
+                  letterSpacing: 0.6,
+                ),
               ),
-            ),
-          ]),
+            ],
+          ),
           const SizedBox(height: 6),
-          // Per-sphere progress bar
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: TweenAnimationBuilder<double>(
-              tween: Tween(begin: 0, end: progress),
-              duration: const Duration(milliseconds: 700),
-              curve: Curves.easeOutCubic,
-              builder: (_, val, __) => LinearProgressIndicator(
-                value: val,
-                backgroundColor: Colors.white.withValues(alpha: 0.15),
-                valueColor:
-                AlwaysStoppedAnimation<Color>(sphere.color),
-                minHeight: 4,
-              ),
+          Text(
+            'L$level',
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: AColors.textPrimary,
+              height: 1,
             ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            '${xp}xp',
+            style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w500,
+              color: AColors.textMuted,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Stack(
+            children: [
+              Container(
+                height: 3,
+                decoration: BoxDecoration(
+                  color: sphere.color.withValues(alpha: 0.15),
+                  borderRadius: ARadius.full,
+                ),
+              ),
+              TweenAnimationBuilder<double>(
+                tween: Tween(begin: 0, end: progress),
+                duration: const Duration(milliseconds: 800),
+                curve: Curves.easeOutCubic,
+                builder: (_, val, __) => FractionallySizedBox(
+                  widthFactor: val.clamp(0.0, 1.0),
+                  child: Container(
+                    height: 3,
+                    decoration: BoxDecoration(
+                      color: sphere.color,
+                      borderRadius: ARadius.full,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -801,70 +909,70 @@ class _FeatureCard extends StatelessWidget {
       child: SizedBox(
         height: 160,
         child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          gradient: gradient,
-          borderRadius: ARadius.lg,
-          border: Border.all(
-            color: accentColor.withValues(alpha: 0.15),
-            width: 1,
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: gradient,
+            borderRadius: ARadius.lg,
+            border: Border.all(
+              color: accentColor.withValues(alpha: 0.15),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.25),
+                blurRadius: 16,
+                offset: const Offset(0, 8),
+              ),
+              BoxShadow(
+                color: accentColor.withValues(alpha: 0.05),
+                blurRadius: 24,
+                spreadRadius: 2,
+              ),
+            ],
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.25),
-              blurRadius: 16,
-              offset: const Offset(0, 8),
-            ),
-            BoxShadow(
-              color: accentColor.withValues(alpha: 0.05),
-              blurRadius: 24,
-              spreadRadius: 2,
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: accentColor.withValues(alpha: 0.15),
-                    borderRadius: ARadius.sm,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: accentColor.withValues(alpha: 0.15),
+                      borderRadius: ARadius.sm,
+                    ),
+                    child: Icon(icon, color: accentColor, size: 16),
                   ),
-                  child: Icon(icon, color: accentColor, size: 16),
-                ),
-                const Spacer(),
-                Container(
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: badgeColor.withValues(alpha: 0.15),
-                    borderRadius: ARadius.full,
-                  ),
-                  child: Text(
-                    badge,
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      color: badgeColor,
+                  const Spacer(),
+                  Container(
+                    padding:
+                    const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: badgeColor.withValues(alpha: 0.15),
+                      borderRadius: ARadius.full,
+                    ),
+                    child: Text(
+                      badge,
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: badgeColor,
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(title, style: AText.titleSmall.copyWith(color: Colors.white)),
-            const SizedBox(height: 2),
-            Text(subtitle, style: AText.bodySmall.copyWith(color: accentColor)),
-            const Spacer(),
-            child,
-          ],
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(title, style: AText.titleSmall.copyWith(color: Colors.white)),
+              const SizedBox(height: 2),
+              Text(subtitle, style: AText.bodySmall.copyWith(color: accentColor)),
+              const Spacer(),
+              child,
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
@@ -1015,12 +1123,12 @@ class _TaskDashboardCard extends StatelessWidget {
           boxShadow: task.done
               ? null
               : [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.3),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Row(
           children: [
@@ -1129,19 +1237,19 @@ class _HabitDashboardChip extends StatelessWidget {
           ),
           boxShadow: done
               ? [
-                  BoxShadow(
-                    color: habit.color.withValues(alpha: 0.05),
-                    blurRadius: 10,
-                    spreadRadius: 1,
-                  ),
-                ]
+            BoxShadow(
+              color: habit.color.withValues(alpha: 0.05),
+              blurRadius: 10,
+              spreadRadius: 1,
+            ),
+          ]
               : [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.2),
-                    blurRadius: 6,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.2),
+              blurRadius: 6,
+              offset: const Offset(0, 3),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1185,14 +1293,24 @@ class _HabitDashboardChip extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 4),
-            Text(
-              habit.streak > 0 ? '🔥 ${habit.streak}' : '⚪ 0',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                color:
-                habit.streak > 0 ? AColors.warning : AColors.textMuted,
-              ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.local_fire_department_rounded,
+                  size: 11,
+                  color: habit.streak > 0 ? AColors.warning : AColors.textMuted,
+                ),
+                const SizedBox(width: 3),
+                Text(
+                  '${habit.streak > 0 ? habit.streak : 0}',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: habit.streak > 0 ? AColors.warning : AColors.textMuted,
+                  ),
+                ),
+              ],
             ),
           ],
         ),

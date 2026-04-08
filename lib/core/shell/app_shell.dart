@@ -270,12 +270,10 @@ class _XpPillOverlayState extends State<_XpPillOverlay>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      sphere.emoji,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        decoration: TextDecoration.none,
-                      ),
+                    Icon(
+                      _sphereIcon(sphere),
+                      size: 15,
+                      color: sphere.color,
                     ),
                     const SizedBox(width: 8),
                     Text(
@@ -297,6 +295,12 @@ class _XpPillOverlayState extends State<_XpPillOverlay>
       ),
     );
   }
+
+  static IconData _sphereIcon(XpSphere sphere) => switch (sphere) {
+    XpSphere.willpower => Icons.bolt_rounded,
+    XpSphere.intellect => Icons.auto_awesome_rounded,
+    XpSphere.health    => Icons.favorite_rounded,
+  };
 }
 
 // ─── LEVEL-UP SHEET ──────────────────────────────────────────────────────
@@ -372,13 +376,35 @@ class _LevelUpSheetState extends State<_LevelUpSheet>
           ),
           const SizedBox(height: 20),
 
-          // Big sphere emoji with scale-in animation
+          // Big sphere icon with scale-in animation
           AnimatedBuilder(
             animation: _scaleIn,
             builder: (_, __) => Transform.scale(
               scale: _scaleIn.value,
-              child: Text(sphere.emoji,
-                  style: const TextStyle(fontSize: 64)),
+              child: Container(
+                width: 88,
+                height: 88,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: sphere.color.withValues(alpha: 0.12),
+                  border: Border.all(
+                    color: sphere.color.withValues(alpha: 0.35),
+                    width: 2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: sphere.color.withValues(alpha: 0.25),
+                      blurRadius: 24,
+                      spreadRadius: 4,
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  _sphereIcon(sphere),
+                  size: 40,
+                  color: sphere.color,
+                ),
+              ),
             ),
           ),
           const SizedBox(height: 16),
@@ -460,7 +486,7 @@ class _LevelUpSheetState extends State<_LevelUpSheet>
               ),
               child: const Center(
                 child: Text(
-                  "Let's go! 🔥",
+                  "Let's go",
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w800,
@@ -474,4 +500,10 @@ class _LevelUpSheetState extends State<_LevelUpSheet>
       ),
     );
   }
+
+  static IconData _sphereIcon(XpSphere sphere) => switch (sphere) {
+    XpSphere.willpower => Icons.bolt_rounded,
+    XpSphere.intellect => Icons.auto_awesome_rounded,
+    XpSphere.health    => Icons.favorite_rounded,
+  };
 }
