@@ -43,7 +43,29 @@ class GoRouterRefreshStream extends ChangeNotifier {
 }
 
 final _routerRefresh =
-GoRouterRefreshStream(FirebaseAuth.instance.authStateChanges());
+    GoRouterRefreshStream(FirebaseAuth.instance.authStateChanges());
+
+/// Smooth fade + subtle upward slide — Apple-style tab transition.
+CustomTransitionPage<void> _fadePage(GoRouterState state, Widget child) {
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 260),
+    reverseTransitionDuration: const Duration(milliseconds: 200),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      final fade = CurvedAnimation(parent: animation, curve: Curves.easeOut);
+      final slide = Tween<Offset>(
+        begin: const Offset(0, 0.04),
+        end: Offset.zero,
+      ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic));
+      return FadeTransition(
+        opacity: fade,
+        child: SlideTransition(position: slide, child: child),
+      );
+    },
+  );
+}
+
 
 final appRouter = GoRouter(
   initialLocation: ARoutes.home,
@@ -72,31 +94,31 @@ final appRouter = GoRouter(
       routes: [
         GoRoute(
           path: ARoutes.home,
-          builder: (_, __) => const HomeScreen(),
+          pageBuilder: (_, s) => _fadePage(s, const HomeScreen()),
         ),
         GoRoute(
           path: ARoutes.tasks,
-          builder: (_, __) => const TasksScreen(),
+          pageBuilder: (_, s) => _fadePage(s, const TasksScreen()),
         ),
         GoRoute(
           path: ARoutes.habits,
-          builder: (_, __) => const HabitsScreen(),
+          pageBuilder: (_, s) => _fadePage(s, const HabitsScreen()),
         ),
         GoRoute(
           path: ARoutes.goals,
-          builder: (_, __) => const GoalsScreen(),
+          pageBuilder: (_, s) => _fadePage(s, const GoalsScreen()),
         ),
         GoRoute(
           path: ARoutes.pomodoro,
-          builder: (_, __) => const PomodoroScreen(),
+          pageBuilder: (_, s) => _fadePage(s, const PomodoroScreen()),
         ),
         GoRoute(
           path: ARoutes.lifeBalance,
-          builder: (_, __) => const LifeBalanceScreen(),
+          pageBuilder: (_, s) => _fadePage(s, const LifeBalanceScreen()),
         ),
         GoRoute(
           path: ARoutes.statistics,
-          builder: (_, __) => const StatisticsScreen(),
+          pageBuilder: (_, s) => _fadePage(s, const StatisticsScreen()),
         ),
       ],
     ),

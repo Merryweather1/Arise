@@ -385,11 +385,14 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen>
           },
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _openGoal(uid),
-        backgroundColor: AColors.primary,
-        foregroundColor: const Color(0xFF003D25),
-        child: const Icon(Icons.add_rounded),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 90),
+        child: FloatingActionButton(
+          onPressed: () => _openGoal(uid),
+          backgroundColor: AColors.primary,
+          foregroundColor: const Color(0xFF003D25),
+          child: const Icon(Icons.add_rounded),
+        ),
       ),
         ),
         // ── Confetti overlay ──

@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -107,86 +106,169 @@ class _AppShellState extends ConsumerState<AppShell> {
       },
       child: Scaffold(
         backgroundColor: AColors.bg,
+        extendBody: true,
         body: widget.child,
-        // Glassmorphic Bottom Navigation Bar
-        bottomNavigationBar: ClipRect(
-          child: BackdropFilter(
-            filter: ui.ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-            child: Container(
-              decoration: BoxDecoration(
-                color: AColors.bgCard.withValues(alpha: 0.85),
-                border: const Border(top: BorderSide(color: AColors.border)),
+        bottomNavigationBar: _GlassPillNavBar(
+          currentIndex: currentIndex,
+          icons: _icons,
+          onTap: (i) {
+            HapticFeedback.selectionClick();
+            context.go(_tabs[i]);
+          },
+        ),
+      ),
+    );
+  }
+}
+
+// ─── FLOATING GLASS PILL NAV BAR ─────────────────────────────────────────
+class _GlassPillNavBar extends StatefulWidget {
+  final int currentIndex;
+  final List<IconData> icons;
+  final ValueChanged<int> onTap;
+
+  const _GlassPillNavBar({
+    super.key,
+    required this.currentIndex,
+    required this.icons,
+    required this.onTap,
+  });
+
+  @override
+  State<_GlassPillNavBar> createState() => _GlassPillNavBarState();
+}
+
+class _GlassPillNavBarState extends State<_GlassPillNavBar>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+  late Animation<double> _position;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 380),
+    );
+    _position = Tween<double>(
+      begin: widget.currentIndex.toDouble(),
+      end: widget.currentIndex.toDouble(),
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic));
+  }
+
+  @override
+  void didUpdateWidget(_GlassPillNavBar old) {
+    super.didUpdateWidget(old);
+    if (old.currentIndex != widget.currentIndex) {
+      final from = old.currentIndex.toDouble();
+      final to = widget.currentIndex.toDouble();
+      _position = Tween<double>(begin: from, end: to)
+          .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic));
+      _ctrl.forward(from: 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bottom = MediaQuery.of(context).padding.bottom;
+    final count = widget.icons.length;
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(40, 0, 40, bottom > 0 ? bottom : 24),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(100),
+        child: BackdropFilter(
+          filter: ui.ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+          child: Container(
+            height: 64,
+            decoration: BoxDecoration(
+              color: AColors.bgSleek.withValues(alpha: 0.75),
+              borderRadius: BorderRadius.circular(100),
+              border: Border.all(
+                color: AColors.borderSleek.withValues(alpha: 0.5),
+                width: 1,
               ),
-              child: SafeArea(
-                top: false,
-                child: SizedBox(
-                  height: 64,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: List.generate(_tabs.length, (i) {
-                      final selected = i == currentIndex;
-                      return GestureDetector(
-                        onTap: () {
-                          HapticFeedback.selectionClick();
-                          context.go(_tabs[i]);
-                        },
-                        behavior: HitTestBehavior.opaque,
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 6),
-                          child: TweenAnimationBuilder<double>(
-                            tween: Tween(begin: 1.0, end: selected ? 1.1 : 1.0),
-                            duration: const Duration(milliseconds: 350),
-                            curve: Curves.elasticOut,
-                            builder: (context, scale, child) {
-                              return Transform.scale(
-                                scale: scale,
-                                child: child,
-                              );
-                            },
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                AnimatedContainer(
-                                  duration: const Duration(milliseconds: 200),
-                                  padding: const EdgeInsets.all(6),
-                                  decoration: BoxDecoration(
-                                    color: selected
-                                        ? AColors.primary.withValues(alpha: 0.15)
-                                        : Colors.transparent,
-                                    borderRadius: ARadius.md,
-                                  ),
-                                  child: Icon(
-                                    _icons[i],
-                                    size: 22,
-                                    color: selected
-                                        ? AColors.primary
-                                        : AColors.textMuted,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  _labels[i],
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: selected
-                                        ? FontWeight.w700
-                                        : FontWeight.w500,
-                                    color: selected
-                                        ? AColors.primary
-                                        : AColors.textMuted,
-                                  ),
-                                ),
+            ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final totalWidth = constraints.maxWidth;
+                final slotWidth = totalWidth / count;
+                const pad = 7.0;
+
+                return AnimatedBuilder(
+                  animation: _position,
+                  builder: (_, __) => Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // ── Sliding glowing pill indicator ──
+                      Positioned(
+                        left: _position.value * slotWidth + pad,
+                        child: Container(
+                          width: slotWidth - pad * 2,
+                          height: 46,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                AColors.primary.withValues(alpha: 0.28),
+                                AColors.primary.withValues(alpha: 0.06),
                               ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
                             ),
+                            borderRadius: BorderRadius.circular(100),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AColors.primary.withValues(alpha: 0.22),
+                                blurRadius: 12,
+                                spreadRadius: 0,
+                              ),
+                            ],
                           ),
                         ),
-                      );
-                    }),
+                      ),
+                      // ── Icons sitting on top in equal slots ──
+                      Row(
+                        children: List.generate(count, (i) {
+                          final selected = i == widget.currentIndex;
+                          return Expanded(
+                            child: GestureDetector(
+                              onTap: () => widget.onTap(i),
+                              behavior: HitTestBehavior.opaque,
+                              child: SizedBox(
+                                height: 64,
+                                child: Center(
+                                  child: AnimatedScale(
+                                    scale: selected ? 1.12 : 1.0,
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeOutCubic,
+                                    child: AnimatedTheme(
+                                      data: Theme.of(context),
+                                      duration: const Duration(milliseconds: 250),
+                                      child: Icon(
+                                        widget.icons[i],
+                                        size: 24,
+                                        color: selected
+                                            ? AColors.primary
+                                            : AColors.textMuted,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }),
+                      ),
+                    ],
                   ),
-                ),
-              ),
+                );
+              },
             ),
           ),
         ),
@@ -244,7 +326,7 @@ class _XpPillOverlayState extends State<_XpPillOverlay>
       right: 0,
       child: AnimatedBuilder(
         animation: _ctrl,
-        builder: (_, __) => Transform.translate(
+        builder: (context, child) => Transform.translate(
           offset: Offset(0, _slide.value),
           child: Opacity(
             opacity: _opacity.value,
@@ -270,11 +352,8 @@ class _XpPillOverlayState extends State<_XpPillOverlay>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      _sphereIcon(sphere),
-                      size: 15,
-                      color: sphere.color,
-                    ),
+                    Text(sphere.emoji,
+                        style: const TextStyle(fontSize: 16)),
                     const SizedBox(width: 8),
                     Text(
                       '+${widget.event.amount} XP',
@@ -282,8 +361,6 @@ class _XpPillOverlayState extends State<_XpPillOverlay>
                         color: sphere.color,
                         fontWeight: FontWeight.w800,
                         fontSize: 15,
-                        decoration: TextDecoration.none,
-                        letterSpacing: 0.5,
                       ),
                     ),
                   ],
@@ -295,12 +372,6 @@ class _XpPillOverlayState extends State<_XpPillOverlay>
       ),
     );
   }
-
-  static IconData _sphereIcon(XpSphere sphere) => switch (sphere) {
-    XpSphere.willpower => Icons.bolt_rounded,
-    XpSphere.intellect => Icons.auto_awesome_rounded,
-    XpSphere.health    => Icons.favorite_rounded,
-  };
 }
 
 // ─── LEVEL-UP SHEET ──────────────────────────────────────────────────────
@@ -376,35 +447,13 @@ class _LevelUpSheetState extends State<_LevelUpSheet>
           ),
           const SizedBox(height: 20),
 
-          // Big sphere icon with scale-in animation
+          // Big sphere emoji with scale-in animation
           AnimatedBuilder(
             animation: _scaleIn,
-            builder: (_, __) => Transform.scale(
+            builder: (context, child) => Transform.scale(
               scale: _scaleIn.value,
-              child: Container(
-                width: 88,
-                height: 88,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: sphere.color.withValues(alpha: 0.12),
-                  border: Border.all(
-                    color: sphere.color.withValues(alpha: 0.35),
-                    width: 2,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: sphere.color.withValues(alpha: 0.25),
-                      blurRadius: 24,
-                      spreadRadius: 4,
-                    ),
-                  ],
-                ),
-                child: Icon(
-                  _sphereIcon(sphere),
-                  size: 40,
-                  color: sphere.color,
-                ),
-              ),
+              child: Text(sphere.emoji,
+                  style: const TextStyle(fontSize: 64)),
             ),
           ),
           const SizedBox(height: 16),
@@ -452,7 +501,7 @@ class _LevelUpSheetState extends State<_LevelUpSheet>
             borderRadius: BorderRadius.circular(100),
             child: AnimatedBuilder(
               animation: _barProgress,
-              builder: (_, __) => LinearProgressIndicator(
+              builder: (context, child) => LinearProgressIndicator(
                 value: _barProgress.value,
                 backgroundColor: sphere.color.withValues(alpha: 0.15),
                 valueColor: AlwaysStoppedAnimation<Color>(sphere.color),
@@ -486,7 +535,7 @@ class _LevelUpSheetState extends State<_LevelUpSheet>
               ),
               child: const Center(
                 child: Text(
-                  "Let's go",
+                  "Let's go! 🔥",
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w800,
@@ -500,10 +549,4 @@ class _LevelUpSheetState extends State<_LevelUpSheet>
       ),
     );
   }
-
-  static IconData _sphereIcon(XpSphere sphere) => switch (sphere) {
-    XpSphere.willpower => Icons.bolt_rounded,
-    XpSphere.intellect => Icons.auto_awesome_rounded,
-    XpSphere.health    => Icons.favorite_rounded,
-  };
 }

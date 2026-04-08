@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../core/models/app_models.dart';
 import '../../core/providers/app_providers.dart';
@@ -137,6 +138,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       ),
     );
     if (confirmed == true) {
+      // Sign out from Firebase AND clear the Google session so that
+      // the account picker is shown on the next sign-in attempt.
+      final googleSignIn = GoogleSignIn();
+      await googleSignIn.signOut();
       await FirebaseAuth.instance.signOut();
     }
   }

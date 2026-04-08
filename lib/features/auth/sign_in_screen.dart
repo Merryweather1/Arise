@@ -19,8 +19,16 @@ class _SignInScreenState extends State<SignInScreen> {
     setState(() => _loading = true);
 
     try {
-      final googleUser = await GoogleSignIn().signIn();
+      final googleSignIn = GoogleSignIn();
+
+      // Always clear the cached Google session first so the account
+      // chooser is shown — even if the user just signed out of a
+      // different account.
+      await googleSignIn.signOut();
+
+      final googleUser = await googleSignIn.signIn();
       if (googleUser == null) {
+        // User dismissed the picker
         if (mounted) setState(() => _loading = false);
         return;
       }
@@ -32,7 +40,7 @@ class _SignInScreenState extends State<SignInScreen> {
       );
 
       final userCred =
-      await FirebaseAuth.instance.signInWithCredential(credential);
+          await FirebaseAuth.instance.signInWithCredential(credential);
 
       final user = userCred.user ?? FirebaseAuth.instance.currentUser;
       if (user != null) {

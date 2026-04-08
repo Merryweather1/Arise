@@ -351,11 +351,14 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _openAdd(),
-        backgroundColor: AColors.primary,
-        foregroundColor: const Color(0xFF003D25),
-        child: const Icon(Icons.add_rounded),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 90),
+        child: FloatingActionButton(
+          onPressed: () => _openAdd(),
+          backgroundColor: AColors.primary,
+          foregroundColor: const Color(0xFF003D25),
+          child: const Icon(Icons.add_rounded),
+        ),
       ),
     );
   }
