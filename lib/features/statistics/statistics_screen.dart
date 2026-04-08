@@ -910,8 +910,8 @@ class _BarChart extends StatelessWidget {
                       const SizedBox(height: 3),
                       TweenAnimationBuilder<double>(
                         tween: Tween(begin: 0, end: frac),
-                        duration: const Duration(milliseconds: 1200),
-                        curve: Curves.elasticOut,
+                        duration: const Duration(milliseconds: 800),
+                        curve: Curves.easeOutCubic,
                         builder: (_, val, __) => Container(
                           height: 100 * val,
                           decoration: BoxDecoration(

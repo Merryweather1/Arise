@@ -8,6 +8,7 @@ import '../../core/providers/app_providers.dart';
 import '../../core/providers/notification_log_provider.dart';
 import '../../core/router/app_router.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/icon_mapper.dart';
 import 'notification_center.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -1256,7 +1257,13 @@ class _HabitDashboardChip extends StatelessWidget {
           children: [
             Row(
               children: [
-                Text(habit.emoji, style: const TextStyle(fontSize: 22)),
+                (AIconMapper.resolve(habit.emoji) != null)
+                    ? Icon(
+                        AIconMapper.resolve(habit.emoji),
+                        size: 24,
+                        color: done ? AColors.textMuted : habit.color,
+                      )
+                    : Text(habit.emoji, style: const TextStyle(fontSize: 22)),
                 const Spacer(),
                 GestureDetector(
                   onTap: onToggle,
