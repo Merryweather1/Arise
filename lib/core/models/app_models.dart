@@ -187,10 +187,10 @@ extension XpSphereExt on XpSphere {
     XpSphere.intellect => 'Intellect',
     XpSphere.health    => 'Health',
   };
-  String get emoji => switch (this) {
-    XpSphere.willpower => '🔥',
-    XpSphere.intellect => '🧠',
-    XpSphere.health    => '❤️',
+  IconData get icon => switch (this) {
+    XpSphere.willpower => Icons.bolt_rounded,
+    XpSphere.intellect => Icons.psychology_rounded,
+    XpSphere.health    => Icons.favorite_rounded,
   };
   Color get color => switch (this) {
     XpSphere.willpower => const Color(0xFFFF6B35),

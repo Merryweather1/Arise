@@ -213,6 +213,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
     final uid = ref.read(currentUidProvider) ?? '';
     final result = await showModalBottomSheet<TaskModel>(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder:
@@ -243,6 +244,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
   void _showSettings() {
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       backgroundColor: Colors.transparent,
       builder: (_) => const _SettingsSheet(),
     );
@@ -301,6 +303,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
   void _showTaskActions(TaskModel task) {
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       backgroundColor: Colors.transparent,
       builder:
           (_) => Container(
@@ -2139,11 +2142,10 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
                                         mainAxisSize:
                                         MainAxisSize.min,
                                         children: [
-                                          Text(
-                                            s.emoji,
-                                            style: const TextStyle(
-                                              fontSize: 14,
-                                            ),
+                                          Icon(
+                                            s.icon,
+                                            size: 16,
+                                            color: sel ? s.color : AColors.textMuted,
                                           ),
                                           const SizedBox(width: 5),
                                           Text(

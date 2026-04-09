@@ -331,39 +331,41 @@ class _XpPillOverlayState extends State<_XpPillOverlay>
           child: Opacity(
             opacity: _opacity.value,
             child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 20, vertical: 10),
-                decoration: BoxDecoration(
-                  color: sphere.color.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(100),
-                  border: Border.all(
-                    color: sphere.color.withValues(alpha: 0.6),
-                    width: 1.5,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: sphere.color.withValues(alpha: 0.25),
-                      blurRadius: 16,
-                      spreadRadius: 2,
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 20, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: sphere.color.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(100),
+                    border: Border.all(
+                      color: sphere.color.withValues(alpha: 0.6),
+                      width: 1.5,
                     ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(sphere.emoji,
-                        style: const TextStyle(fontSize: 16)),
-                    const SizedBox(width: 8),
-                    Text(
-                      '+${widget.event.amount} XP',
-                      style: TextStyle(
-                        color: sphere.color,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 15,
+                    boxShadow: [
+                      BoxShadow(
+                        color: sphere.color.withValues(alpha: 0.25),
+                        blurRadius: 16,
+                        spreadRadius: 2,
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(sphere.icon, size: 18, color: sphere.color),
+                      const SizedBox(width: 8),
+                      Text(
+                        '+${widget.event.amount} XP',
+                        style: TextStyle(
+                          color: sphere.color,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -452,8 +454,7 @@ class _LevelUpSheetState extends State<_LevelUpSheet>
             animation: _scaleIn,
             builder: (context, child) => Transform.scale(
               scale: _scaleIn.value,
-              child: Text(sphere.emoji,
-                  style: const TextStyle(fontSize: 64)),
+              child: Icon(sphere.icon, size: 64, color: sphere.color),
             ),
           ),
           const SizedBox(height: 16),

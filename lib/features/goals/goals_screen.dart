@@ -86,6 +86,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen>
   Future<void> _openGoal(String uid, {GoalModel? existing}) async {
     final result = await showModalBottomSheet<GoalModel>(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => _GoalEditorSheet(
@@ -162,6 +163,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen>
   Future<void> _checkIn(String uid, GoalModel goal) async {
     final completed = await showModalBottomSheet<bool>(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => _CheckInSheet(goal: goal, uid: uid),
@@ -883,6 +885,7 @@ class _GoalCardState extends State<_GoalCard> {
     HapticFeedback.mediumImpact();
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       backgroundColor: Colors.transparent,
       builder: (_) => Container(
         decoration: const BoxDecoration(
@@ -1515,7 +1518,7 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
                               decoration: BoxDecoration(color: sel ? s.color.withValues(alpha: 0.15) : Colors.transparent,
                                 borderRadius: BorderRadius.circular(10), border: Border.all(color: sel ? s.color : AColors.border.withValues(alpha: 0.4))),
                               child: Center(child: Row(mainAxisSize: MainAxisSize.min, children: [
-                                Text(s.emoji, style: const TextStyle(fontSize: 14)), const SizedBox(width: 5),
+                                Icon(s.icon, size: 16, color: sel ? s.color : AColors.textMuted), const SizedBox(width: 5),
                                 Text(s.label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: sel ? s.color : AColors.textMuted)),
                               ])),
                             ),

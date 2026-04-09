@@ -88,6 +88,7 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
 
     final result = await showModalBottomSheet<HabitModel>(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => _HabitEditorSheet(
@@ -751,6 +752,7 @@ class _HabitCard extends StatelessWidget {
     HapticFeedback.mediumImpact();
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       backgroundColor: Colors.transparent,
       builder: (_) => Container(
         decoration: const BoxDecoration(
@@ -1412,7 +1414,7 @@ class _HabitEditorSheetState extends State<_HabitEditorSheet> {
                                     border: Border.all(color: sel ? s.color : AColors.border.withValues(alpha: 0.4)),
                                   ),
                                   child: Center(child: Row(mainAxisSize: MainAxisSize.min, children: [
-                                    Text(s.emoji, style: const TextStyle(fontSize: 14)),
+                                    Icon(s.icon, size: 16, color: sel ? s.color : AColors.textMuted),
                                     const SizedBox(width: 5),
                                     Text(s.label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: sel ? s.color : AColors.textMuted)),
                                   ])),

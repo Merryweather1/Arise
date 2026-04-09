@@ -410,6 +410,7 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
   void _showSettings() {
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       backgroundColor: Colors.transparent,
       builder: (_) => _SettingsSheet(
         onSettingsChanged: () {
