@@ -9,6 +9,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import '../../core/models/app_models.dart';
 import '../../core/providers/app_providers.dart';
 import '../../core/services/firestore_service.dart';
+import '../../core/services/settings_service.dart';
 import '../../core/theme/app_theme.dart';
 
 // ─── SCREEN ───────────────────────────────────────────────────────────────
@@ -50,7 +51,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         backgroundColor: const Color(0xFF1A1D24),
         shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(20))),
-        title: const Text('Edit Name',
+        title:       Text('Edit Name',
             style: TextStyle(
                 color: AColors.textPrimary,
                 fontSize: 16,
@@ -59,10 +60,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           controller: ctrl,
           autofocus: true,
           textCapitalization: TextCapitalization.words,
-          style: const TextStyle(color: AColors.textPrimary, fontSize: 15),
+          style: TextStyle(color: AColors.textPrimary, fontSize: 15),
           decoration: InputDecoration(
             hintText: 'Your name',
-            hintStyle: const TextStyle(color: AColors.textMuted),
+            hintStyle: TextStyle(color: AColors.textMuted),
             filled: true,
             fillColor: const Color(0xFF0E1117),
             border: OutlineInputBorder(
@@ -72,19 +73,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide:
-                  const BorderSide(color: AColors.primary, width: 1.5),
+                  BorderSide(color: AColors.primary, width: 1.5),
             ),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel',
+            child:       Text('Cancel',
                 style: TextStyle(color: AColors.textMuted)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, ctrl.text.trim()),
-            child: const Text('Save',
+            child:       Text('Save',
                 style: TextStyle(
                     color: AColors.primary, fontWeight: FontWeight.w700)),
           ),
@@ -118,14 +119,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         backgroundColor: const Color(0xFF1A1D24),
         shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(20))),
-        title: const Text('Sign Out',
+        title:       Text('Sign Out',
             style: TextStyle(color: AColors.textPrimary, fontWeight: FontWeight.w700)),
-        content: const Text('Are you sure you want to sign out?',
+        content:       Text('Are you sure you want to sign out?',
             style: TextStyle(color: AColors.textMuted, height: 1.5)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel',
+            child:       Text('Cancel',
                 style: TextStyle(color: AColors.textMuted)),
           ),
           TextButton(
@@ -198,10 +199,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               const SliverToBoxAdapter(child: SizedBox(height: 28)),
               SliverToBoxAdapter(child: _AccountSection(profile: profile, email: liveEmail)),
               const SliverToBoxAdapter(child: SizedBox(height: 16)),
+              SliverToBoxAdapter(child: _AppSettingsSection(profile: profile)),
+              const SliverToBoxAdapter(child: SizedBox(height: 16)),
               SliverToBoxAdapter(child: _DangerSection(onSignOut: _signOut)),
               const SliverToBoxAdapter(child: SizedBox(height: 48)),
             ] else ...[
-              const SliverFillRemaining(
+                    SliverFillRemaining(
                 child: Center(
                   child: CircularProgressIndicator(
                       color: AColors.primary, strokeWidth: 2),
@@ -234,12 +237,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               shape: BoxShape.circle,
               border: Border.all(color: const Color(0xFF2A2E3A)),
             ),
-            child: const Icon(Icons.arrow_back_ios_new_rounded,
+            child:       Icon(Icons.arrow_back_ios_new_rounded,
                 size: 15, color: AColors.textPrimary),
           ),
         ),
       ),
-      title: const Text(
+      title:       Text(
         'Profile',
         style: TextStyle(
             color: AColors.textPrimary,
@@ -364,7 +367,7 @@ class _HeroCard extends StatelessWidget {
                           Flexible(
                             child: Text(
                               profile.name,
-                              style: const TextStyle(
+                              style:       TextStyle(
                                   color: AColors.textPrimary,
                                   fontSize: 20,
                                   fontWeight: FontWeight.w800,
@@ -375,7 +378,7 @@ class _HeroCard extends StatelessWidget {
                           const SizedBox(width: 6),
                           GestureDetector(
                             onTap: onEditName,
-                            child: const Icon(Icons.edit_rounded,
+                            child:       Icon(Icons.edit_rounded,
                                 size: 15, color: AColors.textMuted),
                           ),
                         ],
@@ -383,7 +386,7 @@ class _HeroCard extends StatelessWidget {
                       const SizedBox(height: 3),
                       Text(
                         email.isEmpty ? 'No email' : email,
-                        style: const TextStyle(
+                        style:       TextStyle(
                             color: AColors.textMuted, fontSize: 12),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -418,7 +421,7 @@ class _HeroCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    const Text('Overall XP',
+                          Text('Overall XP',
                         style: TextStyle(
                             color: AColors.textMuted,
                             fontSize: 11,
@@ -449,7 +452,7 @@ class _HeroCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text('${profile.totalXp} XP total',
-                    style: const TextStyle(
+                    style:       TextStyle(
                         color: AColors.textMuted, fontSize: 11)),
               ],
             ),
@@ -555,7 +558,7 @@ class _SphereCard extends StatelessWidget {
             const SizedBox(height: 2),
             Text(
               label,
-              style: const TextStyle(
+              style:       TextStyle(
                   color: AColors.textMuted,
                   fontSize: 10,
                   fontWeight: FontWeight.w600),
@@ -566,7 +569,7 @@ class _SphereCard extends StatelessWidget {
             const SizedBox(height: 6),
             Text(
               '$xp XP',
-              style: const TextStyle(color: AColors.textMuted, fontSize: 9),
+              style: TextStyle(color: AColors.textMuted, fontSize: 9),
             ),
           ],
         ),
@@ -647,7 +650,7 @@ class _AccountSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
+                Padding(
             padding: EdgeInsets.only(left: 4, bottom: 10),
             child: Text('ACCOUNT',
                 style: TextStyle(
@@ -668,7 +671,7 @@ class _AccountSection extends StatelessWidget {
                       : (email.length > 24
                           ? '${email.substring(0, 24)}…'
                           : email),
-                  style: const TextStyle(
+                  style:       TextStyle(
                       color: AColors.textMuted, fontSize: 13),
                 ),
                 onTap: null,
@@ -679,7 +682,7 @@ class _AccountSection extends StatelessWidget {
                 label: 'Member Since',
                 trailing: Text(
                   _formatDate(profile.createdAt),
-                  style: const TextStyle(
+                  style:       TextStyle(
                       color: AColors.textMuted, fontSize: 13),
                 ),
                 onTap: null,
@@ -700,6 +703,326 @@ class _AccountSection extends StatelessWidget {
   }
 }
 
+// ─── APP SETTINGS SECTION ──────────────────────────────────────────────────
+class _AppSettingsSection extends ConsumerWidget {
+  final UserProfile profile;
+
+  const _AppSettingsSection({required this.profile});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeModeProvider);
+    final colorTheme = ref.watch(colorThemeProvider);
+
+    String themeModeLabel = 'System';
+    if (themeMode == AppThemeMode.light) themeModeLabel = 'Light';
+    if (themeMode == AppThemeMode.dark) themeModeLabel = 'Dark';
+
+    // Capitalize first letter of color theme
+    String colorThemeLabel = colorTheme.name.substring(0, 1).toUpperCase() + colorTheme.name.substring(1);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 4, bottom: 10),
+            child: Text('APP SETTINGS',
+                style: TextStyle(
+                    color: AColors.textMuted,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.2)),
+          ),
+          _SettingsCard(
+            items: [
+              _SettingsItem(
+                icon: Icons.category_rounded,
+                iconColor: const Color(0xFF9F7AEA),
+                label: 'Custom Categories',
+                trailing: Text(
+                  '${profile.customCategories.length} items',
+                  style: TextStyle(color: AColors.textMuted, fontSize: 13),
+                ),
+                onTap: () => _showCategorySheet(context, ref),
+              ),
+              _SettingsItem(
+                icon: Icons.dark_mode_rounded,
+                iconColor: const Color(0xFF5B9CF6),
+                label: 'App Theme',
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(themeModeLabel, style: TextStyle(color: AColors.textMuted, fontSize: 13)),
+                    const SizedBox(width: 4),
+                    Icon(Icons.chevron_right_rounded, color: AColors.textMuted, size: 18),
+                  ],
+                ),
+                onTap: () => _showAppThemeSheet(context, ref, themeMode),
+              ),
+              _SettingsItem(
+                icon: Icons.palette_rounded,
+                iconColor: AColors.primary,
+                label: 'Color Theme',
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(colorThemeLabel, style: TextStyle(color: AColors.textMuted, fontSize: 13)),
+                    const SizedBox(width: 4),
+                    Icon(Icons.chevron_right_rounded, color: AColors.textMuted, size: 18),
+                  ],
+                ),
+                onTap: () => _showColorThemeSheet(context, ref, colorTheme),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showCategorySheet(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      useRootNavigator: true,
+      backgroundColor: AColors.bgElevated,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (ctx) => _CategoryManagerSheet(profile: profile),
+    );
+  }
+
+  void _showAppThemeSheet(BuildContext context, WidgetRef ref, AppThemeMode currentMode) {
+    showModalBottomSheet(
+      context: context,
+      useRootNavigator: true,
+      backgroundColor: AColors.bgElevated,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (ctx) => _AppThemeSheet(currentMode: currentMode),
+    );
+  }
+
+  void _showColorThemeSheet(BuildContext context, WidgetRef ref, AppColorTheme currentTheme) {
+    showModalBottomSheet(
+      context: context,
+      useRootNavigator: true,
+      backgroundColor: AColors.bgElevated,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (ctx) => _ColorThemeSheet(currentTheme: currentTheme),
+    );
+  }
+}
+
+class _CategoryManagerSheet extends ConsumerStatefulWidget {
+  final UserProfile profile;
+  const _CategoryManagerSheet({required this.profile});
+
+  @override
+  ConsumerState<_CategoryManagerSheet> createState() => _CategoryManagerSheetState();
+}
+
+class _CategoryManagerSheetState extends ConsumerState<_CategoryManagerSheet> {
+  final _ctrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  void _add() {
+    final text = _ctrl.text.trim();
+    if (text.isNotEmpty && !widget.profile.customCategories.contains(text)) {
+      ref.read(userActionsProvider.notifier).addCustomCategory(text);
+      _ctrl.clear();
+    }
+  }
+
+  void _remove(String text) {
+    // We update via UserNotifier or directly to UserRepository. 
+    // Wait, UserNotifier only had addCustomCategory. Let's fire a repo call.
+    final uid = ref.read(currentUidProvider);
+    if (uid != null) {
+      final updated = List<String>.from(widget.profile.customCategories)..remove(text);
+      UserRepository.update(uid, {'customCategories': updated});
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cats = widget.profile.customCategories;
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: Container(
+        constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.7),
+        padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text('Custom Categories', style: AText.titleMedium, textAlign: TextAlign.center),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _ctrl,
+                    style: TextStyle(color: AColors.textPrimary),
+                    decoration: InputDecoration(
+                      hintText: 'New category...',
+                      hintStyle: TextStyle(color: AColors.textMuted),
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                    onSubmitted: (_) => _add(),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                ElevatedButton(
+                  onPressed: _add,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AColors.primary,
+                    shape: RoundedRectangleBorder(borderRadius: ARadius.md),
+                    minimumSize: const Size(48, 48),
+                    padding: EdgeInsets.zero,
+                  ),
+                  child: Icon(Icons.add_rounded, color: AColors.bg, size: 24),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: cats.isEmpty 
+                ? Center(child: Text('No custom categories yet', style: TextStyle(color: AColors.textMuted)))
+                : ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: cats.length,
+                    itemBuilder: (_, i) {
+                      final c = cats[i];
+                      return ListTile(
+                        title: Text(c, style: TextStyle(color: AColors.textPrimary)),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.close_rounded, color: Colors.redAccent),
+                          onPressed: () => _remove(c),
+                        ),
+                        contentPadding: EdgeInsets.zero,
+                      );
+                    },
+                  ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AppThemeSheet extends ConsumerWidget {
+  final AppThemeMode currentMode;
+  const _AppThemeSheet({required this.currentMode});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text('App Theme', style: AText.titleMedium, textAlign: TextAlign.center),
+          const SizedBox(height: 24),
+          _ThemeTile(
+            label: 'System', icon: Icons.brightness_auto_rounded,
+            isSelected: currentMode == AppThemeMode.system,
+            onTap: () { ref.read(themeModeProvider.notifier).setMode(AppThemeMode.system); Navigator.pop(context); },
+          ),
+          _ThemeTile(
+            label: 'Dark', icon: Icons.dark_mode_rounded,
+            isSelected: currentMode == AppThemeMode.dark,
+            onTap: () { ref.read(themeModeProvider.notifier).setMode(AppThemeMode.dark); Navigator.pop(context); },
+          ),
+          _ThemeTile(
+            label: 'Light', icon: Icons.light_mode_rounded,
+            isSelected: currentMode == AppThemeMode.light,
+            onTap: () { ref.read(themeModeProvider.notifier).setMode(AppThemeMode.light); Navigator.pop(context); },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ColorThemeSheet extends ConsumerWidget {
+  final AppColorTheme currentTheme;
+  const _ColorThemeSheet({required this.currentTheme});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final settings = ref.read(settingsServiceProvider);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text('Color Theme', style: AText.titleMedium, textAlign: TextAlign.center),
+          const SizedBox(height: 24),
+          SizedBox(
+            height: 80,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: AppColorTheme.values.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 16),
+              itemBuilder: (ctx, i) {
+                final theme = AppColorTheme.values[i];
+                final isSelected = theme == currentTheme;
+                final color = settings.getPrimaryColorFor(theme);
+                return GestureDetector(
+                  onTap: () {
+                    ref.read(colorThemeProvider.notifier).setTheme(theme);
+                    Navigator.pop(context);
+                  },
+                  child: Container(
+                    width: 60,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: color,
+                      border: isSelected ? Border.all(color: AColors.textPrimary, width: 3) : null,
+                    ),
+                    child: isSelected ? Icon(Icons.check_rounded, color: Colors.white) : null,
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ThemeTile extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _ThemeTile({required this.label, required this.icon, required this.isSelected, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      onTap: onTap,
+      shape: RoundedRectangleBorder(borderRadius: ARadius.md),
+      tileColor: isSelected ? AColors.primary.withValues(alpha: 0.1) : null,
+      leading: Icon(icon, color: isSelected ? AColors.primary : AColors.textSecondary),
+      title: Text(label, style: TextStyle(color: isSelected ? AColors.primary : AColors.textPrimary, fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500)),
+      trailing: isSelected ? Icon(Icons.check_circle_rounded, color: AColors.primary) : null,
+    );
+  }
+}
+
 // ─── DANGER SECTION ───────────────────────────────────────────────────────
 class _DangerSection extends StatelessWidget {
   final VoidCallback onSignOut;
@@ -712,7 +1035,7 @@ class _DangerSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
+                Padding(
             padding: EdgeInsets.only(left: 4, bottom: 10),
             child: Text('SESSION',
                 style: TextStyle(
@@ -832,9 +1155,9 @@ class _SettingsItem extends StatelessWidget {
                         fontSize: 14,
                         fontWeight: FontWeight.w500)),
               ),
-              if (trailing != null) trailing!,
+              ?trailing,
               if (onTap != null && trailing == null)
-                const Icon(Icons.chevron_right_rounded,
+                      Icon(Icons.chevron_right_rounded,
                     color: AColors.textMuted, size: 18),
             ],
           ),

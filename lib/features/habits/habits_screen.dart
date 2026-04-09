@@ -137,7 +137,7 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
       builder: (dCtx) => AlertDialog(
         backgroundColor: AColors.bgElevated,
         shape: const RoundedRectangleBorder(borderRadius: ARadius.xl),
-        title: const Text('New Category', style: AText.titleMedium),
+        title: Text('New Category', style: AText.titleMedium),
         content: TextField(
           controller: ctrl,
           autofocus: true,
@@ -147,7 +147,7 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dCtx).pop(),
-            child: const Text(
+            child:       Text(
               'Cancel',
               style: TextStyle(color: AColors.textMuted),
             ),
@@ -164,7 +164,7 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
                 if (mounted) Navigator.of(dCtx).pop();
               }
             },
-            child: const Text(
+            child:       Text(
               'Add',
               style: TextStyle(color: AColors.primary),
             ),
@@ -206,7 +206,7 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Habits', style: AText.displayMedium),
+                        Text('Habits', style: AText.displayMedium),
                         Text(
                           totalToday == 0
                               ? 'No habits scheduled for today'
@@ -264,11 +264,11 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
                           color: AColors.primary.withAlpha(20),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.track_changes_rounded,
+                        child:       Icon(Icons.track_changes_rounded,
                             color: AColors.primary, size: 18),
                       ),
                       const SizedBox(width: 12),
-                      const Expanded(
+                            Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -413,7 +413,7 @@ class _DailyProgress extends StatelessWidget {
               child: LinearProgressIndicator(
                 value: val,
                 backgroundColor: AColors.border,
-                valueColor: const AlwaysStoppedAnimation(AColors.primary),
+                valueColor: AlwaysStoppedAnimation(AColors.primary),
                 minHeight: 8,
               ),
             ),
@@ -439,7 +439,7 @@ class _TodayTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (habits.isEmpty) {
-      return const Center(
+      return       Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -479,12 +479,12 @@ class _TodayTab extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 12),
               child: Row(
                 children: [
-                  const Expanded(child: Divider(color: AColors.border)),
+                  Expanded(child: Divider(color: AColors.border)),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     child: Text('Completed ${done.length}', style: AText.bodySmall),
                   ),
-                  const Expanded(child: Divider(color: AColors.border)),
+                  Expanded(child: Divider(color: AColors.border)),
                 ],
               ),
             ),
@@ -521,7 +521,7 @@ class _AllTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (habits.isEmpty) {
-      return const Center(
+      return       Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -755,7 +755,7 @@ class _HabitCard extends StatelessWidget {
       useRootNavigator: true,
       backgroundColor: Colors.transparent,
       builder: (_) => Container(
-        decoration: const BoxDecoration(
+        decoration:       BoxDecoration(
           color: AColors.bgElevated,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
@@ -775,16 +775,16 @@ class _HabitCard extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             ListTile(
-              leading: const Icon(Icons.edit_rounded, color: AColors.primary),
-              title: const Text('Edit habit', style: AText.bodyLarge),
+              leading: Icon(Icons.edit_rounded, color: AColors.primary),
+              title: Text('Edit habit', style: AText.bodyLarge),
               onTap: () {
                 Navigator.pop(context);
                 onEdit();
               },
             ),
             ListTile(
-              leading: const Icon(Icons.delete_rounded, color: AColors.error),
-              title: const Text('Delete habit', style: AText.bodyLarge),
+              leading: Icon(Icons.delete_rounded, color: AColors.error),
+              title: Text('Delete habit', style: AText.bodyLarge),
               onTap: () {
                 Navigator.pop(context);
                 onDelete();
@@ -824,7 +824,7 @@ class _OverviewTab extends StatelessWidget {
             const SizedBox(width: 12),
             _StatMini(
               label: 'Best Streak',
-              value: '${bestStreak}🔥',
+              value: '$bestStreak🔥',
               icon: Icons.local_fire_department_rounded,
               color: AColors.warning,
             ),
@@ -935,7 +935,7 @@ class _HabitHeatmap extends StatelessWidget {
                 ),
                 child: Text(
                   '${habit.streak}🔥 streak',
-                  style: const TextStyle(
+                  style:       TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                     color: AColors.warning,
@@ -1120,7 +1120,7 @@ class _HabitEditorSheetState extends State<_HabitEditorSheet> {
       initialTime: _reminderTime ?? TimeOfDay.now(),
       builder: (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
-          colorScheme: const ColorScheme.dark(
+          colorScheme:       ColorScheme.dark(
             primary: AColors.primary,
             surface: AColors.bgElevated,
             onSurface: AColors.textPrimary,
@@ -1173,7 +1173,7 @@ class _HabitEditorSheetState extends State<_HabitEditorSheet> {
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: Container(
-        decoration: const BoxDecoration(
+        decoration:       BoxDecoration(
           color: AColors.bgElevated,
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
@@ -1196,12 +1196,12 @@ class _HabitEditorSheetState extends State<_HabitEditorSheet> {
                   children: [
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
-                      child: const Icon(Icons.close_rounded, color: AColors.textMuted, size: 24),
+                      child: Icon(Icons.close_rounded, color: AColors.textMuted, size: 24),
                     ),
                     const Spacer(),
                     Text(
                       widget.existing == null ? 'New Habit' : 'Edit Habit',
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AColors.textPrimary, letterSpacing: -0.3),
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AColors.textPrimary, letterSpacing: -0.3),
                     ),
                     const Spacer(),
                     GestureDetector(
@@ -1251,7 +1251,7 @@ class _HabitEditorSheetState extends State<_HabitEditorSheet> {
                           Expanded(child: TextField(
                             controller: _nameCtrl,
                             autofocus: widget.existing == null,
-                            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AColors.textPrimary),
+                            style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AColors.textPrimary),
                             decoration: InputDecoration(
                               hintText: 'Habit name',
                               hintStyle: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AColors.textMuted.withValues(alpha: 0.5)),
@@ -1356,7 +1356,7 @@ class _HabitEditorSheetState extends State<_HabitEditorSheet> {
                                       borderRadius: BorderRadius.circular(10),
                                       border: Border.all(color: AColors.error.withValues(alpha: 0.3)),
                                     ),
-                                    child: const Center(child: Icon(Icons.close_rounded, size: 14, color: AColors.error)),
+                                    child: Center(child: Icon(Icons.close_rounded, size: 14, color: AColors.error)),
                                   ),
                                 );
                               }
@@ -1459,14 +1459,14 @@ class _HabitEditorSheetState extends State<_HabitEditorSheet> {
                         ),
 
                         const SizedBox(height: 14),
-                        const Divider(color: AColors.border, height: 1),
+                        Divider(color: AColors.border, height: 1),
                         const SizedBox(height: 12),
 
                         // Duration toggle
                         GestureDetector(
                           onTap: () { setState(() => _isUnlimited = !_isUnlimited); HapticFeedback.selectionClick(); },
                           child: Row(children: [
-                            const Expanded(child: Text('Unlimited', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AColors.textSecondary))),
+                            Expanded(child: Text('Unlimited', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AColors.textSecondary))),
                             _Toggle(value: _isUnlimited, color: _color, onTap: () => setState(() => _isUnlimited = !_isUnlimited)),
                           ]),
                         ),
@@ -1475,7 +1475,7 @@ class _HabitEditorSheetState extends State<_HabitEditorSheet> {
                           TextField(
                             controller: _durationCtrl,
                             keyboardType: TextInputType.number,
-                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AColors.textPrimary),
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AColors.textPrimary),
                             decoration: InputDecoration(
                               hintText: 'Number of days',
                               hintStyle: TextStyle(color: AColors.textMuted.withValues(alpha: 0.5)),
@@ -1488,7 +1488,7 @@ class _HabitEditorSheetState extends State<_HabitEditorSheet> {
                         ],
 
                         const SizedBox(height: 12),
-                        const Divider(color: AColors.border, height: 1),
+                        Divider(color: AColors.border, height: 1),
                         const SizedBox(height: 12),
 
                         // Reminder
@@ -1505,7 +1505,7 @@ class _HabitEditorSheetState extends State<_HabitEditorSheet> {
                             if (_reminderTime != null)
                               GestureDetector(
                                 onTap: () => setState(() => _reminderTime = null),
-                                child: const Icon(Icons.close_rounded, size: 16, color: AColors.textMuted),
+                                child: Icon(Icons.close_rounded, size: 16, color: AColors.textMuted),
                               )
                             else
                               Icon(Icons.chevron_right_rounded, size: 18, color: AColors.textMuted.withValues(alpha: 0.5)),
@@ -1519,7 +1519,7 @@ class _HabitEditorSheetState extends State<_HabitEditorSheet> {
                     // ━━ CARD 4: Note ━━━━━━━━━━━━━━━━━━━━━━━━━━━
                     _card(child: TextField(
                       controller: _noteCtrl,
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AColors.textSecondary),
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AColors.textSecondary),
                       maxLines: 3, minLines: 1,
                       decoration: InputDecoration(
                         hintText: 'Add a note...',
@@ -1758,8 +1758,7 @@ class _HScrollItem {
 
 class _HScrollSelector extends StatelessWidget {
   final List<_HScrollItem> items;
-  final Widget? trailing;
-  const _HScrollSelector({required this.items, this.trailing});
+  const _HScrollSelector({required this.items});
 
   @override
   Widget build(BuildContext context) {
@@ -1793,7 +1792,6 @@ class _HScrollSelector extends StatelessWidget {
               ),
             ),
           )),
-          if (trailing != null) trailing!,
         ],
       ),
     );

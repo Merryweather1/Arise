@@ -67,7 +67,9 @@ class UserProfile {
 
   int get combinedNextLevelXp {
     int req = 300;
-    for (int i = 1; i < combinedLevel; i++) req = (req * 1.25).round();
+    for (int i = 1; i < combinedLevel; i++) {
+      req = (req * 1.25).round();
+    }
     return req;
   }
 
@@ -91,7 +93,9 @@ class UserProfile {
 
   static int _nextLevelXp(int level) {
     int required = 100;
-    for (int i = 1; i < level; i++) required = (required * 1.25).round();
+    for (int i = 1; i < level; i++) {
+      required = (required * 1.25).round();
+    }
     return required;
   }
 

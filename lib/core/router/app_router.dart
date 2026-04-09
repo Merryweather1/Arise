@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -17,15 +16,15 @@ import '../../features/tasks/tasks_screen.dart';
 import '../shell/app_shell.dart';
 
 class ARoutes {
-  static const signIn = '/sign-in';
-  static const home = '/home';
-  static const tasks = '/tasks';
-  static const habits = '/habits';
-  static const goals = '/goals';
-  static const pomodoro = '/pomodoro';
-  static const lifeBalance = '/life-balance';
-  static const statistics = '/statistics';
-  static const profile = '/profile';
+  static const String signIn = '/sign-in';
+  static const String home = '/home';
+  static const String tasks = '/tasks';
+  static const String habits = '/habits';
+  static const String goals = '/goals';
+  static const String pomodoro = '/pomodoro';
+  static const String lifeBalance = '/life-balance';
+  static const String statistics = '/statistics';
+  static const String profile = '/profile';
 }
 
 class GoRouterRefreshStream extends ChangeNotifier {
@@ -50,12 +49,12 @@ CustomTransitionPage<void> _fadePage(GoRouterState state, Widget child) {
   return CustomTransitionPage<void>(
     key: state.pageKey,
     child: child,
-    transitionDuration: const Duration(milliseconds: 260),
-    reverseTransitionDuration: const Duration(milliseconds: 200),
+    transitionDuration:       Duration(milliseconds: 260),
+    reverseTransitionDuration:       Duration(milliseconds: 200),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       final fade = CurvedAnimation(parent: animation, curve: Curves.easeOut);
       final slide = Tween<Offset>(
-        begin: const Offset(0, 0.04),
+        begin:       Offset(0, 0.04),
         end: Offset.zero,
       ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic));
       return FadeTransition(
@@ -87,34 +86,34 @@ final appRouter = GoRouter(
   routes: [
     GoRoute(
       path: ARoutes.signIn,
-      builder: (_, __) => const SignInScreen(),
+      builder: (_, __) =>       SignInScreen(),
     ),
     ShellRoute(
       builder: (context, state, child) => AppShell(child: child),
       routes: [
         GoRoute(
           path: ARoutes.home,
-          pageBuilder: (_, s) => _fadePage(s, const HomeScreen()),
+          pageBuilder: (_, s) => _fadePage(s,       HomeScreen()),
         ),
         GoRoute(
           path: ARoutes.tasks,
-          pageBuilder: (_, s) => _fadePage(s, const TasksScreen()),
+          pageBuilder: (_, s) => _fadePage(s,       TasksScreen()),
         ),
         GoRoute(
           path: ARoutes.habits,
-          pageBuilder: (_, s) => _fadePage(s, const HabitsScreen()),
+          pageBuilder: (_, s) => _fadePage(s,       HabitsScreen()),
         ),
         GoRoute(
           path: ARoutes.goals,
-          pageBuilder: (_, s) => _fadePage(s, const GoalsScreen()),
+          pageBuilder: (_, s) => _fadePage(s,       GoalsScreen()),
         ),
         GoRoute(
           path: ARoutes.pomodoro,
-          pageBuilder: (_, s) => _fadePage(s, const PomodoroScreen()),
+          pageBuilder: (_, s) => _fadePage(s,       PomodoroScreen()),
         ),
         GoRoute(
           path: ARoutes.lifeBalance,
-          pageBuilder: (_, s) => _fadePage(s, const LifeBalanceScreen()),
+          pageBuilder: (_, s) => _fadePage(s,       LifeBalanceScreen()),
         ),
         GoRoute(
           path: ARoutes.statistics,

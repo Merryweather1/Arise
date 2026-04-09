@@ -53,6 +53,7 @@ dependencies:
   percent_indicator: ^4.2.3
   flutter_timezone: ^3.0.0
 
+  timezone: any
 dev_dependencies:
   flutter_test:
     sdk: flutter

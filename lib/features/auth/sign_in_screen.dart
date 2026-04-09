@@ -116,11 +116,11 @@ class _SignInScreenState extends State<SignInScreen> {
               child: const Icon(Icons.trending_up_rounded, color: Colors.white, size: 38),
             ),
             const SizedBox(height: 28),
-            const Text('Welcome to', style: AText.bodyLarge),
+            Text('Welcome to', style: AText.bodyLarge),
             const SizedBox(height: 4),
-            const Text('Arise', style: TextStyle(fontSize: 48, fontWeight: FontWeight.w800, color: AColors.textPrimary, letterSpacing: -1.5)),
+            Text('Arise', style: TextStyle(fontSize: 48, fontWeight: FontWeight.w800, color: AColors.textPrimary, letterSpacing: -1.5)),
             const SizedBox(height: 12),
-            const Text('Build habits. Crush goals.\nBecome who you want to be.', style: AText.bodyMedium),
+            Text('Build habits. Crush goals.\nBecome who you want to be.', style: AText.bodyMedium),
             const Spacer(flex: 3),
             _FeatureRow(icon: Icons.check_circle_rounded, text: 'Track tasks, habits & goals', color: AColors.primary),
             const SizedBox(height: 14),
@@ -139,7 +139,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   elevation: 0, shape: const RoundedRectangleBorder(borderRadius: ARadius.md),
                 ),
                 child: _loading
-                  ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2.5, color: AColors.primary))
+                  ? SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2.5, color: AColors.primary))
                   : const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                       Icon(Icons.g_mobiledata_rounded, size: 28, color: Color(0xFF4285F4)),
                       SizedBox(width: 10),

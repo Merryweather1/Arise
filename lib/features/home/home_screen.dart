@@ -174,7 +174,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     // NEW: Life Balance summary
     final hasLifeData = lifeSnapshots.isNotEmpty && latestBalance != null;
     final latestLifeAverage = hasLifeData
-        ? (latestBalance!.scores.isEmpty
+        ? (latestBalance.scores.isEmpty
         ? 0.0
         : latestBalance.scores.values.fold<double>(0.0, (a, b) => a + b) /
         latestBalance.scores.length)
@@ -640,7 +640,7 @@ class _XpCard extends ConsumerWidget {
                         ),
                         child: Text(
                           'LVL $level',
-                          style: const TextStyle(
+                          style:       TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
                             color: AColors.primary,
@@ -651,7 +651,7 @@ class _XpCard extends ConsumerWidget {
                       const Spacer(),
                       Text(
                         '$xpIntoLevel / $xpNeeded XP',
-                        style: const TextStyle(
+                        style:       TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                           color: AColors.textMuted,
@@ -666,7 +666,7 @@ class _XpCard extends ConsumerWidget {
                   // Rank title (no emoji)
                   Text(
                     rankTitle,
-                    style: const TextStyle(
+                    style:       TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w700,
                       color: AColors.textPrimary,
@@ -677,7 +677,7 @@ class _XpCard extends ConsumerWidget {
                   const SizedBox(height: 4),
                   Text(
                     '${xpNeeded - xpIntoLevel} XP until level ${level + 1}',
-                    style: const TextStyle(
+                    style:       TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                       color: AColors.textMuted,
@@ -705,7 +705,7 @@ class _XpCard extends ConsumerWidget {
                           child: Container(
                             height: 6,
                             decoration: BoxDecoration(
-                              gradient: const LinearGradient(
+                              gradient:       LinearGradient(
                                 colors: [
                                   Color(0xFF00E88A),
                                   AColors.primary,
@@ -830,7 +830,7 @@ class _SpherePip extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             'L$level',
-            style: const TextStyle(
+            style:       TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w700,
               color: AColors.textPrimary,
@@ -840,7 +840,7 @@ class _SpherePip extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             '${xp}xp',
-            style: const TextStyle(
+            style:       TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w500,
               color: AColors.textMuted,
@@ -1356,16 +1356,16 @@ class _EmptyDashboardMainCard extends StatelessWidget {
               color: AColors.bgElevated,
               borderRadius: ARadius.md,
             ),
-            child: const Icon(
+            child:       Icon(
               Icons.inbox_rounded,
               color: AColors.textMuted,
               size: 28,
             ),
           ),
           const SizedBox(height: 18),
-          const Text('Your dashboard is empty', style: AText.titleLarge),
+          Text('Your dashboard is empty', style: AText.titleLarge),
           const SizedBox(height: 8),
-          const Text(
+                Text(
             'Add tasks, habits, and goals to start seeing real data here.',
             style: AText.bodyMedium,
             textAlign: TextAlign.center,

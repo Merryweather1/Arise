@@ -189,7 +189,7 @@ class _NotificationCenterSheetState
                   border: Border.all(
                       color: AColors.primary.withAlpha(50), width: 1),
                 ),
-                child: const Icon(Icons.notifications_rounded,
+                child:       Icon(Icons.notifications_rounded,
                     color: AColors.primary, size: 18),
               ),
               const SizedBox(width: 12),
@@ -197,7 +197,7 @@ class _NotificationCenterSheetState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Notification Center',
+                          Text('Notification Center',
                         style: TextStyle(
                           color: AColors.textPrimary,
                           fontWeight: FontWeight.w700,
@@ -208,7 +208,7 @@ class _NotificationCenterSheetState
                       entries.isEmpty
                           ? 'All caught up'
                           : '${entries.length} reminder${entries.length == 1 ? '' : 's'}',
-                      style: const TextStyle(
+                      style:       TextStyle(
                         color: AColors.textMuted,
                         fontSize: 12,
                       ),
@@ -228,7 +228,7 @@ class _NotificationCenterSheetState
                         horizontal: 12, vertical: 6),
                     foregroundColor: AColors.textMuted,
                   ),
-                  child: const Text('Clear all',
+                  child:       Text('Clear all',
                       style: TextStyle(fontSize: 13, color: AColors.textMuted)),
                 ),
             ],
@@ -259,18 +259,18 @@ class _NotificationCenterSheetState
               border: Border.all(
                   color: AColors.primary.withAlpha(40), width: 1.5),
             ),
-            child: const Icon(Icons.notifications_off_rounded,
+            child:       Icon(Icons.notifications_off_rounded,
                 color: AColors.primary, size: 30),
           ),
           const SizedBox(height: 20),
-          const Text('All caught up!',
+                Text('All caught up!',
               style: TextStyle(
                 color: AColors.textPrimary,
                 fontSize: 17,
                 fontWeight: FontWeight.w600,
               )),
           const SizedBox(height: 6),
-          const Text(
+                Text(
             'Notifications appear here\nonce their reminder fires.',
             textAlign: TextAlign.center,
             style: TextStyle(color: AColors.textMuted, fontSize: 13, height: 1.5),
@@ -292,7 +292,7 @@ class _SectionLabel extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
       child: Text(
         label.toUpperCase(),
-        style: const TextStyle(
+        style:       TextStyle(
           color: AColors.textMuted,
           fontSize: 11,
           fontWeight: FontWeight.w700,
@@ -515,7 +515,7 @@ class _NotifTileState extends State<_NotifTile>
                               const Spacer(),
                               Text(
                                 _formatTime(widget.entry.time),
-                                style: const TextStyle(
+                                style:       TextStyle(
                                   color: AColors.textMuted,
                                   fontSize: 11,
                                 ),
@@ -540,7 +540,7 @@ class _NotifTileState extends State<_NotifTile>
                           const SizedBox(height: 3),
                           Text(
                             widget.entry.body,
-                            style: const TextStyle(
+                            style:       TextStyle(
                               color: AColors.textMuted,
                               fontSize: 12,
                               height: 1.4,

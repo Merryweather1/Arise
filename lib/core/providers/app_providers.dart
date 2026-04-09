@@ -6,6 +6,46 @@ import '../services/notification_service.dart';
 import '../providers/notification_log_provider.dart';
 import 'package:flutter/material.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+import '../services/settings_service.dart';
+
+// ─── SETTINGS & THEME ──────────────────────────────────────────────────────
+final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
+  throw UnimplementedError('Initialize SharedPreferences Provider in main.dart');
+});
+
+final settingsServiceProvider = Provider<SettingsService>((ref) {
+  return SettingsService(ref.watch(sharedPreferencesProvider));
+});
+
+class ThemeModeNotifier extends StateNotifier<AppThemeMode> {
+  final SettingsService _service;
+  ThemeModeNotifier(this._service) : super(_service.getThemeMode());
+
+  Future<void> setMode(AppThemeMode mode) async {
+    await _service.setThemeMode(mode);
+    state = mode;
+  }
+}
+
+final themeModeProvider = StateNotifierProvider<ThemeModeNotifier, AppThemeMode>((ref) {
+  return ThemeModeNotifier(ref.watch(settingsServiceProvider));
+});
+
+class ColorThemeNotifier extends StateNotifier<AppColorTheme> {
+  final SettingsService _service;
+  ColorThemeNotifier(this._service) : super(_service.getColorTheme());
+
+  Future<void> setTheme(AppColorTheme theme) async {
+    await _service.setColorTheme(theme);
+    state = theme;
+  }
+}
+
+final colorThemeProvider = StateNotifierProvider<ColorThemeNotifier, AppColorTheme>((ref) {
+  return ColorThemeNotifier(ref.watch(settingsServiceProvider));
+});
+
 // ─── AUTH ──────────────────────────────────────────────────────────────────
 final authStateProvider = StreamProvider<User?>((ref) =>
     FirebaseAuth.instance.authStateChanges());

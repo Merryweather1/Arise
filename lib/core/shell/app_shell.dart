@@ -12,14 +12,14 @@ import '../router/app_router.dart';
 
 class AppShell extends ConsumerStatefulWidget {
   final Widget child;
-  const AppShell({super.key, required this.child});
+        const AppShell({super.key, required this.child});
 
   @override
   ConsumerState<AppShell> createState() => _AppShellState();
 }
 
 class _AppShellState extends ConsumerState<AppShell> {
-  static const _tabs = [
+  static       final _tabs = [
     ARoutes.home,
     ARoutes.tasks,
     ARoutes.habits,
@@ -128,7 +128,6 @@ class _GlassPillNavBar extends StatefulWidget {
   final ValueChanged<int> onTap;
 
   const _GlassPillNavBar({
-    super.key,
     required this.currentIndex,
     required this.icons,
     required this.onTap,

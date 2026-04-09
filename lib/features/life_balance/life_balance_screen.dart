@@ -128,7 +128,7 @@ class _LifeBalanceScreenState extends ConsumerState<LifeBalanceScreen>
       body: SafeArea(
         child: Column(
           children: [
-            const Padding(
+                  Padding(
               padding: EdgeInsets.fromLTRB(20, 20, 20, 0),
               child: Row(
                 children: [
@@ -430,7 +430,7 @@ class _SphereSlider extends StatelessWidget {
   final LifeSphere sphere;
   final Function(double) onChanged;
 
-  const _SphereSlider({required this.sphere, required this.onChanged});
+        _SphereSlider({required this.sphere, required this.onChanged});
 
   String get _scoreLabel {
     final s = sphere.score;
@@ -444,9 +444,9 @@ class _SphereSlider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
+      padding:       EdgeInsets.only(bottom: 14),
       child: Container(
-        padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
+        padding:       EdgeInsets.fromLTRB(16, 14, 16, 10),
         decoration: BoxDecoration(
           color: AColors.bgCard,
           borderRadius: ARadius.lg,
@@ -474,7 +474,7 @@ class _SphereSlider extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+                  SizedBox(height: 8),
             SliderTheme(
               data: SliderTheme.of(context).copyWith(
                 activeTrackColor: sphere.color,
@@ -512,7 +512,7 @@ class _HistoryTab extends StatelessWidget {
   final List<LifeSphere> spheres;
   final List<_BalanceSnapshot> history;
 
-  const _HistoryTab({required this.spheres, required this.history});
+        _HistoryTab({required this.spheres, required this.history});
 
   @override
   Widget build(BuildContext context) {
@@ -520,7 +520,7 @@ class _HistoryTab extends StatelessWidget {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
+          children:       [
             Icon(Icons.explore_off_rounded, size: 52, color: AColors.primary),
             SizedBox(height: 16),
             Text('No snapshots yet', style: AText.titleMedium),
@@ -535,11 +535,11 @@ class _HistoryTab extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
       physics: const BouncingScrollPhysics(),
       children: [
-        const Text('Trends (recent)', style: AText.titleSmall),
+        Text('Trends (recent)', style: AText.titleSmall),
         const SizedBox(height: 12),
         ...spheres.map((s) => _TrendRow(sphere: s, history: history)),
         const SizedBox(height: 24),
-        const Text('Saved Snapshots', style: AText.titleSmall),
+        Text('Saved Snapshots', style: AText.titleSmall),
         const SizedBox(height: 12),
         ...history.reversed.map((snap) => _SnapshotCard(snap: snap, spheres: spheres)),
       ],
@@ -678,7 +678,7 @@ class _SnapshotCard extends StatelessWidget {
                   ),
                   child: Text(
                     'Avg ${avg.toStringAsFixed(1)}',
-                    style: const TextStyle(
+                    style:       TextStyle(
                       color: AColors.primary,
                       fontSize: 12,
                       fontWeight: FontWeight.w700,

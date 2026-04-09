@@ -259,7 +259,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
           (dCtx) => AlertDialog(
         backgroundColor: AColors.bgElevated,
         shape: const RoundedRectangleBorder(borderRadius: ARadius.xl),
-        title: const Text('New Category', style: AText.titleMedium),
+        title: Text('New Category', style: AText.titleMedium),
         content: TextField(
           controller: ctrl,
           autofocus: true,
@@ -271,7 +271,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dCtx).pop(),
-            child: const Text(
+            child:       Text(
               'Cancel',
               style: TextStyle(color: AColors.textMuted),
             ),
@@ -290,7 +290,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
                 if (mounted) Navigator.of(dCtx).pop();
               }
             },
-            child: const Text(
+            child:       Text(
               'Add',
               style: TextStyle(color: AColors.primary),
             ),
@@ -307,7 +307,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
       backgroundColor: Colors.transparent,
       builder:
           (_) => Container(
-        decoration: const BoxDecoration(
+        decoration:       BoxDecoration(
           color: AColors.bgElevated,
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
@@ -336,11 +336,11 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
             const SizedBox(height: 20),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: const Icon(
+              leading:       Icon(
                 Icons.edit_rounded,
                 color: AColors.primary,
               ),
-              title: const Text(
+              title:       Text(
                 'Edit task',
                 style: AText.bodyLarge,
               ),
@@ -382,11 +382,11 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
             ),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: const Icon(
+              leading:       Icon(
                 Icons.delete_rounded,
                 color: AColors.error,
               ),
-              title: const Text(
+              title:       Text(
                 'Delete task',
                 style: AText.bodyLarge,
               ),
@@ -416,7 +416,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
               child: Row(
                 children: [
-                  const Expanded(
+                        Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -487,7 +487,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
             Expanded(
               child: tasksAsync.when(
                 loading:
-                    () => const Center(
+                    () =>       Center(
                   child: CircularProgressIndicator(
                     color: AColors.primary,
                   ),
@@ -736,7 +736,7 @@ class _TaskListState extends State<_TaskList> {
   @override
   Widget build(BuildContext context) {
     if (_visible.isEmpty) {
-      return const Center(
+      return       Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -1053,7 +1053,7 @@ class _SwipeableTaskTileState extends State<_SwipeableTaskTile>
                                 ),
                                 borderRadius: ARadius.full,
                               ),
-                              child: const Text(
+                              child:       Text(
                                 'PENDING',
                                 style: TextStyle(
                                   fontSize: 9,
@@ -1208,7 +1208,7 @@ class _SwipeableTaskTileState extends State<_SwipeableTaskTile>
                           child: AnimatedRotation(
                             turns: _expanded ? 0.5 : 0,
                             duration: const Duration(milliseconds: 200),
-                            child: const Icon(
+                            child:       Icon(
                               Icons.keyboard_arrow_down_rounded,
                               color: AColors.textMuted,
                               size: 20,
@@ -1261,7 +1261,7 @@ class _SwipeableTaskTileState extends State<_SwipeableTaskTile>
                 _expanded && hasSubs
                     ? Column(
                   children: [
-                    const Divider(
+                          Divider(
                       height: 1,
                       color: AColors.border,
                     ),
@@ -1362,7 +1362,7 @@ class _SettingsSheet extends ConsumerWidget {
     final hideCompleted = ref.watch(tasksHideCompletedProvider);
 
     return Container(
-      decoration: const BoxDecoration(
+      decoration:       BoxDecoration(
         color: AColors.bgElevated,
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
@@ -1382,10 +1382,10 @@ class _SettingsSheet extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 20),
-          const Text('Settings', style: AText.titleLarge),
+          Text('Settings', style: AText.titleLarge),
           const SizedBox(height: 24),
 
-          const Text('Sort by', style: AText.titleSmall),
+          Text('Sort by', style: AText.titleSmall),
           const SizedBox(height: 10),
           Row(
             children: [
@@ -1414,7 +1414,7 @@ class _SettingsSheet extends ConsumerWidget {
           ),
           const SizedBox(height: 24),
 
-          const Text('Display mode', style: AText.titleSmall),
+          Text('Display mode', style: AText.titleSmall),
           const SizedBox(height: 10),
           Row(
             children: [
@@ -1450,7 +1450,7 @@ class _SettingsSheet extends ConsumerWidget {
             },
             child: Row(
               children: [
-                const Expanded(
+                      Expanded(
                   child: Column(
                     crossAxisAlignment:
                     CrossAxisAlignment.start,
@@ -1646,7 +1646,7 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
       builder:
           (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
-          colorScheme: const ColorScheme.dark(
+          colorScheme:       ColorScheme.dark(
             primary: AColors.primary,
             surface: AColors.bgElevated,
             onSurface: AColors.textPrimary,
@@ -1668,7 +1668,7 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
       builder:
           (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
-          colorScheme: const ColorScheme.dark(
+          colorScheme:       ColorScheme.dark(
             primary: AColors.primary,
             surface: AColors.bgElevated,
             onSurface: AColors.textPrimary,
@@ -1756,7 +1756,7 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
       child: Container(
-        decoration: const BoxDecoration(
+        decoration:       BoxDecoration(
           color: AColors.bgElevated,
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
@@ -1785,7 +1785,7 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
                   children: [
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
-                      child: const Icon(
+                      child:       Icon(
                         Icons.close_rounded,
                         color: AColors.textMuted,
                         size: 24,
@@ -1796,7 +1796,7 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
                       widget.existing == null
                           ? 'New Task'
                           : 'Edit Task',
-                      style: const TextStyle(
+                      style:       TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                         color: AColors.textPrimary,
@@ -1841,7 +1841,7 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
                           TextField(
                             controller: _titleCtrl,
                             autofocus: widget.existing == null,
-                            style: const TextStyle(
+                            style:       TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.w600,
                               color: AColors.textPrimary,
@@ -1866,14 +1866,14 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          const Divider(
+                                Divider(
                             color: AColors.border,
                             height: 1,
                           ),
                           const SizedBox(height: 8),
                           TextField(
                             controller: _noteCtrl,
-                            style: const TextStyle(
+                            style:       TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
                               color: AColors.textSecondary,
@@ -2005,7 +2005,7 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
                                           ),
                                         ),
                                       ),
-                                      child: const Center(
+                                      child:       Center(
                                         child: Icon(
                                           Icons.close_rounded,
                                           size: 14,
@@ -2215,7 +2215,7 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
                                         () => setState(
                                           () => _dueDate = null,
                                     ),
-                                    child: const Icon(
+                                    child:       Icon(
                                       Icons.close_rounded,
                                       size: 16,
                                       color: AColors.textMuted,
@@ -2233,7 +2233,7 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
                           ),
 
                           const SizedBox(height: 12),
-                          const Divider(
+                                Divider(
                             color: AColors.border,
                             height: 1,
                           ),
@@ -2275,7 +2275,7 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
                                       _reminderTime = null;
                                       _reminderDays = [];
                                     }),
-                                    child: const Icon(
+                                    child:       Icon(
                                       Icons.close_rounded,
                                       size: 16,
                                       color: AColors.textMuted,
@@ -2357,7 +2357,7 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
                           ],
 
                           const SizedBox(height: 12),
-                          const Divider(
+                                Divider(
                             color: AColors.border,
                             height: 1,
                           ),
@@ -2370,7 +2370,7 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
                             },
                             child: Row(
                               children: [
-                                const Expanded(
+                                      Expanded(
                                   child: Text(
                                     'Pending',
                                     style: TextStyle(
@@ -2509,7 +2509,7 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
                                           () => _subtasks
                                           .removeAt(e.key),
                                     ),
-                                    child: const Icon(
+                                    child:       Icon(
                                       Icons.close_rounded,
                                       color: AColors.textMuted,
                                       size: 16,
@@ -2524,7 +2524,7 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
                               Expanded(
                                 child: TextField(
                                   controller: _subtaskCtrl,
-                                  style: const TextStyle(
+                                  style:       TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w500,
                                     color: AColors.textPrimary,
@@ -2566,7 +2566,7 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
                                     borderRadius:
                                     BorderRadius.circular(10),
                                   ),
-                                  child: const Icon(
+                                  child:       Icon(
                                     Icons.add_rounded,
                                     color: AColors.primary,
                                     size: 20,
@@ -2803,11 +2803,9 @@ class _HScrollItem {
 
 class _HScrollSelector extends StatelessWidget {
   final List<_HScrollItem> items;
-  final Widget? trailing;
 
   const _HScrollSelector({
     required this.items,
-    this.trailing,
   });
 
   @override
@@ -2858,7 +2856,6 @@ class _HScrollSelector extends StatelessWidget {
             ),
           ),
         ),
-        if (trailing != null) trailing!,
       ],
     ),
   );

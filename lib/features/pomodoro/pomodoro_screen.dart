@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -373,7 +372,7 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
               Navigator.of(dialogCtx).pop();
               _proceedToNextPhase(nextPhase, autoStart: false);
             },
-            child: const Text(
+            child:       Text(
               'Close',
               style: TextStyle(
                 color: AColors.textMuted,
@@ -437,7 +436,7 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
         return AlertDialog(
           backgroundColor: AColors.bgElevated,
           shape: const RoundedRectangleBorder(borderRadius: ARadius.xl),
-          title: const Text(
+          title:       Text(
             'What are you working on?',
             style: AText.titleMedium,
           ),
@@ -455,14 +454,14 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogCtx).pop(),
-              child: const Text(
+              child:       Text(
                 'Cancel',
                 style: TextStyle(color: AColors.textMuted),
               ),
             ),
             TextButton(
               onPressed: () => Navigator.of(dialogCtx).pop(ctrl.text.trim()),
-              child: const Text(
+              child:       Text(
                 'Set',
                 style: TextStyle(
                   color: AColors.primary,
@@ -489,7 +488,7 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
       backgroundColor: AColors.bg,
       body: SafeArea(
         child: uid == null || uid.isEmpty
-            ? const Center(
+            ?       Center(
           child: Text(
             'Sign in to use Pomodoro',
             style: AText.bodyMedium,
@@ -514,7 +513,7 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
                   padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
                   child: Row(
                     children: [
-                      const Expanded(
+                            Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -582,7 +581,7 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
                                   ),
                                 ),
                                 const SizedBox(width: 4),
-                                const Icon(
+                                      Icon(
                                   Icons.edit_rounded,
                                   size: 12,
                                   color: AColors.textMuted,
@@ -648,7 +647,7 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
                                       children: [
                                         Text(
                                           _timeString,
-                                          style: const TextStyle(
+                                          style:       TextStyle(
                                             fontSize: 58,
                                             fontWeight: FontWeight.w800,
                                             color: AColors.textPrimary,
@@ -938,7 +937,7 @@ class _SettingsSheet extends ConsumerWidget {
     final sessions = ref.watch(pomodoroSessionsUntilLongProvider);
 
     return Container(
-      decoration: const BoxDecoration(
+      decoration:       BoxDecoration(
         color: AColors.bgElevated,
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
@@ -958,7 +957,7 @@ class _SettingsSheet extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 20),
-          const Text('Timer Settings', style: AText.titleLarge),
+          Text('Timer Settings', style: AText.titleLarge),
           const SizedBox(height: 24),
           _TimerRow(
             label: 'Focus',

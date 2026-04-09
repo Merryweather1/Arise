@@ -8,7 +8,7 @@ import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 
 class StatisticsScreen extends ConsumerStatefulWidget {
-  const StatisticsScreen({super.key});
+        const StatisticsScreen({super.key});
 
   @override
   ConsumerState<StatisticsScreen> createState() => _StatisticsScreenState();
@@ -19,7 +19,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen>
   late TabController _tabCtrl;
   String _period = 'Week';
 
-  final _categoryColors = const [
+  final _categoryColors =       [
     AColors.primary,
     AColors.info,
     AColors.warning,
@@ -70,7 +70,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen>
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
               child: Row(
                 children: [
-                  const Expanded(
+                        Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -505,9 +505,9 @@ class _StatisticsEmptyState extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.insights_outlined, size: 56, color: AColors.textMuted),
+            Icon(Icons.insights_outlined, size: 56, color: AColors.textMuted),
             const SizedBox(height: 12),
-            const Text('No statistics yet', style: AText.titleMedium),
+            Text('No statistics yet', style: AText.titleMedium),
             const SizedBox(height: 6),
             Text(
               'No real data found for $period.\nComplete tasks, habits, or focus sessions to see insights.',
@@ -692,7 +692,7 @@ class _TasksTab extends StatelessWidget {
           title: 'Category Breakdown',
           subtitle: '$total tasks total',
           child: entries.isEmpty
-              ? const Text('No category data', style: AText.bodyMedium)
+              ? Text('No category data', style: AText.bodyMedium)
               : Column(
             children: [
               ClipRRect(
@@ -957,7 +957,7 @@ class _DonutChart extends StatelessWidget {
     final total = data.values.fold(0, (a, b) => a + b);
 
     if (entries.isEmpty || total == 0) {
-      return const Text('No category data', style: AText.bodyMedium);
+      return Text('No category data', style: AText.bodyMedium);
     }
 
     return Row(
@@ -978,7 +978,7 @@ class _DonutChart extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(width: 16),
+              SizedBox(width: 16),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1056,12 +1056,12 @@ class _DonutPainter extends CustomPainter {
     final tp = TextPainter(
       text: TextSpan(
         text: '${data.length}\n',
-        style: const TextStyle(
+        style:       TextStyle(
           color: AColors.textPrimary,
           fontSize: 20,
           fontWeight: FontWeight.w800,
         ),
-        children: const [
+        children:       [
           TextSpan(
             text: 'categories',
             style: TextStyle(
@@ -1078,6 +1078,7 @@ class _DonutPainter extends CustomPainter {
     tp.paint(canvas, Offset(center.dx - tp.width / 2, center.dy - tp.height / 2));
   }
 
+  @override
   bool shouldRepaint(covariant _DonutPainter oldDelegate) =>
       oldDelegate.progress != progress;
 }

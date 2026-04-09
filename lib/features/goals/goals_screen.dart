@@ -191,7 +191,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen>
       builder: (dCtx) => AlertDialog(
         backgroundColor: AColors.bgElevated,
         shape: const RoundedRectangleBorder(borderRadius: ARadius.xl),
-        title: const Text('New Category', style: AText.titleMedium),
+        title: Text('New Category', style: AText.titleMedium),
         content: TextField(
           controller: ctrl,
           autofocus: true,
@@ -201,7 +201,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dCtx).pop(),
-            child: const Text(
+            child:       Text(
               'Cancel',
               style: TextStyle(color: AColors.textMuted),
             ),
@@ -218,7 +218,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen>
                 if (mounted) Navigator.of(dCtx).pop();
               }
             },
-            child: const Text(
+            child:       Text(
               'Add',
               style: TextStyle(color: AColors.primary),
             ),
@@ -233,7 +233,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen>
     final uid = ref.watch(currentUidProvider);
 
     if (uid == null || uid.isEmpty) {
-      return const Scaffold(
+      return       Scaffold(
         backgroundColor: AColors.bg,
         body: SafeArea(
           child: Center(
@@ -266,7 +266,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen>
             }
 
             if (!snapshot.hasData) {
-              return const Center(
+              return       Center(
                 child: CircularProgressIndicator(color: AColors.primary),
               );
             }
@@ -279,7 +279,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen>
 
             return Column(
               children: [
-                const Padding(
+                      Padding(
                   padding: EdgeInsets.fromLTRB(20, 20, 20, 0),
                   child: Row(
                     children: [
@@ -408,7 +408,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen>
             numberOfParticles: 20,
             gravity: 0.2,
             shouldLoop: false,
-            colors: const [AColors.primary, Color(0xFFFFD700), Color(0xFFBF7FF5),
+            colors:       [AColors.primary, Color(0xFFFFD700), Color(0xFFBF7FF5),
               Color(0xFF4D9FFF), Colors.white],
           ),
         ),
@@ -557,7 +557,7 @@ class _GoalList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (goals.isEmpty) {
-      return const Center(
+      return       Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -843,7 +843,7 @@ class _GoalCardState extends State<_GoalCard> {
                 },
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  decoration: const BoxDecoration(
+                  decoration:       BoxDecoration(
                     border: Border(top: BorderSide(color: AColors.border))),
                   child: Row(children: [
                     Text(
@@ -853,7 +853,7 @@ class _GoalCardState extends State<_GoalCard> {
                     AnimatedRotation(
                       turns: _expanded ? 0.5 : 0,
                       duration: const Duration(milliseconds: 200),
-                      child: const Icon(Icons.keyboard_arrow_down_rounded,
+                      child:       Icon(Icons.keyboard_arrow_down_rounded,
                         color: AColors.textMuted, size: 18),
                     ),
                   ]),
@@ -888,7 +888,7 @@ class _GoalCardState extends State<_GoalCard> {
       useRootNavigator: true,
       backgroundColor: Colors.transparent,
       builder: (_) => Container(
-        decoration: const BoxDecoration(
+        decoration:       BoxDecoration(
           color: AColors.bgElevated,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
@@ -898,21 +898,21 @@ class _GoalCardState extends State<_GoalCard> {
             decoration: BoxDecoration(color: AColors.border, borderRadius: ARadius.full))),
           const SizedBox(height: 20),
           ListTile(
-            leading: const Icon(Icons.edit_rounded, color: AColors.primary),
-            title: const Text('Edit goal', style: AText.bodyLarge),
+            leading: Icon(Icons.edit_rounded, color: AColors.primary),
+            title: Text('Edit goal', style: AText.bodyLarge),
             onTap: () { Navigator.pop(context); widget.onTap(); },
           ),
           if (!widget.isComplete(widget.goal))
             ListTile(
-              leading: const Icon(Icons.check_circle_rounded, color: AColors.primary),
-              title: const Text('Mark as Complete', style: AText.bodyLarge),
-              subtitle: const Text('Override progress and finish the goal',
+              leading: Icon(Icons.check_circle_rounded, color: AColors.primary),
+              title: Text('Mark as Complete', style: AText.bodyLarge),
+              subtitle:       Text('Override progress and finish the goal',
                 style: AText.bodySmall),
               onTap: () { Navigator.pop(context); widget.onMarkComplete(); },
             ),
           ListTile(
-            leading: const Icon(Icons.delete_rounded, color: AColors.error),
-            title: const Text('Delete goal', style: AText.bodyLarge),
+            leading: Icon(Icons.delete_rounded, color: AColors.error),
+            title: Text('Delete goal', style: AText.bodyLarge),
             onTap: () { Navigator.pop(context); widget.onDelete(); },
           ),
         ]),
@@ -987,7 +987,7 @@ class _CheckInTimeline extends StatelessWidget {
     final hasMeasure = goal.measureTarget != null;
 
     return Container(
-      decoration: const BoxDecoration(
+      decoration:       BoxDecoration(
         border: Border(top: BorderSide(color: AColors.border))),
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -1086,7 +1086,7 @@ class _CheckInSheetState extends ConsumerState<_CheckInSheet> {
     final bottomPad = MediaQuery.of(context).viewInsets.bottom;
 
     return Container(
-      decoration: const BoxDecoration(
+      decoration:       BoxDecoration(
         color: AColors.bgElevated,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -1118,10 +1118,10 @@ class _CheckInSheetState extends ConsumerState<_CheckInSheet> {
             filled: true, fillColor: AColors.bgCard,
             border: OutlineInputBorder(
               borderRadius: ARadius.md,
-              borderSide: const BorderSide(color: AColors.border)),
+              borderSide: BorderSide(color: AColors.border)),
             enabledBorder: OutlineInputBorder(
               borderRadius: ARadius.md,
-              borderSide: const BorderSide(color: AColors.border)),
+              borderSide: BorderSide(color: AColors.border)),
             focusedBorder: OutlineInputBorder(
               borderRadius: ARadius.md,
               borderSide: BorderSide(color: goalColor, width: 1.5)),
@@ -1141,10 +1141,10 @@ class _CheckInSheetState extends ConsumerState<_CheckInSheet> {
               filled: true, fillColor: AColors.bgCard,
               border: OutlineInputBorder(
                 borderRadius: ARadius.md,
-                borderSide: const BorderSide(color: AColors.border)),
+                borderSide: BorderSide(color: AColors.border)),
               enabledBorder: OutlineInputBorder(
                 borderRadius: ARadius.md,
-                borderSide: const BorderSide(color: AColors.border)),
+                borderSide: BorderSide(color: AColors.border)),
               focusedBorder: OutlineInputBorder(
                 borderRadius: ARadius.md,
                 borderSide: BorderSide(color: goalColor, width: 1.5)),
@@ -1290,7 +1290,7 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
       lastDate: DateTime.now().add(const Duration(days: 730)),
       builder: (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
-          colorScheme: const ColorScheme.dark(
+          colorScheme:       ColorScheme.dark(
             primary: AColors.primary,
             surface: AColors.bgElevated,
             onSurface: AColors.textPrimary,
@@ -1372,7 +1372,7 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: Container(
-        decoration: const BoxDecoration(
+        decoration:       BoxDecoration(
           color: AColors.bgElevated,
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
@@ -1388,9 +1388,9 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
                 child: Row(children: [
-                  GestureDetector(onTap: () => Navigator.pop(context), child: const Icon(Icons.close_rounded, color: AColors.textMuted, size: 24)),
+                  GestureDetector(onTap: () => Navigator.pop(context), child: Icon(Icons.close_rounded, color: AColors.textMuted, size: 24)),
                   const Spacer(),
-                  Text(widget.existing == null ? 'New Goal' : 'Edit Goal', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AColors.textPrimary, letterSpacing: -0.3)),
+                  Text(widget.existing == null ? 'New Goal' : 'Edit Goal', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AColors.textPrimary, letterSpacing: -0.3)),
                   const Spacer(),
                   GestureDetector(
                     onTap: _save,
@@ -1419,7 +1419,7 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
                         const SizedBox(width: 12),
                         Expanded(child: TextField(
                           controller: _titleCtrl, autofocus: widget.existing == null,
-                          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AColors.textPrimary),
+                          style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AColors.textPrimary),
                           decoration: InputDecoration(
                             hintText: 'What is your goal?',
                             hintStyle: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AColors.textMuted.withValues(alpha: 0.5)),
@@ -1486,7 +1486,7 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
                             return GestureDetector(onTap: () => setState(() => _category = null),
                               child: Container(padding: const EdgeInsets.symmetric(horizontal: 10),
                                 decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), border: Border.all(color: AColors.error.withValues(alpha: 0.3))),
-                                child: const Center(child: Icon(Icons.close_rounded, size: 14, color: AColors.error)),
+                                child: Center(child: Icon(Icons.close_rounded, size: 14, color: AColors.error)),
                               ),
                             );
                           }
@@ -1537,14 +1537,14 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
                         Text(_deadline != null ? DateFormat('EEE, MMM d yyyy').format(_deadline!) : 'Deadline',
                           style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: _deadline != null ? _color : AColors.textMuted)),
                         const Spacer(),
-                        if (_deadline != null) GestureDetector(onTap: () => setState(() => _deadline = null), child: const Icon(Icons.close_rounded, size: 16, color: AColors.textMuted))
+                        if (_deadline != null) GestureDetector(onTap: () => setState(() => _deadline = null), child: Icon(Icons.close_rounded, size: 16, color: AColors.textMuted))
                         else Icon(Icons.chevron_right_rounded, size: 18, color: AColors.textMuted.withValues(alpha: 0.5)),
                       ])),
-                      const SizedBox(height: 12), const Divider(color: AColors.border, height: 1), const SizedBox(height: 12),
+                      const SizedBox(height: 12), Divider(color: AColors.border, height: 1), const SizedBox(height: 12),
                       GestureDetector(
                         onTap: () { setState(() => _useMeasure = !_useMeasure); HapticFeedback.selectionClick(); },
                         child: Row(children: [
-                          const Expanded(child: Text('Measurable target', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AColors.textSecondary))),
+                          Expanded(child: Text('Measurable target', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AColors.textSecondary))),
                           _Toggle(value: _useMeasure, color: _color, onTap: () => setState(() => _useMeasure = !_useMeasure)),
                         ]),
                       ),
@@ -1556,12 +1556,12 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
                           Expanded(flex: 3, child: _InputBox(ctrl: _measureUnitCtrl, hint: 'Unit (km, pts...)')),
                         ]),
                       ],
-                      const SizedBox(height: 12), const Divider(color: AColors.border, height: 1), const SizedBox(height: 12),
+                      const SizedBox(height: 12), Divider(color: AColors.border, height: 1), const SizedBox(height: 12),
                       Row(children: [
                         Icon(Icons.card_giftcard_rounded, size: 18, color: AColors.textMuted.withValues(alpha: 0.6)),
                         const SizedBox(width: 8),
                         Expanded(child: TextField(controller: _customRewardCtrl,
-                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AColors.textPrimary),
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AColors.textPrimary),
                           decoration: InputDecoration(hintText: 'Reward on completion',
                             hintStyle: TextStyle(color: AColors.textMuted.withValues(alpha: 0.5)),
                             border: InputBorder.none, enabledBorder: InputBorder.none, focusedBorder: InputBorder.none,
@@ -1617,7 +1617,7 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
                           ),
                           const SizedBox(width: 6),
                           GestureDetector(onTap: () => setState(() => _steps.removeAt(e.key)),
-                            child: const Icon(Icons.close_rounded, color: AColors.textMuted, size: 16)),
+                            child: Icon(Icons.close_rounded, color: AColors.textMuted, size: 16)),
                         ]),
                       )),
                       const SizedBox(height: 8),
@@ -1647,7 +1647,7 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
                         }),
                         const SizedBox(width: 4),
                         Expanded(child: TextField(controller: _stepCtrl,
-                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AColors.textPrimary),
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AColors.textPrimary),
                           onSubmitted: (_) => _addStep(),
                           decoration: InputDecoration(hintText: 'Add a milestone...',
                             hintStyle: TextStyle(color: AColors.textMuted.withValues(alpha: 0.5)),
@@ -1666,7 +1666,7 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
 
                     // в”Ѓв”Ѓ CARD 5: Note в”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓ
                     _card(child: TextField(controller: _noteCtrl,
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AColors.textSecondary),
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AColors.textSecondary),
                       maxLines: 3, minLines: 1,
                       decoration: InputDecoration(hintText: 'Add a note...',
                         hintStyle: TextStyle(color: AColors.textMuted.withValues(alpha: 0.4)),
@@ -1706,7 +1706,7 @@ class _InputBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) => TextField(
     controller: ctrl,
-    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AColors.textPrimary),
+    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AColors.textPrimary),
     keyboardType: hint.contains('Amount')
         ? const TextInputType.numberWithOptions(decimal: true)
         : TextInputType.text,
@@ -1867,8 +1867,7 @@ class _HScrollItem {
 
 class _HScrollSelector extends StatelessWidget {
   final List<_HScrollItem> items;
-  final Widget? trailing;
-  const _HScrollSelector({required this.items, this.trailing});
+  const _HScrollSelector({required this.items});
 
   @override
   Widget build(BuildContext context) => SizedBox(
@@ -1891,7 +1890,6 @@ class _HScrollSelector extends StatelessWidget {
             child: Text(item.label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: item.selected ? AColors.primary : AColors.textMuted)),
           ),
         )),
-        if (trailing != null) trailing!,
       ],
     ),
   );
