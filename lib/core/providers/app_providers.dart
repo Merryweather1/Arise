@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 import '../models/app_models.dart';
 import '../services/firestore_service.dart';
 import '../services/notification_service.dart';
@@ -365,24 +366,40 @@ class HabitNotifier extends AsyncNotifier<void> {
     final updated = await HabitRepository.toggleToday(_uid, habit);
     final nowComplete = updated.isCompletedToday;
 
+    final todayKey = _todayKey();
+
     if (!wasComplete && nowComplete) {
-      // Habit just completed for today — award XP
-      await ref.read(notificationLogProvider.notifier).remove('habit-${habit.id}');
-      final profileBefore = ref.read(userProfileProvider).valueOrNull;
-      final levelBefore = profileBefore?.levelForSphere(habit.xpSphere) ?? 1;
-      await UserRepository.addXp(_uid, habit.xpSphere, habit.xpReward);
-      final profileAfter = await UserRepository.get(_uid);
-      final levelAfter = profileAfter?.levelForSphere(habit.xpSphere) ?? levelBefore;
-      ref.read(xpEventProvider.notifier).state = XpEvent(
-        sphere: habit.xpSphere,
-        amount: habit.xpReward,
-        isLevelUp: levelAfter > levelBefore,
-        newLevel: levelAfter,
-      );
+      // Only award XP if we haven't already awarded it today.
+      if (habit.xpAwardedDate != todayKey) {
+        await HabitRepository.setXpAwardedDate(_uid, habit.id, todayKey);
+        await ref.read(notificationLogProvider.notifier).remove('habit-${habit.id}');
+        final profileBefore = ref.read(userProfileProvider).valueOrNull;
+        final levelBefore = profileBefore?.levelForSphere(habit.xpSphere) ?? 1;
+        await UserRepository.addXp(_uid, habit.xpSphere, habit.xpReward);
+        final profileAfter = await UserRepository.get(_uid);
+        final levelAfter = profileAfter?.levelForSphere(habit.xpSphere) ?? levelBefore;
+        ref.read(xpEventProvider.notifier).state = XpEvent(
+          sphere: habit.xpSphere,
+          amount: habit.xpReward,
+          isLevelUp: levelAfter > levelBefore,
+          newLevel: levelAfter,
+        );
+      } else {
+        // XP already awarded today (re-toggle after un-toggle): just remove log entry.
+        await ref.read(notificationLogProvider.notifier).remove('habit-${habit.id}');
+      }
     } else if (wasComplete && !nowComplete) {
-      // Habit un-toggled — deduct the XP that was awarded
-      await UserRepository.subtractXp(_uid, habit.xpSphere, habit.xpReward);
+      // Only deduct XP if it was originally awarded today.
+      if (habit.xpAwardedDate == todayKey) {
+        await UserRepository.subtractXp(_uid, habit.xpSphere, habit.xpReward);
+        await HabitRepository.setXpAwardedDate(_uid, habit.id, null);
+      }
     }
+  }
+
+  static String _todayKey() {
+    final now = DateTime.now();
+    return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
   }
 }
 
@@ -437,7 +454,7 @@ class GoalNotifier extends AsyncNotifier<void> {
   /// also advances measureCurrent. Returns true if this check-in completed the goal.
   Future<bool> addCheckIn(GoalModel goal, String note, double? delta) async {
     final checkIn = GoalCheckInModel(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      id: const Uuid().v4(),
       note: note,
       date: DateTime.now(),
       progressDelta: delta,
@@ -524,17 +541,22 @@ final lifeBalanceActionsProvider =
 AsyncNotifierProvider<LifeBalanceNotifier, void>(LifeBalanceNotifier.new);
 
 // ─── NOTIFICATION BOOT PROVIDER ────────────────────────────────────────────
-// Watches tasks/habits/goals and re-registers all notifications once loaded.
-// This restores alarms after app restarts (flutter_local_notifications only
-// persists schedules while the app remembers them; this provider rebuilds them
-// from Firestore on every cold start).
+// Watches tasks/habits/goals and re-registers all notifications ONCE on cold
+// start (when all 3 streams first emit data). Subsequent Firestore writes do
+// NOT trigger a full reschedule — individual actions handle their own alarms.
 final notificationBootProvider = Provider<void>((ref) {
   final tasks  = ref.watch(tasksProvider).valueOrNull;
   final habits = ref.watch(habitsProvider).valueOrNull;
   final goals  = ref.watch(goalsProvider).valueOrNull;
 
-  // Only reschedule once all 3 streams have data
+  // Only reschedule once all 3 streams have data for the first time.
   if (tasks == null || habits == null || goals == null) return;
+
+  // Guard: only call rescheduleAll once per app-lifecycle using a flag stored
+  // on the ProviderContainer. Subsequent stream updates are ignored.
+  final flag = ref.read(_notificationBootDoneProvider);
+  if (flag) return;
+  ref.read(_notificationBootDoneProvider.notifier).state = true;
 
   NotificationService.instance.rescheduleAll(
     tasks:  tasks,
@@ -542,3 +564,6 @@ final notificationBootProvider = Provider<void>((ref) {
     goals:  goals,
   );
 });
+
+/// Internal flag so [notificationBootProvider] only fires once.
+final _notificationBootDoneProvider = StateProvider<bool>((_) => false);

@@ -284,7 +284,9 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
       return;
     }
 
-    _showCompletionDialog(
+    // Await the dialog so _handlingCompletion stays true until the user
+    // dismisses it, preventing the timer from firing again mid-dialog.
+    await _showCompletionDialog(
       completedPhase: completedPhase,
       nextPhase: nextPhase,
     );
@@ -330,10 +332,10 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
     });
   }
 
-  void _showCompletionDialog({
+  Future<void> _showCompletionDialog({
     required PomodoroPhase completedPhase,
     required PomodoroPhase nextPhase,
-  }) {
+  }) async {
     final completedFocus = completedPhase == PomodoroPhase.focus;
     final nextIsBreak = nextPhase != PomodoroPhase.focus;
     final nextLabel = nextPhase == PomodoroPhase.focus
@@ -349,7 +351,7 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
         : 'Excellent work. You can close this or start your next focus session now.'
         : 'Break is over. You can close this or start focusing again.';
 
-    showDialog(
+    await showDialog(
       context: context,
       barrierDismissible: true,
       builder: (dialogCtx) => AlertDialog(

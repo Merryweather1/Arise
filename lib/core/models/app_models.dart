@@ -375,6 +375,8 @@ class HabitModel {
   final bool isUnlimited;
   final int? durationDays; // null if unlimited
   final DateTime createdAt;
+  /// yyyy-MM-dd string of the day XP was last awarded. Null if never awarded.
+  final String? xpAwardedDate;
 
   const HabitModel({
     required this.id,
@@ -395,6 +397,7 @@ class HabitModel {
     this.isUnlimited = true,
     this.durationDays,
     required this.createdAt,
+    this.xpAwardedDate,
   });
 
   Color get color => Color(colorValue);
@@ -454,6 +457,7 @@ class HabitModel {
       isUnlimited: d['isUnlimited'] ?? true,
       durationDays: d['durationDays'],
       createdAt: (d['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      xpAwardedDate: d['xpAwardedDate'] as String?,
     );
   }
 
@@ -476,6 +480,7 @@ class HabitModel {
     'isUnlimited': isUnlimited,
     'durationDays': durationDays,
     'createdAt': Timestamp.fromDate(createdAt),
+    'xpAwardedDate': xpAwardedDate,
   };
 
   HabitModel copyWith({
@@ -495,6 +500,7 @@ class HabitModel {
     bool? isUnlimited,
     int? durationDays,
     bool clearReminder = false,
+    Object? xpAwardedDate = _sentinel,
   }) =>
       HabitModel(
         id: id,
@@ -515,8 +521,14 @@ class HabitModel {
         archived: archived ?? this.archived,
         isUnlimited: isUnlimited ?? this.isUnlimited,
         durationDays: durationDays ?? this.durationDays,
+        xpAwardedDate: xpAwardedDate == _sentinel
+            ? this.xpAwardedDate
+            : xpAwardedDate as String?,
       );
 }
+
+// Sentinel for optional nullable overrides in copyWith.
+const Object _sentinel = Object();
 
 // ─── GOAL ─────────────────────────────────────────────────────────────────
 

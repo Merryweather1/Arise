@@ -39,15 +39,19 @@ class UserRepository {
     });
   }
 
-  /// Deduct XP (clamps at 0 client-side via max check in rules, safe to call).
-  static Future<void> subtractXp(String uid, XpSphere sphere, int xp) {
+  /// Deduct XP — floors at 0 using a Firestore transaction so XP can never go negative.
+  static Future<void> subtractXp(String uid, XpSphere sphere, int xp) async {
     final field = switch (sphere) {
       XpSphere.willpower => 'willpowerXp',
       XpSphere.intellect => 'intellectXp',
       XpSphere.health    => 'healthXp',
     };
-    return _db.collection('users').doc(uid).update({
-      field: FieldValue.increment(-xp),
+    final ref = _db.collection('users').doc(uid);
+    await _db.runTransaction((tx) async {
+      final snap = await tx.get(ref);
+      final current = (snap.data() as Map<String, dynamic>?)?[field] ?? 0;
+      final newVal = ((current as num).toInt() - xp).clamp(0, 9999999);
+      tx.update(ref, {field: newVal});
     });
   }
 
@@ -173,7 +177,7 @@ class HabitRepository {
       dates.add(today);
     }
 
-    final newStreak = _calcStreak(dates);
+    final newStreak = _calcStreak(dates, habit.scheduleDays);
     final newBest = newStreak > habit.bestStreak ? newStreak : habit.bestStreak;
 
     final updated = habit.copyWith(
@@ -186,15 +190,28 @@ class HabitRepository {
     return updated;
   }
 
-  static int _calcStreak(List<String> dates) {
+  /// Calculates the current streak, honouring [scheduleDays] so that only
+  /// scheduled days are counted as "required". If [scheduleDays] is empty the
+  /// habit is considered daily and every calendar day is required.
+  static int _calcStreak(List<String> dates, List<int> scheduleDays) {
     if (dates.isEmpty) return 0;
-    final sorted = [...dates]..sort();
+    final dateSet = dates.toSet();
     int streak = 0;
     DateTime check = DateTime.now();
 
     while (true) {
+      // Determine whether today/check is a scheduled day.
+      // DateTime.weekday: 1=Mon … 7=Sun, which matches scheduleDays encoding.
+      final isScheduled = scheduleDays.isEmpty || scheduleDays.contains(check.weekday);
+
+      if (!isScheduled) {
+        // Skip non-scheduled days without breaking the streak.
+        check = check.subtract(const Duration(days: 1));
+        continue;
+      }
+
       final key = _dateKey(check);
-      if (sorted.contains(key)) {
+      if (dateSet.contains(key)) {
         streak++;
         check = check.subtract(const Duration(days: 1));
       } else {
@@ -206,6 +223,11 @@ class HabitRepository {
 
   static String _dateKey(DateTime d) =>
       '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+  /// Persist the date on which XP was last awarded for this habit.
+  /// Pass [null] to clear the date (e.g. after deducting XP on un-toggle).
+  static Future<void> setXpAwardedDate(String uid, String habitId, String? date) =>
+      _userCol(uid, 'habits').doc(habitId).update({'xpAwardedDate': date});
 }
 
 // ─── GOALS ────────────────────────────────────────────────────────────────
