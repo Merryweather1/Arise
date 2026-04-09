@@ -397,11 +397,11 @@ class GoalNotifier extends AsyncNotifier<void> {
 
   Future<void> create(GoalModel goal) async {
     await GoalRepository.create(_uid,
-      title: goal.title, category: goal.category, emoji: goal.emoji,
-      colorValue: goal.colorValue, note: goal.note, deadline: goal.deadline,
-      steps: goal.steps, xpSphere: goal.xpSphere, xpReward: goal.xpReward,
-      customReward: goal.customReward, measureTarget: goal.measureTarget,
-      measureUnit: goal.measureUnit);
+        title: goal.title, category: goal.category, emoji: goal.emoji,
+        colorValue: goal.colorValue, note: goal.note, deadline: goal.deadline,
+        steps: goal.steps, xpSphere: goal.xpSphere, xpReward: goal.xpReward,
+        customReward: goal.customReward, measureTarget: goal.measureTarget,
+        measureUnit: goal.measureUnit);
     await NotificationService.instance.scheduleGoalDeadline(goal);
   }
 

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/providers/notification_log_provider.dart';
+import '../../core/providers/app_providers.dart';
 import '../../core/theme/app_theme.dart';
 
 // ─── PUBLIC ENTRY POINT ───────────────────────────────────────────────────
@@ -80,6 +81,10 @@ class _NotificationCenterSheetState
 
   @override
   Widget build(BuildContext context) {
+    // Watch theme providers so this widget rebuilds immediately on theme change.
+    ref.watch(themeModeProvider);
+    ref.watch(colorThemeProvider);
+
     final allEntries = ref.watch(notificationLogProvider);
     // Only show entries that have actually fired
     final entries = allEntries.where((e) => e.hasFired).toList();
@@ -96,9 +101,9 @@ class _NotificationCenterSheetState
         builder: (ctx, scrollCtrl) {
           return Container(
             decoration: BoxDecoration(
-              color: const Color(0xFF111318),
+              color: AColors.bgElevated,
               borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(32)),
+              const BorderRadius.vertical(top: Radius.circular(32)),
               border: Border(
                 top: BorderSide(
                     color: AColors.primary.withAlpha(60), width: 1.5),
@@ -115,35 +120,35 @@ class _NotificationCenterSheetState
                   child: entries.isEmpty
                       ? _buildEmpty()
                       : ListView.builder(
-                          controller: scrollCtrl,
-                          padding: const EdgeInsets.only(bottom: 32),
-                          itemCount: sections.fold<int>(
-                              0, (s, g) => s + 1 + g.value.length),
-                          itemBuilder: (_, rawIndex) {
-                            // Map flat index to section + item
-                            int idx = rawIndex;
-                            for (final section in sections) {
-                              if (idx == 0) {
-                                return _SectionLabel(section.key);
-                              }
-                              idx--;
-                              if (idx < section.value.length) {
-                                return _NotifTile(
-                                  entry: section.value[idx],
-                                  animIndex: rawIndex,
-                                  onDismiss: () {
-                                    HapticFeedback.lightImpact();
-                                    ref
-                                        .read(notificationLogProvider.notifier)
-                                        .remove(section.value[idx].id);
-                                  },
-                                );
-                              }
-                              idx -= section.value.length;
-                            }
-                            return const SizedBox.shrink();
-                          },
-                        ),
+                    controller: scrollCtrl,
+                    padding: const EdgeInsets.only(bottom: 32),
+                    itemCount: sections.fold<int>(
+                        0, (s, g) => s + 1 + g.value.length),
+                    itemBuilder: (_, rawIndex) {
+                      // Map flat index to section + item
+                      int idx = rawIndex;
+                      for (final section in sections) {
+                        if (idx == 0) {
+                          return _SectionLabel(section.key);
+                        }
+                        idx--;
+                        if (idx < section.value.length) {
+                          return _NotifTile(
+                            entry: section.value[idx],
+                            animIndex: rawIndex,
+                            onDismiss: () {
+                              HapticFeedback.lightImpact();
+                              ref
+                                  .read(notificationLogProvider.notifier)
+                                  .remove(section.value[idx].id);
+                            },
+                          );
+                        }
+                        idx -= section.value.length;
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
                 ),
               ],
             ),
@@ -197,7 +202,7 @@ class _NotificationCenterSheetState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                          Text('Notification Center',
+                    Text('Notification Center',
                         style: TextStyle(
                           color: AColors.textPrimary,
                           fontWeight: FontWeight.w700,
@@ -263,14 +268,14 @@ class _NotificationCenterSheetState
                 color: AColors.primary, size: 30),
           ),
           const SizedBox(height: 20),
-                Text('All caught up!',
+          Text('All caught up!',
               style: TextStyle(
                 color: AColors.textPrimary,
                 fontSize: 17,
                 fontWeight: FontWeight.w600,
               )),
           const SizedBox(height: 6),
-                Text(
+          Text(
             'Notifications appear here\nonce their reminder fires.',
             textAlign: TextAlign.center,
             style: TextStyle(color: AColors.textMuted, fontSize: 13, height: 1.5),
@@ -422,7 +427,7 @@ class _NotifTileState extends State<_NotifTile>
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
           decoration: BoxDecoration(
-            color: const Color(0xFF16191F),
+            color: AColors.bgSleek,
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
               color: _typeColor.withAlpha(widget.entry.read ? 18 : 50),

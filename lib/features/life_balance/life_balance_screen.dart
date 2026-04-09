@@ -108,6 +108,10 @@ class _LifeBalanceScreenState extends ConsumerState<LifeBalanceScreen>
 
   @override
   Widget build(BuildContext context) {
+    // Watch theme providers so this screen rebuilds immediately on theme change.
+    ref.watch(themeModeProvider);
+    ref.watch(colorThemeProvider);
+
     final snapshots = ref.watch(lifeBalanceProvider).valueOrNull ?? <LifeBalanceSnapshot>[];
     final latest = ref.watch(latestBalanceProvider);
 
@@ -128,7 +132,7 @@ class _LifeBalanceScreenState extends ConsumerState<LifeBalanceScreen>
       body: SafeArea(
         child: Column(
           children: [
-                  Padding(
+            Padding(
               padding: EdgeInsets.fromLTRB(20, 20, 20, 0),
               child: Row(
                 children: [
@@ -430,7 +434,7 @@ class _SphereSlider extends StatelessWidget {
   final LifeSphere sphere;
   final Function(double) onChanged;
 
-        _SphereSlider({required this.sphere, required this.onChanged});
+  _SphereSlider({required this.sphere, required this.onChanged});
 
   String get _scoreLabel {
     final s = sphere.score;
@@ -474,7 +478,7 @@ class _SphereSlider extends StatelessWidget {
                 ),
               ],
             ),
-                  SizedBox(height: 8),
+            SizedBox(height: 8),
             SliderTheme(
               data: SliderTheme.of(context).copyWith(
                 activeTrackColor: sphere.color,
@@ -512,7 +516,7 @@ class _HistoryTab extends StatelessWidget {
   final List<LifeSphere> spheres;
   final List<_BalanceSnapshot> history;
 
-        _HistoryTab({required this.spheres, required this.history});
+  _HistoryTab({required this.spheres, required this.history});
 
   @override
   Widget build(BuildContext context) {
@@ -706,11 +710,11 @@ class _SnapshotCard extends StatelessWidget {
                       const SizedBox(width: 4),
                       Text(
                         score.toStringAsFixed(1),
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: s.color,
-                    ),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: s.color,
+                        ),
                       ),
                     ],
                   ),

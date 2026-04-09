@@ -12,7 +12,7 @@ import '../router/app_router.dart';
 
 class AppShell extends ConsumerStatefulWidget {
   final Widget child;
-        const AppShell({super.key, required this.child});
+  const AppShell({super.key, required this.child});
 
   @override
   ConsumerState<AppShell> createState() => _AppShellState();
@@ -93,6 +93,10 @@ class _AppShellState extends ConsumerState<AppShell> {
   Widget build(BuildContext context) {
     final location = GoRouterState.of(context).matchedLocation;
     final currentIndex = _currentIndex(location);
+
+    // Watch theme providers so shell rebuilds immediately when theme changes.
+    ref.watch(themeModeProvider);
+    ref.watch(colorThemeProvider);
 
     // Activate the startup re-schedule provider (watches tasks/habits/goals
     // and re-registers all notifications once data loads from Firestore).

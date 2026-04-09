@@ -23,22 +23,22 @@ class NotificationEntry {
   });
 
   NotificationEntry copyWith({bool? read}) => NotificationEntry(
-        id: id,
-        type: type,
-        title: title,
-        body: body,
-        time: time,
-        read: read ?? this.read,
-      );
+    id: id,
+    type: type,
+    title: title,
+    body: body,
+    time: time,
+    read: read ?? this.read,
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'type': type.name,
-        'title': title,
-        'body': body,
-        'time': time.toIso8601String(),
-        'read': read,
-      };
+    'id': id,
+    'type': type.name,
+    'title': title,
+    'body': body,
+    'time': time.toIso8601String(),
+    'read': read,
+  };
 
   factory NotificationEntry.fromJson(Map<String, dynamic> j) =>
       NotificationEntry(
@@ -173,8 +173,8 @@ class NotificationLogNotifier extends Notifier<List<NotificationEntry>> {
 
 
 final notificationLogProvider =
-    NotifierProvider<NotificationLogNotifier, List<NotificationEntry>>(
-        NotificationLogNotifier.new);
+NotifierProvider<NotificationLogNotifier, List<NotificationEntry>>(
+    NotificationLogNotifier.new);
 
 /// Count of UNREAD entries that have already fired (time <= now).
 /// This is what drives the bell badge.

@@ -133,8 +133,8 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen>
   Future<void> _toggleStep(String uid, GoalModel goal, GoalStepModel step) async {
     final updatedSteps = goal.steps
         .map((s) => s.id == step.id
-            ? GoalStepModel(id: s.id, title: s.title, done: !s.done, weight: s.weight)
-            : s)
+        ? GoalStepModel(id: s.id, title: s.title, done: !s.done, weight: s.weight)
+        : s)
         .toList();
 
     final wasComplete = _goalIsComplete(goal);
@@ -230,6 +230,10 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen>
 
   @override
   Widget build(BuildContext context) {
+    // Watch theme providers so this screen rebuilds immediately on theme change.
+    ref.watch(themeModeProvider);
+    ref.watch(colorThemeProvider);
+
     final uid = ref.watch(currentUidProvider);
 
     if (uid == null || uid.isEmpty) {
@@ -246,156 +250,156 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen>
     return Stack(
       children: [
         Scaffold(
-      resizeToAvoidBottomInset: true,
-      backgroundColor: AColors.bg,
-      body: SafeArea(
-        child: StreamBuilder<List<GoalModel>>(
-          stream: GoalRepository.stream(uid),
-          builder: (context, snapshot) {
-            if (snapshot.hasError) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Text(
-                    'Failed to load goals:\n${snapshot.error}',
-                    textAlign: TextAlign.center,
-                    style: AText.bodyMedium,
-                  ),
-                ),
-              );
-            }
+          resizeToAvoidBottomInset: true,
+          backgroundColor: AColors.bg,
+          body: SafeArea(
+            child: StreamBuilder<List<GoalModel>>(
+              stream: GoalRepository.stream(uid),
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Text(
+                        'Failed to load goals:\n${snapshot.error}',
+                        textAlign: TextAlign.center,
+                        style: AText.bodyMedium,
+                      ),
+                    ),
+                  );
+                }
 
-            if (!snapshot.hasData) {
-              return       Center(
-                child: CircularProgressIndicator(color: AColors.primary),
-              );
-            }
+                if (!snapshot.hasData) {
+                  return       Center(
+                    child: CircularProgressIndicator(color: AColors.primary),
+                  );
+                }
 
-            final goals = snapshot.data ?? [];
-            final categories = ref.watch(allCategoriesProvider);
-            final active = _active(goals);
-            final complete = _complete(goals);
-            final all = _all(goals);
+                final goals = snapshot.data ?? [];
+                final categories = ref.watch(allCategoriesProvider);
+                final active = _active(goals);
+                final complete = _complete(goals);
+                final all = _all(goals);
 
-            return Column(
-              children: [
-                      Padding(
-                  padding: EdgeInsets.fromLTRB(20, 20, 20, 0),
-                  child: Row(
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                return Column(
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(20, 20, 20, 0),
+                      child: Row(
                         children: [
-                          Text('Goals', style: AText.displayLarge), // Larger text
-                          SizedBox(height: 4),
-                          Text(
-                            'Define targets. Measure progress.', // More serious copy
-                            style: AText.bodyLarge,
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Goals', style: AText.displayLarge), // Larger text
+                              SizedBox(height: 4),
+                              Text(
+                                'Define targets. Measure progress.', // More serious copy
+                                style: AText.bodyLarge,
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ],
-                  ),
-                ),
+                    ),
 
-                const SizedBox(height: 16),
+                    const SizedBox(height: 16),
 
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: _OverallProgress(
-                    goals: goals,
-                    isComplete: _goalIsComplete,
-                    progress: _goalProgress,
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                SizedBox(
-                  height: 36,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    children: [
-                      _FilterChip(
-                        label: 'All',
-                        selected: _filterCategory == 'All',
-                        onTap: () => setState(() => _filterCategory = 'All'),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: _OverallProgress(
+                        goals: goals,
+                        isComplete: _goalIsComplete,
+                        progress: _goalProgress,
                       ),
-                      ...categories.map(
-                            (c) => _FilterChip(
-                          label: c,
-                          selected: _filterCategory == c,
-                          onTap: () => setState(() => _filterCategory = c),
-                        ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    SizedBox(
+                      height: 36,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        children: [
+                          _FilterChip(
+                            label: 'All',
+                            selected: _filterCategory == 'All',
+                            onTap: () => setState(() => _filterCategory = 'All'),
+                          ),
+                          ...categories.map(
+                                (c) => _FilterChip(
+                              label: c,
+                              selected: _filterCategory == c,
+                              onTap: () => setState(() => _filterCategory = c),
+                            ),
+                          ),
+                          _FilterChip(
+                            label: '+ New',
+                            selected: false,
+                            isAdd: true,
+                            onTap: _showAddCategory,
+                          ),
+                        ],
                       ),
-                      _FilterChip(
-                        label: '+ New',
-                        selected: false,
-                        isAdd: true,
-                        onTap: _showAddCategory,
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: _ATabBar(
+                        controller: _tabCtrl,
+                        tabs: const ['Active', 'Completed', 'All'],
                       ),
-                    ],
-                  ),
-                ),
+                    ),
 
-                const SizedBox(height: 12),
+                    const SizedBox(height: 16),
 
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: _ATabBar(
-                    controller: _tabCtrl,
-                    tabs: const ['Active', 'Completed', 'All'],
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                Expanded(
-                  child: TabBarView(
-                    controller: _tabCtrl,
-                    children: [
-                      _GoalList(goals: active, onTap: (g) => _openGoal(uid, existing: g),
-                        onDelete: (g) => _deleteGoal(uid, g),
-                        onToggleStep: (g, step) => _toggleStep(uid, g, step),
-                        onMarkComplete: (g) => _markComplete(uid, g),
-                        onCheckIn: (g) => _checkIn(uid, g),
-                        progress: _goalProgress, doneSteps: _goalDoneSteps,
-                        isComplete: _goalIsComplete, daysLeft: _goalDaysLeft,
-                        rewardLabel: _goalRewardLabel, color: _goalColor),
-                      _GoalList(goals: complete, onTap: (g) => _openGoal(uid, existing: g),
-                        onDelete: (g) => _deleteGoal(uid, g),
-                        onToggleStep: (g, step) => _toggleStep(uid, g, step),
-                        onMarkComplete: (g) => _markComplete(uid, g),
-                        onCheckIn: (g) => _checkIn(uid, g),
-                        progress: _goalProgress, doneSteps: _goalDoneSteps,
-                        isComplete: _goalIsComplete, daysLeft: _goalDaysLeft,
-                        rewardLabel: _goalRewardLabel, color: _goalColor),
-                      _GoalList(goals: all, onTap: (g) => _openGoal(uid, existing: g),
-                        onDelete: (g) => _deleteGoal(uid, g),
-                        onToggleStep: (g, step) => _toggleStep(uid, g, step),
-                        onMarkComplete: (g) => _markComplete(uid, g),
-                        onCheckIn: (g) => _checkIn(uid, g),
-                        progress: _goalProgress, doneSteps: _goalDoneSteps,
-                        isComplete: _goalIsComplete, daysLeft: _goalDaysLeft,
-                        rewardLabel: _goalRewardLabel, color: _goalColor),
-                    ],
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
-      ),
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 90),
-        child: FloatingActionButton(
-          onPressed: () => _openGoal(uid),
-          backgroundColor: AColors.primary,
-          foregroundColor: const Color(0xFF003D25),
-          child: const Icon(Icons.add_rounded),
-        ),
-      ),
+                    Expanded(
+                      child: TabBarView(
+                        controller: _tabCtrl,
+                        children: [
+                          _GoalList(goals: active, onTap: (g) => _openGoal(uid, existing: g),
+                              onDelete: (g) => _deleteGoal(uid, g),
+                              onToggleStep: (g, step) => _toggleStep(uid, g, step),
+                              onMarkComplete: (g) => _markComplete(uid, g),
+                              onCheckIn: (g) => _checkIn(uid, g),
+                              progress: _goalProgress, doneSteps: _goalDoneSteps,
+                              isComplete: _goalIsComplete, daysLeft: _goalDaysLeft,
+                              rewardLabel: _goalRewardLabel, color: _goalColor),
+                          _GoalList(goals: complete, onTap: (g) => _openGoal(uid, existing: g),
+                              onDelete: (g) => _deleteGoal(uid, g),
+                              onToggleStep: (g, step) => _toggleStep(uid, g, step),
+                              onMarkComplete: (g) => _markComplete(uid, g),
+                              onCheckIn: (g) => _checkIn(uid, g),
+                              progress: _goalProgress, doneSteps: _goalDoneSteps,
+                              isComplete: _goalIsComplete, daysLeft: _goalDaysLeft,
+                              rewardLabel: _goalRewardLabel, color: _goalColor),
+                          _GoalList(goals: all, onTap: (g) => _openGoal(uid, existing: g),
+                              onDelete: (g) => _deleteGoal(uid, g),
+                              onToggleStep: (g, step) => _toggleStep(uid, g, step),
+                              onMarkComplete: (g) => _markComplete(uid, g),
+                              onCheckIn: (g) => _checkIn(uid, g),
+                              progress: _goalProgress, doneSteps: _goalDoneSteps,
+                              isComplete: _goalIsComplete, daysLeft: _goalDaysLeft,
+                              rewardLabel: _goalRewardLabel, color: _goalColor),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+          floatingActionButton: Padding(
+            padding: const EdgeInsets.only(bottom: 90),
+            child: FloatingActionButton(
+              onPressed: () => _openGoal(uid),
+              backgroundColor: AColors.primary,
+              foregroundColor: const Color(0xFF003D25),
+              child: const Icon(Icons.add_rounded),
+            ),
+          ),
         ),
         // ── Confetti overlay ──
         Align(
@@ -687,7 +691,7 @@ class _GoalCardState extends State<_GoalCard> {
           ),
           boxShadow: !complete
               ? [BoxShadow(color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 10, offset: const Offset(0, 4))]
+              blurRadius: 10, offset: const Offset(0, 4))]
               : null,
         ),
         child: Column(
@@ -724,7 +728,7 @@ class _GoalCardState extends State<_GoalCard> {
                                 Icon(Icons.check_circle_rounded, size: 13, color: goalColor),
                                 const SizedBox(width: 4),
                                 Text('Completed', style: TextStyle(
-                                  fontSize: 11, fontWeight: FontWeight.w700, color: goalColor)),
+                                    fontSize: 11, fontWeight: FontWeight.w700, color: goalColor)),
                               ]),
                             ),
                         ]),
@@ -734,15 +738,15 @@ class _GoalCardState extends State<_GoalCard> {
                             _MiniTag(label: g.category, color: goalColor),
                           if (reward.isNotEmpty)
                             _MiniTag(label: reward, color: const Color(0xFFFFD700),
-                              icon: Icons.card_giftcard_rounded),
+                                icon: Icons.card_giftcard_rounded),
                           if (hasMeasure)
                             _MiniTag(
-                              label: '${_fmt(g.measureCurrent)} / ${_fmt(g.measureTarget!)} ${g.measureUnit ?? ""}',
-                              color: AColors.info, icon: Icons.trending_up_rounded),
+                                label: '${_fmt(g.measureCurrent)} / ${_fmt(g.measureTarget!)} ${g.measureUnit ?? ""}',
+                                color: AColors.info, icon: Icons.trending_up_rounded),
                           if (g.deadline != null)
                             _MiniTag(
-                              label: left < 0 ? 'Overdue' : left == 0 ? 'Due today' : '$left days left',
-                              color: deadlineColor, icon: Icons.calendar_today_rounded),
+                                label: left < 0 ? 'Overdue' : left == 0 ? 'Due today' : '$left days left',
+                                color: deadlineColor, icon: Icons.calendar_today_rounded),
                         ]),
                       ])),
                     ]),
@@ -774,7 +778,7 @@ class _GoalCardState extends State<_GoalCard> {
                             ? '${widget.doneSteps(g)}/${g.steps.length}'
                             : '${(prog * 100).round()}%',
                         style: AText.bodySmall.copyWith(
-                          color: goalColor, fontWeight: FontWeight.w700),
+                            color: goalColor, fontWeight: FontWeight.w700),
                       ),
                     ]),
 
@@ -782,15 +786,15 @@ class _GoalCardState extends State<_GoalCard> {
                       const SizedBox(height: 6),
                       Row(children: [
                         Icon(Icons.bookmark_rounded, size: 11,
-                          color: goalColor.withValues(alpha: 0.65)),
+                            color: goalColor.withValues(alpha: 0.65)),
                         const SizedBox(width: 4),
                         Text(
                           checkInLabel.isNotEmpty
                               ? '$checkInLabel  \xb7  $checkInCount check-in${checkInCount == 1 ? '' : 's'}'
                               : '$checkInCount check-in${checkInCount == 1 ? '' : 's'}',
                           style: TextStyle(fontSize: 11,
-                            color: goalColor.withValues(alpha: 0.65),
-                            fontWeight: FontWeight.w600),
+                              color: goalColor.withValues(alpha: 0.65),
+                              fontWeight: FontWeight.w600),
                         ),
                       ]),
                     ],
@@ -815,7 +819,7 @@ class _GoalCardState extends State<_GoalCard> {
                             Icon(Icons.add_circle_outline_rounded, color: goalColor, size: 16),
                             const SizedBox(width: 6),
                             Text('Check In', style: TextStyle(
-                              fontSize: 13, fontWeight: FontWeight.w700, color: goalColor)),
+                                fontSize: 13, fontWeight: FontWeight.w700, color: goalColor)),
                             const SizedBox(width: 8),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -824,7 +828,7 @@ class _GoalCardState extends State<_GoalCard> {
                                 borderRadius: ARadius.full,
                               ),
                               child: Text('$xp XP', style: TextStyle(
-                                fontSize: 9, fontWeight: FontWeight.w800, color: goalColor)),
+                                  fontSize: 9, fontWeight: FontWeight.w800, color: goalColor)),
                             ),
                           ]),
                         ),
@@ -844,17 +848,17 @@ class _GoalCardState extends State<_GoalCard> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration:       BoxDecoration(
-                    border: Border(top: BorderSide(color: AColors.border))),
+                      border: Border(top: BorderSide(color: AColors.border))),
                   child: Row(children: [
                     Text(
-                      '${g.steps.length} milestone${g.steps.length == 1 ? '' : 's'}  \xb7  ${widget.doneSteps(g)} done',
-                      style: AText.bodySmall),
+                        '${g.steps.length} milestone${g.steps.length == 1 ? '' : 's'}  \xb7  ${widget.doneSteps(g)} done',
+                        style: AText.bodySmall),
                     const Spacer(),
                     AnimatedRotation(
                       turns: _expanded ? 0.5 : 0,
                       duration: const Duration(milliseconds: 200),
                       child:       Icon(Icons.keyboard_arrow_down_rounded,
-                        color: AColors.textMuted, size: 18),
+                          color: AColors.textMuted, size: 18),
                     ),
                   ]),
                 ),
@@ -865,8 +869,8 @@ class _GoalCardState extends State<_GoalCard> {
                 child: _expanded
                     ? Column(children: [
                   ...g.steps.map((step) => _StepRow(
-                    step: step, color: goalColor,
-                    onToggle: () => widget.onToggleStep(step))),
+                      step: step, color: goalColor,
+                      onToggle: () => widget.onToggleStep(step))),
                   const SizedBox(height: 6),
                 ])
                     : const SizedBox.shrink(),
@@ -895,7 +899,7 @@ class _GoalCardState extends State<_GoalCard> {
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           Center(child: Container(width: 36, height: 4,
-            decoration: BoxDecoration(color: AColors.border, borderRadius: ARadius.full))),
+              decoration: BoxDecoration(color: AColors.border, borderRadius: ARadius.full))),
           const SizedBox(height: 20),
           ListTile(
             leading: Icon(Icons.edit_rounded, color: AColors.primary),
@@ -907,7 +911,7 @@ class _GoalCardState extends State<_GoalCard> {
               leading: Icon(Icons.check_circle_rounded, color: AColors.primary),
               title: Text('Mark as Complete', style: AText.bodyLarge),
               subtitle:       Text('Override progress and finish the goal',
-                style: AText.bodySmall),
+                  style: AText.bodySmall),
               onTap: () { Navigator.pop(context); widget.onMarkComplete(); },
             ),
           ListTile(
@@ -965,8 +969,8 @@ class _StepRow extends StatelessWidget {
             shape: BoxShape.circle,
           ),
           child: Center(child: Text(_weightLabel, style: TextStyle(
-            fontSize: 9, fontWeight: FontWeight.w800,
-            color: color.withValues(alpha: step.done ? 0.4 : 0.85)))),
+              fontSize: 9, fontWeight: FontWeight.w800,
+              color: color.withValues(alpha: step.done ? 0.4 : 0.85)))),
         ),
       ]),
     ),
@@ -988,16 +992,16 @@ class _CheckInTimeline extends StatelessWidget {
 
     return Container(
       decoration:       BoxDecoration(
-        border: Border(top: BorderSide(color: AColors.border))),
+          border: Border(top: BorderSide(color: AColors.border))),
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
           Icon(Icons.history_rounded, size: 12, color: color.withValues(alpha: 0.7)),
           const SizedBox(width: 5),
           Text('Check-in history', style: TextStyle(
-            fontSize: 11, fontWeight: FontWeight.w700,
-            color: color.withValues(alpha: 0.7))),
-          if (goal.checkIns.length > 10) ...[ 
+              fontSize: 11, fontWeight: FontWeight.w700,
+              color: color.withValues(alpha: 0.7))),
+          if (goal.checkIns.length > 10) ...[
             const Spacer(),
             Text('showing last 10', style: AText.bodySmall),
           ],
@@ -1009,19 +1013,19 @@ class _CheckInTimeline extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 6),
             child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Container(width: 6, height: 6, margin: const EdgeInsets.only(top: 5),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.5), shape: BoxShape.circle)),
+                  decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.5), shape: BoxShape.circle)),
               const SizedBox(width: 8),
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text(ci.note, style: AText.bodySmall.copyWith(
-                  color: AColors.textSecondary)),
+                    color: AColors.textSecondary)),
                 Row(children: [
                   Text(dateStr, style: AText.bodySmall),
-                  if (hasMeasure && ci.progressDelta != null && ci.progressDelta! > 0) ...[ 
+                  if (hasMeasure && ci.progressDelta != null && ci.progressDelta! > 0) ...[
                     const SizedBox(width: 8),
                     Text('+${ci.progressDelta!.toStringAsFixed(ci.progressDelta!.truncateToDouble() == ci.progressDelta ? 0 : 1)} ${goal.measureUnit ?? ""}',
-                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700,
-                        color: color.withValues(alpha: 0.75))),
+                        style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700,
+                            color: color.withValues(alpha: 0.75))),
                   ],
                 ]),
               ])),
@@ -1093,13 +1097,13 @@ class _CheckInSheetState extends ConsumerState<_CheckInSheet> {
       padding: EdgeInsets.fromLTRB(20, 16, 20, 24 + bottomPad),
       child: Column(mainAxisSize: MainAxisSize.min, children: [
         Center(child: Container(width: 36, height: 4,
-          decoration: BoxDecoration(color: AColors.border, borderRadius: ARadius.full))),
+            decoration: BoxDecoration(color: AColors.border, borderRadius: ARadius.full))),
         const SizedBox(height: 20),
         Row(children: [
           Container(width: 36, height: 36,
-            decoration: BoxDecoration(
-              color: goalColor.withValues(alpha: 0.12), borderRadius: ARadius.sm),
-            child: Center(child: AIconMapper.iconWidget(g.emoji, size: 18, color: goalColor))),
+              decoration: BoxDecoration(
+                  color: goalColor.withValues(alpha: 0.12), borderRadius: ARadius.sm),
+              child: Center(child: AIconMapper.iconWidget(g.emoji, size: 18, color: goalColor))),
           const SizedBox(width: 10),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text('Check In', style: AText.titleSmall),
@@ -1117,18 +1121,18 @@ class _CheckInSheetState extends ConsumerState<_CheckInSheet> {
             hintStyle: AText.bodyMedium.copyWith(color: AColors.textMuted),
             filled: true, fillColor: AColors.bgCard,
             border: OutlineInputBorder(
-              borderRadius: ARadius.md,
-              borderSide: BorderSide(color: AColors.border)),
+                borderRadius: ARadius.md,
+                borderSide: BorderSide(color: AColors.border)),
             enabledBorder: OutlineInputBorder(
-              borderRadius: ARadius.md,
-              borderSide: BorderSide(color: AColors.border)),
+                borderRadius: ARadius.md,
+                borderSide: BorderSide(color: AColors.border)),
             focusedBorder: OutlineInputBorder(
-              borderRadius: ARadius.md,
-              borderSide: BorderSide(color: goalColor, width: 1.5)),
+                borderRadius: ARadius.md,
+                borderSide: BorderSide(color: goalColor, width: 1.5)),
             contentPadding: const EdgeInsets.all(12),
           ),
         ),
-        if (_hasMeasure) ...[ 
+        if (_hasMeasure) ...[
           const SizedBox(height: 10),
           TextField(
             controller: _deltaCtrl,
@@ -1140,22 +1144,22 @@ class _CheckInSheetState extends ConsumerState<_CheckInSheet> {
               prefixIcon: Icon(Icons.trending_up_rounded, color: goalColor, size: 18),
               filled: true, fillColor: AColors.bgCard,
               border: OutlineInputBorder(
-                borderRadius: ARadius.md,
-                borderSide: BorderSide(color: AColors.border)),
+                  borderRadius: ARadius.md,
+                  borderSide: BorderSide(color: AColors.border)),
               enabledBorder: OutlineInputBorder(
-                borderRadius: ARadius.md,
-                borderSide: BorderSide(color: AColors.border)),
+                  borderRadius: ARadius.md,
+                  borderSide: BorderSide(color: AColors.border)),
               focusedBorder: OutlineInputBorder(
-                borderRadius: ARadius.md,
-                borderSide: BorderSide(color: goalColor, width: 1.5)),
+                  borderRadius: ARadius.md,
+                  borderSide: BorderSide(color: goalColor, width: 1.5)),
               contentPadding: const EdgeInsets.all(12),
             ),
           ),
           Padding(
             padding: const EdgeInsets.only(top: 4),
             child: Text(
-              '${g.measureCurrent} / ${g.measureTarget} ${g.measureUnit ?? ""} so far',
-              style: TextStyle(fontSize: 11, color: goalColor, fontWeight: FontWeight.w600)),
+                '${g.measureCurrent} / ${g.measureTarget} ${g.measureUnit ?? ""} so far',
+                style: TextStyle(fontSize: 11, color: goalColor, fontWeight: FontWeight.w600)),
           ),
         ],
         const SizedBox(height: 16),
@@ -1171,9 +1175,9 @@ class _CheckInSheetState extends ConsumerState<_CheckInSheet> {
             ),
             child: _saving
                 ? const SizedBox(width: 18, height: 18,
-              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                 : const Text('Save Check-In', style: TextStyle(
-              fontSize: 15, fontWeight: FontWeight.w700)),
+                fontSize: 15, fontWeight: FontWeight.w700)),
           ),
         ),
       ]),
@@ -1516,7 +1520,7 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
                             onTap: () { HapticFeedback.selectionClick(); setState(() { _xpSphereOverride = s; _sphereManuallyOverridden = true; }); },
                             child: AnimatedContainer(duration: const Duration(milliseconds: 180), padding: const EdgeInsets.symmetric(horizontal: 12),
                               decoration: BoxDecoration(color: sel ? s.color.withValues(alpha: 0.15) : Colors.transparent,
-                                borderRadius: BorderRadius.circular(10), border: Border.all(color: sel ? s.color : AColors.border.withValues(alpha: 0.4))),
+                                  borderRadius: BorderRadius.circular(10), border: Border.all(color: sel ? s.color : AColors.border.withValues(alpha: 0.4))),
                               child: Center(child: Row(mainAxisSize: MainAxisSize.min, children: [
                                 Icon(s.icon, size: 16, color: sel ? s.color : AColors.textMuted), const SizedBox(width: 5),
                                 Text(s.label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: sel ? s.color : AColors.textMuted)),
@@ -1535,7 +1539,7 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
                         Icon(Icons.calendar_today_rounded, size: 18, color: _deadline != null ? _color : AColors.textMuted),
                         const SizedBox(width: 8),
                         Text(_deadline != null ? DateFormat('EEE, MMM d yyyy').format(_deadline!) : 'Deadline',
-                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: _deadline != null ? _color : AColors.textMuted)),
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: _deadline != null ? _color : AColors.textMuted)),
                         const Spacer(),
                         if (_deadline != null) GestureDetector(onTap: () => setState(() => _deadline = null), child: Icon(Icons.close_rounded, size: 16, color: AColors.textMuted))
                         else Icon(Icons.chevron_right_rounded, size: 18, color: AColors.textMuted.withValues(alpha: 0.5)),
@@ -1563,9 +1567,9 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
                         Expanded(child: TextField(controller: _customRewardCtrl,
                           style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AColors.textPrimary),
                           decoration: InputDecoration(hintText: 'Reward on completion',
-                            hintStyle: TextStyle(color: AColors.textMuted.withValues(alpha: 0.5)),
-                            border: InputBorder.none, enabledBorder: InputBorder.none, focusedBorder: InputBorder.none,
-                            fillColor: Colors.transparent, isDense: true, contentPadding: EdgeInsets.zero),
+                              hintStyle: TextStyle(color: AColors.textMuted.withValues(alpha: 0.5)),
+                              border: InputBorder.none, enabledBorder: InputBorder.none, focusedBorder: InputBorder.none,
+                              fillColor: Colors.transparent, isDense: true, contentPadding: EdgeInsets.zero),
                         )),
                       ]),
                     ])),
@@ -1585,14 +1589,14 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
                             onTap: () { setState(() { _steps[e.key] = GoalStepModel(id: e.value.id, title: e.value.title, done: !e.value.done, weight: e.value.weight); }); HapticFeedback.selectionClick(); },
                             child: AnimatedContainer(duration: const Duration(milliseconds: 180), width: 20, height: 20,
                               decoration: BoxDecoration(color: e.value.done ? _color : Colors.transparent, shape: BoxShape.circle,
-                                border: Border.all(color: e.value.done ? _color : AColors.border, width: 1.5)),
+                                  border: Border.all(color: e.value.done ? _color : AColors.border, width: 1.5)),
                               child: e.value.done ? const Icon(Icons.check_rounded, color: Colors.white, size: 12) : null,
                             ),
                           ),
                           const SizedBox(width: 10),
                           Expanded(child: Text(e.value.title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500,
-                            color: e.value.done ? AColors.textMuted : AColors.textSecondary,
-                            decoration: e.value.done ? TextDecoration.lineThrough : null))),
+                              color: e.value.done ? AColors.textMuted : AColors.textSecondary,
+                              decoration: e.value.done ? TextDecoration.lineThrough : null))),
                           // Weight badge — tap to cycle S -> M -> L -> S
                           GestureDetector(
                             onTap: () {
@@ -1617,7 +1621,7 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
                           ),
                           const SizedBox(width: 6),
                           GestureDetector(onTap: () => setState(() => _steps.removeAt(e.key)),
-                            child: Icon(Icons.close_rounded, color: AColors.textMuted, size: 16)),
+                              child: Icon(Icons.close_rounded, color: AColors.textMuted, size: 16)),
                         ]),
                       )),
                       const SizedBox(height: 8),
@@ -1640,8 +1644,8 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
                                 border: Border.all(color: sel ? _color : AColors.border, width: 1.5),
                               ),
                               child: Center(child: Text(label,
-                                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800,
-                                  color: sel ? _color : AColors.textMuted))),
+                                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800,
+                                      color: sel ? _color : AColors.textMuted))),
                             ),
                           );
                         }),
@@ -1650,15 +1654,15 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
                           style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AColors.textPrimary),
                           onSubmitted: (_) => _addStep(),
                           decoration: InputDecoration(hintText: 'Add a milestone...',
-                            hintStyle: TextStyle(color: AColors.textMuted.withValues(alpha: 0.5)),
-                            filled: true, fillColor: AColors.bg,
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10), isDense: true),
+                              hintStyle: TextStyle(color: AColors.textMuted.withValues(alpha: 0.5)),
+                              filled: true, fillColor: AColors.bg,
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10), isDense: true),
                         )),
                         const SizedBox(width: 8),
                         GestureDetector(onTap: _addStep, child: Container(width: 36, height: 36,
-                          decoration: BoxDecoration(color: _color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10)),
-                          child: Icon(Icons.add_rounded, color: _color, size: 20))),
+                            decoration: BoxDecoration(color: _color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10)),
+                            child: Icon(Icons.add_rounded, color: _color, size: 20))),
                       ]),
                     ])),
 
@@ -1669,9 +1673,9 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
                       style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AColors.textSecondary),
                       maxLines: 3, minLines: 1,
                       decoration: InputDecoration(hintText: 'Add a note...',
-                        hintStyle: TextStyle(color: AColors.textMuted.withValues(alpha: 0.4)),
-                        border: InputBorder.none, enabledBorder: InputBorder.none, focusedBorder: InputBorder.none,
-                        fillColor: Colors.transparent, isDense: true, contentPadding: EdgeInsets.zero),
+                          hintStyle: TextStyle(color: AColors.textMuted.withValues(alpha: 0.4)),
+                          border: InputBorder.none, enabledBorder: InputBorder.none, focusedBorder: InputBorder.none,
+                          fillColor: Colors.transparent, isDense: true, contentPadding: EdgeInsets.zero),
                     )),
 
                     const SizedBox(height: 32),
@@ -1688,12 +1692,12 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
   Widget _card({required Widget child}) => Container(
     padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(color: AColors.bgCard, borderRadius: BorderRadius.circular(18),
-      border: Border.all(color: AColors.border.withValues(alpha: 0.35))),
+        border: Border.all(color: AColors.border.withValues(alpha: 0.35))),
     child: child,
   );
 
   Widget _label(String text) => Text(text,
-    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1.1, color: AColors.textMuted.withValues(alpha: 0.55)));
+      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1.1, color: AColors.textMuted.withValues(alpha: 0.55)));
 }
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────

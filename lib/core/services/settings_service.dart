@@ -7,11 +7,11 @@ enum AppColorTheme { emerald, ruby, amethyst, sapphire, amber }
 class SettingsService {
   static const _themeModeKey = 'theme_mode_v1';
   static const _colorThemeKey = 'color_theme_v1';
-  
+
   final SharedPreferences _prefs;
-  
+
   SettingsService(this._prefs);
-  
+
   // Theme Mode
   AppThemeMode getThemeMode() {
     final val = _prefs.getString(_themeModeKey);
@@ -19,11 +19,11 @@ class SettingsService {
     if (val == AppThemeMode.dark.name) return AppThemeMode.dark;
     return AppThemeMode.system;
   }
-  
+
   Future<void> setThemeMode(AppThemeMode mode) async {
     await _prefs.setString(_themeModeKey, mode.name);
   }
-  
+
   // Color Theme
   AppColorTheme getColorTheme() {
     final val = _prefs.getString(_colorThemeKey);
@@ -33,11 +33,11 @@ class SettingsService {
     if (val == AppColorTheme.amber.name) return AppColorTheme.amber;
     return AppColorTheme.emerald; // Default
   }
-  
+
   Future<void> setColorTheme(AppColorTheme theme) async {
     await _prefs.setString(_colorThemeKey, theme.name);
   }
-  
+
   Color getPrimaryColorFor(AppColorTheme theme) {
     switch (theme) {
       case AppColorTheme.ruby:

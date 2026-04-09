@@ -46,16 +46,16 @@ class _PomodoroIntSetting extends Notifier<int> {
 }
 
 final pomodoroFocusMinsProvider =
-    NotifierProvider<_PomodoroIntSetting, int>(
+NotifierProvider<_PomodoroIntSetting, int>(
         () => _PomodoroIntSetting('pomo_focus', 25));
 final pomodoroShortBreakMinsProvider =
-    NotifierProvider<_PomodoroIntSetting, int>(
+NotifierProvider<_PomodoroIntSetting, int>(
         () => _PomodoroIntSetting('pomo_short', 5));
 final pomodoroLongBreakMinsProvider =
-    NotifierProvider<_PomodoroIntSetting, int>(
+NotifierProvider<_PomodoroIntSetting, int>(
         () => _PomodoroIntSetting('pomo_long', 15));
 final pomodoroSessionsUntilLongProvider =
-    NotifierProvider<_PomodoroIntSetting, int>(
+NotifierProvider<_PomodoroIntSetting, int>(
         () => _PomodoroIntSetting('pomo_sessions', 4));
 
 // ─── MODELS ───────────────────────────────────────────────────────────────
@@ -481,6 +481,10 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
 
   @override
   Widget build(BuildContext context) {
+    // Watch theme providers so this screen rebuilds immediately on theme change.
+    ref.watch(themeModeProvider);
+    ref.watch(colorThemeProvider);
+
     final uid = ref.watch(currentUidProvider);
 
     return Scaffold(
@@ -513,7 +517,7 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
                   padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
                   child: Row(
                     children: [
-                            Expanded(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -581,7 +585,7 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
                                   ),
                                 ),
                                 const SizedBox(width: 4),
-                                      Icon(
+                                Icon(
                                   Icons.edit_rounded,
                                   size: 12,
                                   color: AColors.textMuted,
@@ -629,19 +633,19 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
                                         ],
                                       ),
                                     ),
-                                      AnimatedBuilder(
-                                        animation: Listenable.merge([
-                                          _pulseCtrl, // if we want the stroke to throb
-                                        ]),
-                                        builder: (_, __) => CustomPaint(
-                                          size: Size(size, size),
-                                          painter: _PomodoroRingPainter(
-                                            progress: _progress,
-                                            color: _phaseColor,
-                                            glowIntensity: _running ? _pulseAnim.value - 1.0 : 0.0,
-                                          ),
+                                    AnimatedBuilder(
+                                      animation: Listenable.merge([
+                                        _pulseCtrl, // if we want the stroke to throb
+                                      ]),
+                                      builder: (_, __) => CustomPaint(
+                                        size: Size(size, size),
+                                        painter: _PomodoroRingPainter(
+                                          progress: _progress,
+                                          color: _phaseColor,
+                                          glowIntensity: _running ? _pulseAnim.value - 1.0 : 0.0,
                                         ),
                                       ),
+                                    ),
                                     Column(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
@@ -1262,24 +1266,24 @@ class _CircleBtn extends StatelessWidget {
         ),
         boxShadow: glow
             ? [
-                BoxShadow(
-                  color: (glowColor ?? bgColor).withValues(alpha: 0.45),
-                  blurRadius: 24,
-                  spreadRadius: 2,
-                ),
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.4),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ]
+          BoxShadow(
+            color: (glowColor ?? bgColor).withValues(alpha: 0.45),
+            blurRadius: 24,
+            spreadRadius: 2,
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.4),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ]
             : [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Icon(icon, color: color, size: size * 0.45),
     ),

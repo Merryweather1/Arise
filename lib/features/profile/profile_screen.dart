@@ -48,10 +48,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final result = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1D24),
+        backgroundColor: AColors.bgElevated,
         shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(20))),
-        title:       Text('Edit Name',
+        title: Text('Edit Name',
             style: TextStyle(
                 color: AColors.textPrimary,
                 fontSize: 16,
@@ -65,7 +65,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             hintText: 'Your name',
             hintStyle: TextStyle(color: AColors.textMuted),
             filled: true,
-            fillColor: const Color(0xFF0E1117),
+            fillColor: AColors.bgInput,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(color: AColors.primary.withAlpha(60)),
@@ -73,7 +73,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide:
-                  BorderSide(color: AColors.primary, width: 1.5),
+              BorderSide(color: AColors.primary, width: 1.5),
             ),
           ),
         ),
@@ -116,7 +116,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1D24),
+        backgroundColor: AColors.bgElevated,
         shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(20))),
         title:       Text('Sign Out',
@@ -149,6 +149,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
   @override
   Widget build(BuildContext context) {
+    // Watch theme providers so this screen rebuilds immediately on theme change.
+    ref.watch(themeModeProvider);
+    ref.watch(colorThemeProvider);
+
     final profileAsync = ref.watch(userProfileProvider);
     final profile = profileAsync.valueOrNull;
     // Always use the live Firebase Auth email — Firestore's copy may be stale
@@ -192,27 +196,27 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               physics: const BouncingScrollPhysics(),
               slivers: [
                 _buildAppBar(context, profile),
-            if (profile != null) ...[
-              SliverToBoxAdapter(child: _HeroCard(profile: profile, email: liveEmail, onEditName: () => _editName(profile))),
-              const SliverToBoxAdapter(child: SizedBox(height: 24)),
-              SliverToBoxAdapter(child: _XpSphereRow(profile: profile)),
-              const SliverToBoxAdapter(child: SizedBox(height: 28)),
-              SliverToBoxAdapter(child: _AccountSection(profile: profile, email: liveEmail)),
-              const SliverToBoxAdapter(child: SizedBox(height: 16)),
-              SliverToBoxAdapter(child: _AppSettingsSection(profile: profile)),
-              const SliverToBoxAdapter(child: SizedBox(height: 16)),
-              SliverToBoxAdapter(child: _DangerSection(onSignOut: _signOut)),
-              const SliverToBoxAdapter(child: SizedBox(height: 48)),
-            ] else ...[
-                    SliverFillRemaining(
-                child: Center(
-                  child: CircularProgressIndicator(
-                      color: AColors.primary, strokeWidth: 2),
-                ),
-              ),
-            ],
-          ],
-        ),
+                if (profile != null) ...[
+                  SliverToBoxAdapter(child: _HeroCard(profile: profile, email: liveEmail, onEditName: () => _editName(profile))),
+                  const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                  SliverToBoxAdapter(child: _XpSphereRow(profile: profile)),
+                  const SliverToBoxAdapter(child: SizedBox(height: 28)),
+                  SliverToBoxAdapter(child: _AccountSection(profile: profile, email: liveEmail)),
+                  const SliverToBoxAdapter(child: SizedBox(height: 16)),
+                  SliverToBoxAdapter(child: _AppSettingsSection(profile: profile)),
+                  const SliverToBoxAdapter(child: SizedBox(height: 16)),
+                  SliverToBoxAdapter(child: _DangerSection(onSignOut: _signOut)),
+                  const SliverToBoxAdapter(child: SizedBox(height: 48)),
+                ] else ...[
+                  SliverFillRemaining(
+                    child: Center(
+                      child: CircularProgressIndicator(
+                          color: AColors.primary, strokeWidth: 2),
+                    ),
+                  ),
+                ],
+              ],
+            ),
           ],
         ),
       ),
@@ -233,9 +237,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: const Color(0xFF16191F),
+              color: AColors.bgElevated,
               shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFF2A2E3A)),
+              border: Border.all(color: AColors.border),
             ),
             child:       Icon(Icons.arrow_back_ios_new_rounded,
                 size: 15, color: AColors.textPrimary),
@@ -348,7 +352,7 @@ class _HeroCard extends StatelessWidget {
                           color: AColors.primary,
                           shape: BoxShape.circle,
                           border: Border.all(
-                              color: const Color(0xFF080A0F), width: 2),
+                              color: AColors.bgCard, width: 2),
                         ),
                         child: const Icon(Icons.star_rounded,
                             size: 12, color: Color(0xFF003D25)),
@@ -421,7 +425,7 @@ class _HeroCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                          Text('Overall XP',
+                    Text('Overall XP',
                         style: TextStyle(
                             color: AColors.textMuted,
                             fontSize: 11,
@@ -445,7 +449,7 @@ class _HeroCard extends StatelessWidget {
                     child: LinearProgressIndicator(
                       value: val,
                       minHeight: 7,
-                      backgroundColor: const Color(0xFF1E2230),
+                      backgroundColor: AColors.border,
                       valueColor: AlwaysStoppedAnimation<Color>(gradient[0]),
                     ),
                   ),
@@ -650,7 +654,7 @@ class _AccountSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-                Padding(
+          Padding(
             padding: EdgeInsets.only(left: 4, bottom: 10),
             child: Text('ACCOUNT',
                 style: TextStyle(
@@ -669,8 +673,8 @@ class _AccountSection extends StatelessWidget {
                   email.isEmpty
                       ? 'Not set'
                       : (email.length > 24
-                          ? '${email.substring(0, 24)}…'
-                          : email),
+                      ? '${email.substring(0, 24)}…'
+                      : email),
                   style:       TextStyle(
                       color: AColors.textMuted, fontSize: 13),
                 ),
@@ -893,23 +897,23 @@ class _CategoryManagerSheetState extends ConsumerState<_CategoryManagerSheet> {
             ),
             const SizedBox(height: 16),
             Expanded(
-              child: cats.isEmpty 
-                ? Center(child: Text('No custom categories yet', style: TextStyle(color: AColors.textMuted)))
-                : ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: cats.length,
-                    itemBuilder: (_, i) {
-                      final c = cats[i];
-                      return ListTile(
-                        title: Text(c, style: TextStyle(color: AColors.textPrimary)),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.close_rounded, color: Colors.redAccent),
-                          onPressed: () => _remove(c),
-                        ),
-                        contentPadding: EdgeInsets.zero,
-                      );
-                    },
-                  ),
+              child: cats.isEmpty
+                  ? Center(child: Text('No custom categories yet', style: TextStyle(color: AColors.textMuted)))
+                  : ListView.builder(
+                shrinkWrap: true,
+                itemCount: cats.length,
+                itemBuilder: (_, i) {
+                  final c = cats[i];
+                  return ListTile(
+                    title: Text(c, style: TextStyle(color: AColors.textPrimary)),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.close_rounded, color: Colors.redAccent),
+                      onPressed: () => _remove(c),
+                    ),
+                    contentPadding: EdgeInsets.zero,
+                  );
+                },
+              ),
             ),
           ],
         ),
@@ -1035,7 +1039,7 @@ class _DangerSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-                Padding(
+          Padding(
             padding: EdgeInsets.only(left: 4, bottom: 10),
             child: Text('SESSION',
                 style: TextStyle(
@@ -1126,16 +1130,16 @@ class _SettingsItem extends StatelessWidget {
       child: InkWell(
         onTap: onTap != null
             ? () {
-                HapticFeedback.selectionClick();
-                onTap!();
-              }
+          HapticFeedback.selectionClick();
+          onTap!();
+        }
             : null,
         borderRadius: BorderRadius.circular(20),
         splashColor: iconColor.withAlpha(12),
         highlightColor: iconColor.withAlpha(6),
         child: Padding(
           padding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
             children: [
               Container(
@@ -1157,7 +1161,7 @@ class _SettingsItem extends StatelessWidget {
               ),
               ?trailing,
               if (onTap != null && trailing == null)
-                      Icon(Icons.chevron_right_rounded,
+                Icon(Icons.chevron_right_rounded,
                     color: AColors.textMuted, size: 18),
             ],
           ),

@@ -27,7 +27,7 @@ void main() async {
   await NotificationService.instance.initialize(container: container);
 
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-  
+
   runApp(ProviderScope(parent: container, child: const AriseApp()));
 }
 
@@ -55,7 +55,7 @@ class _AriseAppState extends ConsumerState<AriseApp> with WidgetsBindingObserver
     // If we're in system mode, a brightness change should trigger a rebuild
     final mode = ref.read(themeModeProvider);
     if (mode == AppThemeMode.system) {
-      setState(() {}); 
+      setState(() {});
     }
   }
 
@@ -63,7 +63,7 @@ class _AriseAppState extends ConsumerState<AriseApp> with WidgetsBindingObserver
   Widget build(BuildContext context) {
     final mode = ref.watch(themeModeProvider);
     final colorTheme = ref.watch(colorThemeProvider);
-    
+
     // Apply dynamic colors
     final settings = ref.read(settingsServiceProvider);
     AColors.applyTheme(mode, settings.getPrimaryColorFor(colorTheme));

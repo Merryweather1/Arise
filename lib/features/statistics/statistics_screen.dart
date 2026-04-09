@@ -8,7 +8,7 @@ import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_theme.dart';
 
 class StatisticsScreen extends ConsumerStatefulWidget {
-        const StatisticsScreen({super.key});
+  const StatisticsScreen({super.key});
 
   @override
   ConsumerState<StatisticsScreen> createState() => _StatisticsScreenState();
@@ -42,6 +42,10 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen>
 
   @override
   Widget build(BuildContext context) {
+    // Watch theme providers so this screen rebuilds immediately on theme change.
+    ref.watch(themeModeProvider);
+    ref.watch(colorThemeProvider);
+
     final tasks = ref.watch(tasksProvider).valueOrNull ?? <TaskModel>[];
     final habits = ref.watch(habitsProvider).valueOrNull ?? <HabitModel>[];
     final sessions = ref.watch(pomodoroSessionsProvider).valueOrNull ?? <PomodoroSession>[];
@@ -70,7 +74,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen>
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
               child: Row(
                 children: [
-                        Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -978,7 +982,7 @@ class _DonutChart extends StatelessWidget {
             ),
           ),
         ),
-              SizedBox(width: 16),
+        SizedBox(width: 16),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

@@ -403,6 +403,10 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Watch theme providers so this screen rebuilds immediately on theme change.
+    ref.watch(themeModeProvider);
+    ref.watch(colorThemeProvider);
+
     final tasksAsync = ref.watch(tasksProvider);
     final categories = ref.watch(allCategoriesProvider);
 
@@ -416,7 +420,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
               child: Row(
                 children: [
-                        Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -1261,7 +1265,7 @@ class _SwipeableTaskTileState extends State<_SwipeableTaskTile>
                 _expanded && hasSubs
                     ? Column(
                   children: [
-                          Divider(
+                    Divider(
                       height: 1,
                       color: AColors.border,
                     ),
@@ -1450,7 +1454,7 @@ class _SettingsSheet extends ConsumerWidget {
             },
             child: Row(
               children: [
-                      Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment:
                     CrossAxisAlignment.start,
@@ -1866,7 +1870,7 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                                Divider(
+                          Divider(
                             color: AColors.border,
                             height: 1,
                           ),
@@ -2233,7 +2237,7 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
                           ),
 
                           const SizedBox(height: 12),
-                                Divider(
+                          Divider(
                             color: AColors.border,
                             height: 1,
                           ),
@@ -2357,7 +2361,7 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
                           ],
 
                           const SizedBox(height: 12),
-                                Divider(
+                          Divider(
                             color: AColors.border,
                             height: 1,
                           ),
@@ -2370,7 +2374,7 @@ class _TaskEditorSheetState extends State<_TaskEditorSheet> {
                             },
                             child: Row(
                               children: [
-                                      Expanded(
+                                Expanded(
                                   child: Text(
                                     'Pending',
                                     style: TextStyle(

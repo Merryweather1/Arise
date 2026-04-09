@@ -49,10 +49,10 @@ class AIconMapper {
 
   /// Get an Icon widget with current-selection styling.
   static Widget iconWidget(
-    String emoji, {
-    double size = 22,
-    Color? color,
-  }) {
+      String emoji, {
+        double size = 22,
+        Color? color,
+      }) {
     final icon = resolve(emoji);
     if (icon != null) {
       return Icon(icon, size: size, color: color ?? Colors.white);

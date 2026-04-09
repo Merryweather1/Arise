@@ -46,12 +46,12 @@ class NotificationService {
     );
     await _plugin
         .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
+        AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(channel);
 
     await _plugin
         .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
+        AndroidFlutterLocalNotificationsPlugin>()
         ?.requestNotificationsPermission();
   }
 
@@ -106,7 +106,7 @@ class NotificationService {
     if (task.done || task.reminderTime == null) return;
 
     final body =
-        task.note?.isNotEmpty == true ? task.note! : 'Tap to open your task';
+    task.note?.isNotEmpty == true ? task.note! : 'Tap to open your task';
 
     if (task.reminderDays.isNotEmpty) {
       // в”Ђв”Ђ Recurring task: fire every selected weekday в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
@@ -122,7 +122,7 @@ class NotificationService {
           _notifDetails,
           androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
           uiLocalNotificationDateInterpretation:
-              UILocalNotificationDateInterpretation.absoluteTime,
+          UILocalNotificationDateInterpretation.absoluteTime,
           matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
           payload: 'task:${task.id}',
         );
@@ -159,7 +159,7 @@ class NotificationService {
         _notifDetails,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
+        UILocalNotificationDateInterpretation.absoluteTime,
         // No matchDateTimeComponents = fires once, no repeat
         payload: 'task:${task.id}',
       );
@@ -209,7 +209,7 @@ class NotificationService {
         _notifDetails,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
+        UILocalNotificationDateInterpretation.absoluteTime,
         matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
         payload: 'habit:${habit.id}',
       );
@@ -256,7 +256,7 @@ class NotificationService {
       _notifDetails,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
+      UILocalNotificationDateInterpretation.absoluteTime,
       payload: 'goal:${goal.id}',
     );
     _log(
@@ -297,7 +297,7 @@ class NotificationService {
   Future<void> _scheduleOnlyTask(TaskModel task) async {
     if (task.done || task.reminderTime == null) return;
     final body =
-        task.note?.isNotEmpty == true ? task.note! : 'Tap to open your task';
+    task.note?.isNotEmpty == true ? task.note! : 'Tap to open your task';
 
     if (task.reminderDays.isNotEmpty) {
       for (final weekday in task.reminderDays) {
@@ -308,7 +308,7 @@ class NotificationService {
           _notifDetails,
           androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
           uiLocalNotificationDateInterpretation:
-              UILocalNotificationDateInterpretation.absoluteTime,
+          UILocalNotificationDateInterpretation.absoluteTime,
           matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
           payload: 'task:${task.id}',
         );
@@ -328,7 +328,7 @@ class NotificationService {
         'рџ“‹ ${task.title}', body, when, _notifDetails,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
+        UILocalNotificationDateInterpretation.absoluteTime,
         payload: 'task:${task.id}',
       );
     }
@@ -348,7 +348,7 @@ class NotificationService {
         _notifDetails,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
+        UILocalNotificationDateInterpretation.absoluteTime,
         matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
         payload: 'habit:${habit.id}',
       );
@@ -368,7 +368,7 @@ class NotificationService {
       scheduled, _notifDetails,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
+      UILocalNotificationDateInterpretation.absoluteTime,
       payload: 'goal:${goal.id}',
     );
   }

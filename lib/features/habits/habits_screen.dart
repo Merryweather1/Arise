@@ -176,6 +176,10 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
 
   @override
   Widget build(BuildContext context) {
+    // Watch theme providers so this screen rebuilds immediately on theme change.
+    ref.watch(themeModeProvider);
+    ref.watch(colorThemeProvider);
+
     final habits = ref.watch(habitsProvider).valueOrNull ?? [];
     final visibleHabits = habits.where((h) => !h.archived).toList();
     final categories = ref.watch(allCategoriesProvider);
@@ -268,7 +272,7 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
                             color: AColors.primary, size: 18),
                       ),
                       const SizedBox(width: 12),
-                            Expanded(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [

@@ -15,7 +15,7 @@ class AColors {
   static Color bgCard        = const Color(0xFF131A16);
   static Color bgElevated    = const Color(0xFF1A2420);
   static Color bgInput       = const Color(0xFF1F2B26);
-  
+
   static Color bgSleek       = const Color(0xFF0D1210);
   static Color borderSleek   = const Color(0xFF18221D);
 
@@ -41,31 +41,31 @@ class AColors {
   );
 
   static void applyTheme(AppThemeMode mode, Color primaryColor) {
-    bool isLight = mode == AppThemeMode.light || 
+    bool isLight = mode == AppThemeMode.light ||
         (mode == AppThemeMode.system && PlatformDispatcher.instance.platformBrightness == Brightness.light);
 
     if (isLight) {
-       bg = const Color(0xFFF7F9FC);
-       bgCard = const Color(0xFFFFFFFF);
-       bgElevated = const Color(0xFFFFFFFF);
-       bgInput = const Color(0xFFEDF2F7);
-       bgSleek = const Color(0xFFFFFFFF);
-       borderSleek = const Color(0xFFE2E8F0);
-       border = const Color(0xFFE2E8F0);
-       textPrimary = const Color(0xFF1A202C);
-       textSecondary = const Color(0xFF4A5568);
-       textMuted = const Color(0xFFA0AEC0);
+      bg = const Color(0xFFF7F9FC);
+      bgCard = const Color(0xFFFFFFFF);
+      bgElevated = const Color(0xFFFFFFFF);
+      bgInput = const Color(0xFFEDF2F7);
+      bgSleek = const Color(0xFFFFFFFF);
+      borderSleek = const Color(0xFFE2E8F0);
+      border = const Color(0xFFE2E8F0);
+      textPrimary = const Color(0xFF1A202C);
+      textSecondary = const Color(0xFF4A5568);
+      textMuted = const Color(0xFFA0AEC0);
     } else {
-       bg = const Color(0xFF0A0F0D);
-       bgCard = const Color(0xFF131A16);
-       bgElevated = const Color(0xFF1A2420);
-       bgInput = const Color(0xFF1F2B26);
-       bgSleek = const Color(0xFF0D1210);
-       borderSleek = const Color(0xFF18221D);
-       border = const Color(0xFF243029);
-       textPrimary = const Color(0xFFF0FAF5);
-       textSecondary = const Color(0xFF8BA898);
-       textMuted = const Color(0xFF4D6359);
+      bg = const Color(0xFF0A0F0D);
+      bgCard = const Color(0xFF131A16);
+      bgElevated = const Color(0xFF1A2420);
+      bgInput = const Color(0xFF1F2B26);
+      bgSleek = const Color(0xFF0D1210);
+      borderSleek = const Color(0xFF18221D);
+      border = const Color(0xFF243029);
+      textPrimary = const Color(0xFFF0FAF5);
+      textSecondary = const Color(0xFF8BA898);
+      textMuted = const Color(0xFF4D6359);
     }
 
     final hsl = HSLColor.fromColor(primaryColor);
@@ -216,7 +216,7 @@ class ATheme {
 
     checkboxTheme: CheckboxThemeData(
       fillColor: WidgetStateProperty.resolveWith((states) =>
-          states.contains(WidgetState.selected) ? AColors.primary : Colors.transparent),
+      states.contains(WidgetState.selected) ? AColors.primary : Colors.transparent),
       checkColor: WidgetStateProperty.all(const Color(0xFF003D25)),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
       side: BorderSide(color: AColors.border, width: 1.5),
@@ -224,9 +224,9 @@ class ATheme {
 
     switchTheme: SwitchThemeData(
       thumbColor: WidgetStateProperty.resolveWith((states) =>
-          states.contains(WidgetState.selected) ? AColors.primary : AColors.textMuted),
+      states.contains(WidgetState.selected) ? AColors.primary : AColors.textMuted),
       trackColor: WidgetStateProperty.resolveWith((states) =>
-          states.contains(WidgetState.selected) ? AColors.primaryGlow : AColors.bgInput),
+      states.contains(WidgetState.selected) ? AColors.primaryGlow : AColors.bgInput),
     ),
 
     progressIndicatorTheme:       ProgressIndicatorThemeData(

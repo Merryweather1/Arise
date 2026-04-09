@@ -125,6 +125,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Watch theme providers so this screen rebuilds immediately on theme change.
+    ref.watch(themeModeProvider);
+    ref.watch(colorThemeProvider);
+
     final tasksAsync = ref.watch(tasksProvider);
     final habitsAsync = ref.watch(habitsProvider);
 
@@ -284,8 +288,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         Expanded(
                           child: _FeatureCard(
                             onTap: () => context.push(ARoutes.lifeBalance),
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF1A2F26), Color(0xFF0F2420)],
+                            gradient: LinearGradient(
+                              colors: [AColors.bgElevated, AColors.bgCard],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
@@ -308,8 +312,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         Expanded(
                           child: _FeatureCard(
                             onTap: () => context.push(ARoutes.statistics),
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF1A2030), Color(0xFF0F1520)],
+                            gradient: LinearGradient(
+                              colors: [AColors.bgElevated, AColors.bgSleek],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
@@ -581,7 +585,7 @@ class _XpCard extends ConsumerWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF0D1A14),
+        color: AColors.bgCard,
         borderRadius: ARadius.xl,
         border: Border.all(
           color: AColors.primary.withValues(alpha: 0.18),
@@ -967,7 +971,7 @@ class _FeatureCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 8),
-              Text(title, style: AText.titleSmall.copyWith(color: Colors.white)),
+              Text(title, style: AText.titleSmall.copyWith(color: AColors.textPrimary)),
               const SizedBox(height: 2),
               Text(subtitle, style: AText.bodySmall.copyWith(color: accentColor)),
               const Spacer(),
@@ -990,12 +994,12 @@ class _FeaturePlaceholder extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.06),
+          color: AColors.bgElevated,
           borderRadius: ARadius.full,
         ),
         child: Text(
           text,
-          style: AText.bodySmall.copyWith(color: Colors.white70),
+          style: AText.bodySmall.copyWith(color: AColors.textSecondary),
         ),
       ),
     );
@@ -1013,14 +1017,14 @@ class _FeatureLiveStat extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.10),
+          color: AColors.bgElevated,
           borderRadius: ARadius.full,
-          border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+          border: Border.all(color: AColors.border),
         ),
         child: Text(
           text,
           style: AText.bodySmall.copyWith(
-            color: Colors.white,
+            color: AColors.textPrimary,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -1260,10 +1264,10 @@ class _HabitDashboardChip extends StatelessWidget {
               children: [
                 (AIconMapper.resolve(habit.emoji) != null)
                     ? Icon(
-                        AIconMapper.resolve(habit.emoji),
-                        size: 24,
-                        color: done ? AColors.textMuted : habit.color,
-                      )
+                  AIconMapper.resolve(habit.emoji),
+                  size: 24,
+                  color: done ? AColors.textMuted : habit.color,
+                )
                     : Text(habit.emoji, style: const TextStyle(fontSize: 22)),
                 const Spacer(),
                 GestureDetector(
@@ -1365,7 +1369,7 @@ class _EmptyDashboardMainCard extends StatelessWidget {
           const SizedBox(height: 18),
           Text('Your dashboard is empty', style: AText.titleLarge),
           const SizedBox(height: 8),
-                Text(
+          Text(
             'Add tasks, habits, and goals to start seeing real data here.',
             style: AText.bodyMedium,
             textAlign: TextAlign.center,
