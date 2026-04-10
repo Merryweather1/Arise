@@ -1,4 +1,4 @@
-package com.example.arise_test
+package app.arise.merryweather
 
 import io.flutter.embedding.android.FlutterActivity
 

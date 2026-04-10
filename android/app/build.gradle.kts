@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
     // START: FlutterFire Configuration
@@ -9,7 +12,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.arise_test"
+    namespace = "app.arise.merryweather"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -24,14 +27,17 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.arise_test"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
+        applicationId = "app.arise.merryweather"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+    }
+
+    val keystorePropertiesFile = rootProject.file("key.properties")
+    val keystoreProperties = Properties()
+    if (keystorePropertiesFile.exists()) {
+        keystoreProperties.load(FileInputStream(keystorePropertiesFile))
     }
 
     signingConfigs {
@@ -41,6 +47,15 @@ android {
             keyAlias = "androiddebugkey"
             keyPassword = "android"
         }
+        create("release") {
+            keyAlias = keystoreProperties["keyAlias"] as String? ?: ""
+            keyPassword = keystoreProperties["keyPassword"] as String? ?: ""
+            
+            val storeFileVal = keystoreProperties["storeFile"] as String?
+            storeFile = if (storeFileVal != null) file(storeFileVal) else null
+            
+            storePassword = keystoreProperties["storePassword"] as String? ?: ""
+        }
     }
 
     buildTypes {
@@ -48,13 +63,9 @@ android {
             signingConfig = signingConfigs.getByName("sharedDebug")
         }
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the shared debug keys so `flutter run --release` works everywhere.
-            signingConfig = signingConfigs.getByName("sharedDebug")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
-
-
 }
 
 flutter {
