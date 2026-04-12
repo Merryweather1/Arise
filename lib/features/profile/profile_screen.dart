@@ -12,7 +12,6 @@ import '../../core/services/firestore_service.dart';
 import '../../core/services/settings_service.dart';
 import '../../core/theme/app_theme.dart';
 
-// ─── SCREEN ───────────────────────────────────────────────────────────────
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
@@ -119,43 +118,84 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         backgroundColor: AColors.bgElevated,
         shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(20))),
-        title:       Text('Sign Out',
+        title: Text('Sign Out',
             style: TextStyle(color: AColors.textPrimary, fontWeight: FontWeight.w700)),
-        content:       Text('Are you sure you want to sign out?',
+        content: Text('Are you sure you want to sign out?',
             style: TextStyle(color: AColors.textMuted, height: 1.5)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child:       Text('Cancel',
-                style: TextStyle(color: AColors.textMuted)),
+            child: Text('Cancel', style: TextStyle(color: AColors.textMuted)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('Sign Out',
-                style: TextStyle(
-                    color: Colors.redAccent, fontWeight: FontWeight.w700)),
+                style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w700)),
           ),
         ],
       ),
     );
     if (confirmed == true) {
-      // Sign out from Firebase AND clear the Google session so that
-      // the account picker is shown on the next sign-in attempt.
       final googleSignIn = GoogleSignIn();
       await googleSignIn.signOut();
       await FirebaseAuth.instance.signOut();
     }
   }
 
+  Future<void> _deleteAccount() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AColors.bgElevated,
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(20))),
+        title: const Text('Delete Account',
+            style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w800)),
+        content: Text(
+          'This will permanently delete your account and ALL your data (tasks, habits, goals, XP). This cannot be undone.',
+          style: TextStyle(color: AColors.textMuted, height: 1.5),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Cancel', style: TextStyle(color: AColors.textMuted)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Delete Everything',
+                style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w800)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    final uid = ref.read(currentUidProvider);
+    if (uid == null) return;
+    try {
+      await UserRepository.deleteAllUserData(uid);
+      final googleSignIn = GoogleSignIn();
+      await googleSignIn.signOut();
+      await FirebaseAuth.instance.currentUser?.delete();
+      await FirebaseAuth.instance.signOut();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to delete account: $e'),
+          backgroundColor: AColors.error,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Watch theme providers so this screen rebuilds immediately on theme change.
     ref.watch(themeModeProvider);
     ref.watch(colorThemeProvider);
 
     final profileAsync = ref.watch(userProfileProvider);
     final profile = profileAsync.valueOrNull;
-    // Always use the live Firebase Auth email — Firestore's copy may be stale
     final liveEmail = FirebaseAuth.instance.currentUser?.email
         ?? profile?.email
         ?? '';
@@ -205,7 +245,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   const SliverToBoxAdapter(child: SizedBox(height: 16)),
                   SliverToBoxAdapter(child: _AppSettingsSection(profile: profile)),
                   const SliverToBoxAdapter(child: SizedBox(height: 16)),
-                  SliverToBoxAdapter(child: _DangerSection(onSignOut: _signOut)),
+                  SliverToBoxAdapter(child: _DangerSection(onSignOut: _signOut, onDeleteAccount: _deleteAccount)),
                   const SliverToBoxAdapter(child: SizedBox(height: 48)),
                 ] else ...[
                   SliverFillRemaining(
@@ -259,7 +299,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   }
 }
 
-// ─── HERO CARD ────────────────────────────────────────────────────────────
 class _HeroCard extends StatelessWidget {
   final UserProfile profile;
   final String email;
@@ -267,7 +306,6 @@ class _HeroCard extends StatelessWidget {
 
   const _HeroCard({required this.profile, required this.email, required this.onEditName});
 
-  // Deterministic avatar gradient from uid
   List<Color> _avatarGradient() {
     final hash = profile.uid.hashCode.abs();
     const palettes = [
@@ -313,7 +351,6 @@ class _HeroCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                // Avatar
                 Stack(
                   children: [
                     Container(
@@ -361,7 +398,6 @@ class _HeroCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(width: 16),
-                // Name + level
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -419,7 +455,6 @@ class _HeroCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 20),
-            // Combined XP bar
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -467,7 +502,6 @@ class _HeroCard extends StatelessWidget {
   }
 }
 
-// ─── XP SPHERE ROW ────────────────────────────────────────────────────────
 class _XpSphereRow extends StatelessWidget {
   final UserProfile profile;
   const _XpSphereRow({required this.profile});
@@ -568,7 +602,6 @@ class _SphereCard extends StatelessWidget {
                   fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 10),
-            // Arc progress
             _ArcProgress(progress: progress, color: color, size: 48),
             const SizedBox(height: 6),
             Text(
@@ -640,7 +673,6 @@ class _ArcPainter extends CustomPainter {
   bool shouldRepaint(_ArcPainter old) => old.progress != progress;
 }
 
-// ─── ACCOUNT SECTION ──────────────────────────────────────────────────────
 class _AccountSection extends StatelessWidget {
   final UserProfile profile;
   final String email;
@@ -707,7 +739,6 @@ class _AccountSection extends StatelessWidget {
   }
 }
 
-// ─── APP SETTINGS SECTION ──────────────────────────────────────────────────
 class _AppSettingsSection extends ConsumerWidget {
   final UserProfile profile;
 
@@ -722,7 +753,6 @@ class _AppSettingsSection extends ConsumerWidget {
     if (themeMode == AppThemeMode.light) themeModeLabel = 'Light';
     if (themeMode == AppThemeMode.dark) themeModeLabel = 'Dark';
 
-    // Capitalize first letter of color theme
     String colorThemeLabel = colorTheme.name.substring(0, 1).toUpperCase() + colorTheme.name.substring(1);
 
     return Padding(
@@ -844,8 +874,6 @@ class _CategoryManagerSheetState extends ConsumerState<_CategoryManagerSheet> {
   }
 
   void _remove(String text) {
-    // We update via UserNotifier or directly to UserRepository. 
-    // Wait, UserNotifier only had addCustomCategory. Let's fire a repo call.
     final uid = ref.read(currentUidProvider);
     if (uid != null) {
       final updated = List<String>.from(widget.profile.customCategories)..remove(text);
@@ -1027,10 +1055,10 @@ class _ThemeTile extends StatelessWidget {
   }
 }
 
-// ─── DANGER SECTION ───────────────────────────────────────────────────────
 class _DangerSection extends StatelessWidget {
   final VoidCallback onSignOut;
-  const _DangerSection({required this.onSignOut});
+  final VoidCallback onDeleteAccount;
+  const _DangerSection({required this.onSignOut, required this.onDeleteAccount});
 
   @override
   Widget build(BuildContext context) {
@@ -1040,7 +1068,7 @@ class _DangerSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: EdgeInsets.only(left: 4, bottom: 10),
+            padding: const EdgeInsets.only(left: 4, bottom: 10),
             child: Text('SESSION',
                 style: TextStyle(
                     color: AColors.textMuted,
@@ -1060,6 +1088,16 @@ class _DangerSection extends StatelessWidget {
                     color: Colors.redAccent, size: 18),
                 onTap: onSignOut,
               ),
+              _SettingsItem(
+                icon: Icons.delete_forever_rounded,
+                iconColor: const Color(0xFFFF3B30),
+                iconBg: const Color(0xFFFF3B30).withAlpha(20),
+                label: 'Delete Account & Data',
+                labelColor: const Color(0xFFFF3B30),
+                trailing: const Icon(Icons.chevron_right_rounded,
+                    color: Color(0xFFFF3B30), size: 18),
+                onTap: onDeleteAccount,
+              ),
             ],
           ),
           const SizedBox(height: 20),
@@ -1077,7 +1115,6 @@ class _DangerSection extends StatelessWidget {
   }
 }
 
-// ─── SETTINGS CARD / ITEM ─────────────────────────────────────────────────
 class _SettingsCard extends StatelessWidget {
   final List<_SettingsItem> items;
   const _SettingsCard({required this.items});

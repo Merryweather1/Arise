@@ -59,6 +59,17 @@ class UserRepository {
       _db.collection('users').doc(uid).set({
         'customCategories': FieldValue.arrayUnion([category])
       }, SetOptions(merge: true));
+
+  static Future<void> deleteAllUserData(String uid) async {
+    final userDoc = _db.collection('users').doc(uid);
+    for (final sub in ['tasks', 'habits', 'goals']) {
+      final snap = await userDoc.collection(sub).get();
+      for (final doc in snap.docs) {
+        await doc.reference.delete();
+      }
+    }
+    await userDoc.delete();
+  }
 }
 
 // ─── TASKS ────────────────────────────────────────────────────────────────

@@ -10,6 +10,10 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <!-- Required to keep the CPU awake while firing the alarm -->
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    
+    <!-- Required for Firebase and cloud sync in Release builds -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:label="Arise"
