@@ -8,10 +8,8 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/icon_mapper.dart';
 import '../../core/widgets/app_toast.dart';
 
-// ─── SETTINGS ─────────────────────────────────────────────────────────────
 final habitsFilterCategoryProvider = StateProvider<String>((ref) => 'All');
 
-// ─── SCREEN ───────────────────────────────────────────────────────────────
 class HabitsScreen extends ConsumerStatefulWidget {
   const HabitsScreen({super.key});
 
@@ -176,7 +174,6 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
 
   @override
   Widget build(BuildContext context) {
-    // Watch theme providers so this screen rebuilds immediately on theme change.
     ref.watch(themeModeProvider);
     ref.watch(colorThemeProvider);
 
@@ -226,7 +223,6 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
 
             const SizedBox(height: 16),
 
-            // Progress card – only when there are 2+ habits
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 450),
               switchInCurve: Curves.easeOutCubic,
@@ -369,7 +365,6 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
   }
 }
 
-// ─── DAILY PROGRESS ───────────────────────────────────────────────────────
 class _DailyProgress extends StatelessWidget {
   final int done, total;
   const _DailyProgress({required this.done, required this.total});
@@ -428,7 +423,6 @@ class _DailyProgress extends StatelessWidget {
   }
 }
 
-// ─── TODAY TAB ────────────────────────────────────────────────────────────
 class _TodayTab extends StatelessWidget {
   final List<HabitModel> habits;
   final Function(HabitModel) onToggle, onEdit, onDelete;
@@ -510,7 +504,6 @@ class _TodayTab extends StatelessWidget {
   }
 }
 
-// ─── ALL TAB ──────────────────────────────────────────────────────────────
 class _AllTab extends StatelessWidget {
   final List<HabitModel> habits;
   final Function(HabitModel) onToggle, onEdit, onDelete;
@@ -558,7 +551,6 @@ class _AllTab extends StatelessWidget {
   }
 }
 
-// ─── HABIT CARD ───────────────────────────────────────────────────────────
 class _HabitCard extends StatelessWidget {
   final HabitModel habit;
   final VoidCallback onToggle, onEdit, onDelete;
@@ -758,8 +750,8 @@ class _HabitCard extends StatelessWidget {
       context: context,
       useRootNavigator: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => Container(
-        decoration:       BoxDecoration(
+      builder: (sheetCtx) => Container(
+        decoration: BoxDecoration(
           color: AColors.bgElevated,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
@@ -782,7 +774,7 @@ class _HabitCard extends StatelessWidget {
               leading: Icon(Icons.edit_rounded, color: AColors.primary),
               title: Text('Edit habit', style: AText.bodyLarge),
               onTap: () {
-                Navigator.pop(context);
+                Navigator.pop(sheetCtx);
                 onEdit();
               },
             ),
@@ -790,7 +782,7 @@ class _HabitCard extends StatelessWidget {
               leading: Icon(Icons.delete_rounded, color: AColors.error),
               title: Text('Delete habit', style: AText.bodyLarge),
               onTap: () {
-                Navigator.pop(context);
+                Navigator.pop(sheetCtx);
                 onDelete();
               },
             ),
@@ -801,7 +793,6 @@ class _HabitCard extends StatelessWidget {
   }
 }
 
-// ─── OVERVIEW TAB ─────────────────────────────────────────────────────────
 class _OverviewTab extends StatelessWidget {
   final List<HabitModel> habits;
   const _OverviewTab({required this.habits});
@@ -889,7 +880,6 @@ class _StatMini extends StatelessWidget {
   );
 }
 
-// ─── HABIT HEATMAP ────────────────────────────────────────────────────────
 class _HabitHeatmap extends StatelessWidget {
   final HabitModel habit;
   const _HabitHeatmap({required this.habit});
@@ -1022,7 +1012,6 @@ class _HabitHeatmap extends StatelessWidget {
   }
 }
 
-// ─── HABIT EDITOR ─────────────────────────────────────────────────────────
 class _HabitEditorSheet extends StatefulWidget {
   final HabitModel? existing;
   final String uid;
@@ -1188,7 +1177,6 @@ class _HabitEditorSheetState extends State<_HabitEditorSheet> {
           maxChildSize: 0.95,
           builder: (_, ctrl) => Column(
             children: [
-              // ── Handle + header ──────────────────────────────
               const SizedBox(height: 10),
               Center(child: Container(
                 width: 36, height: 4,
@@ -1223,21 +1211,18 @@ class _HabitEditorSheetState extends State<_HabitEditorSheet> {
                 ),
               ),
 
-              // ── Scrollable body ─────────────────────────────
               Expanded(
                 child: ListView(
                   controller: ctrl,
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
                   children: [
 
-                    // ━━ CARD 1: Name + Appearance ━━━━━━━━━━━━━━━
                     _card(child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Name row with icon preview
                         Row(children: [
                           GestureDetector(
-                            onTap: () {}, // icon already selectable below
+                            onTap: () {},
                             child: Container(
                               width: 48, height: 48,
                               decoration: BoxDecoration(
@@ -1268,7 +1253,6 @@ class _HabitEditorSheetState extends State<_HabitEditorSheet> {
 
                         const SizedBox(height: 16),
 
-                        // Icon strip
                         _label('ICON'),
                         const SizedBox(height: 8),
                         SizedBox(
@@ -1303,7 +1287,6 @@ class _HabitEditorSheetState extends State<_HabitEditorSheet> {
 
                         const SizedBox(height: 14),
 
-                        // Color strip
                         _label('COLOR'),
                         const SizedBox(height: 8),
                         SizedBox(
@@ -1337,7 +1320,6 @@ class _HabitEditorSheetState extends State<_HabitEditorSheet> {
 
                     const SizedBox(height: 10),
 
-                    // ━━ CARD 2: Category + XP ━━━━━━━━━━━━━━━━━━
                     _card(child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -1350,7 +1332,6 @@ class _HabitEditorSheetState extends State<_HabitEditorSheet> {
                             itemCount: widget.categories.length + (_category != null ? 1 : 0),
                             separatorBuilder: (_, __) => const SizedBox(width: 6),
                             itemBuilder: (_, i) {
-                              // Clear button at the end
                               if (_category != null && i == widget.categories.length) {
                                 return GestureDetector(
                                   onTap: () => setState(() => _category = null),
@@ -1391,7 +1372,6 @@ class _HabitEditorSheetState extends State<_HabitEditorSheet> {
 
                         const SizedBox(height: 14),
 
-                        // XP Sphere — inline compact chips
                         Row(children: [
                           _label('XP SPHERE'),
                           const Spacer(),
@@ -1432,7 +1412,6 @@ class _HabitEditorSheetState extends State<_HabitEditorSheet> {
 
                     const SizedBox(height: 10),
 
-                    // ━━ CARD 3: Schedule ━━━━━━━━━━━━━━━━━━━━━━━━
                     _card(child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -1466,7 +1445,6 @@ class _HabitEditorSheetState extends State<_HabitEditorSheet> {
                         Divider(color: AColors.border, height: 1),
                         const SizedBox(height: 12),
 
-                        // Duration toggle
                         GestureDetector(
                           onTap: () { setState(() => _isUnlimited = !_isUnlimited); HapticFeedback.selectionClick(); },
                           child: Row(children: [
@@ -1495,7 +1473,6 @@ class _HabitEditorSheetState extends State<_HabitEditorSheet> {
                         Divider(color: AColors.border, height: 1),
                         const SizedBox(height: 12),
 
-                        // Reminder
                         GestureDetector(
                           onTap: _pickTime,
                           child: Row(children: [
@@ -1520,7 +1497,6 @@ class _HabitEditorSheetState extends State<_HabitEditorSheet> {
 
                     const SizedBox(height: 10),
 
-                    // ━━ CARD 4: Note ━━━━━━━━━━━━━━━━━━━━━━━━━━━
                     _card(child: TextField(
                       controller: _noteCtrl,
                       style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AColors.textSecondary),
@@ -1561,7 +1537,6 @@ class _HabitEditorSheetState extends State<_HabitEditorSheet> {
   );
 }
 
-// ─── SHARED HELPERS ───────────────────────────────────────────────────────
 class _Sec extends StatelessWidget {
   final String label;
   final IconData icon;
@@ -1752,7 +1727,6 @@ class _InfoPill extends StatelessWidget {
     ),
   );
 }
-// ─── SHARED HORIZONTAL SCROLL SELECTOR ───────────────────────────────────
 class _HScrollItem {
   final String label;
   final bool selected;

@@ -12,7 +12,6 @@ class SettingsService {
 
   SettingsService(this._prefs);
 
-  // Theme Mode
   AppThemeMode getThemeMode() {
     final val = _prefs.getString(_themeModeKey);
     if (val == AppThemeMode.light.name) return AppThemeMode.light;
@@ -24,14 +23,13 @@ class SettingsService {
     await _prefs.setString(_themeModeKey, mode.name);
   }
 
-  // Color Theme
   AppColorTheme getColorTheme() {
     final val = _prefs.getString(_colorThemeKey);
     if (val == AppColorTheme.ruby.name) return AppColorTheme.ruby;
     if (val == AppColorTheme.amethyst.name) return AppColorTheme.amethyst;
     if (val == AppColorTheme.sapphire.name) return AppColorTheme.sapphire;
     if (val == AppColorTheme.amber.name) return AppColorTheme.amber;
-    return AppColorTheme.emerald; // Default
+    return AppColorTheme.emerald;
   }
 
   Future<void> setColorTheme(AppColorTheme theme) async {
@@ -50,7 +48,7 @@ class SettingsService {
         return const Color(0xFFD69E2E);
       case AppColorTheme.emerald:
       default:
-        return const Color(0xFF00C97B); // Original Emerald
+        return const Color(0xFF00C97B);
     }
   }
 }

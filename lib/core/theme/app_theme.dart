@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/settings_service.dart';
 
-// ─── COLORS ───────────────────────────────────────────────────────────────
 class AColors {
   AColors._();
 
@@ -82,7 +81,6 @@ class AColors {
   }
 }
 
-// ─── SPACING & RADIUS ─────────────────────────────────────────────────────
 class ARadius {
   ARadius._();
   static const sm   = BorderRadius.all(Radius.circular(8));
@@ -93,7 +91,6 @@ class ARadius {
   static const full = BorderRadius.all(Radius.circular(999));
 }
 
-// ─── TEXT STYLES ──────────────────────────────────────────────────────────
 class AText {
   AText._();
 
@@ -109,7 +106,6 @@ class AText {
   static TextStyle get labelSmall    => TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AColors.textMuted, letterSpacing: 0.5);
 }
 
-// ─── THEME ────────────────────────────────────────────────────────────────
 class ATheme {
   ATheme._();
 

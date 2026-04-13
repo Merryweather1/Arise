@@ -7,7 +7,6 @@ import '../../core/providers/notification_log_provider.dart';
 import '../../core/providers/app_providers.dart';
 import '../../core/theme/app_theme.dart';
 
-// ─── PUBLIC ENTRY POINT ───────────────────────────────────────────────────
 void showNotificationCenter(BuildContext context) {
   showModalBottomSheet(
     context: context,
@@ -19,7 +18,6 @@ void showNotificationCenter(BuildContext context) {
   );
 }
 
-// ─── SHEET ────────────────────────────────────────────────────────────────
 class _NotificationCenterSheet extends ConsumerStatefulWidget {
   const _NotificationCenterSheet();
 
@@ -44,9 +42,7 @@ class _NotificationCenterSheetState
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final notifier = ref.read(notificationLogProvider.notifier);
-      // Purge habit entries from previous days (habits reset each cycle)
       notifier.purgeOldHabitEntries();
-      // Mark all currently-fired entries as read
       notifier.markAllRead();
     });
   }
@@ -81,12 +77,10 @@ class _NotificationCenterSheetState
 
   @override
   Widget build(BuildContext context) {
-    // Watch theme providers so this widget rebuilds immediately on theme change.
     ref.watch(themeModeProvider);
     ref.watch(colorThemeProvider);
 
     final allEntries = ref.watch(notificationLogProvider);
-    // Only show entries that have actually fired
     final entries = allEntries.where((e) => e.hasFired).toList();
     final grouped = _grouped(entries);
     final sections = grouped.entries.toList();
@@ -111,11 +105,9 @@ class _NotificationCenterSheetState
             ),
             child: Column(
               children: [
-                // ── Handle + Header ──────────────────────────────────────
                 _buildHeader(entries, ctx),
                 const Divider(color: Color(0xFF1E2128), height: 1),
 
-                // ── Body ────────────────────────────────────────────────
                 Expanded(
                   child: entries.isEmpty
                       ? _buildEmpty()
@@ -125,7 +117,6 @@ class _NotificationCenterSheetState
                     itemCount: sections.fold<int>(
                         0, (s, g) => s + 1 + g.value.length),
                     itemBuilder: (_, rawIndex) {
-                      // Map flat index to section + item
                       int idx = rawIndex;
                       for (final section in sections) {
                         if (idx == 0) {
@@ -163,7 +154,6 @@ class _NotificationCenterSheetState
       padding: const EdgeInsets.fromLTRB(24, 12, 16, 16),
       child: Column(
         children: [
-          // Drag handle
           Center(
             child: Container(
               width: 36,
@@ -177,7 +167,6 @@ class _NotificationCenterSheetState
           const SizedBox(height: 16),
           Row(
             children: [
-              // Icon + Title
               Container(
                 width: 36,
                 height: 36,
@@ -225,7 +214,6 @@ class _NotificationCenterSheetState
                 TextButton(
                   onPressed: () {
                     HapticFeedback.mediumImpact();
-                    // Only clear fired ones; keeps future-scheduled pending
                     ref.read(notificationLogProvider.notifier).clearFired();
                   },
                   style: TextButton.styleFrom(
@@ -286,7 +274,6 @@ class _NotificationCenterSheetState
   }
 }
 
-// ─── SECTION LABEL ────────────────────────────────────────────────────────
 class _SectionLabel extends StatelessWidget {
   final String label;
   const _SectionLabel(this.label);
@@ -308,7 +295,6 @@ class _SectionLabel extends StatelessWidget {
   }
 }
 
-// ─── NOTIFICATION TILE ────────────────────────────────────────────────────
 class _NotifTile extends StatefulWidget {
   final NotificationEntry entry;
   final int animIndex;
@@ -392,7 +378,6 @@ class _NotifTileState extends State<_NotifTile>
     return DateFormat('MMM d, h:mm a').format(t);
   }
 
-  /// Task reminders that fired >6 h ago without being dismissed = overdue.
   bool get _isOverdue {
     if (widget.entry.type != NotifType.task) return false;
     return DateTime.now().difference(widget.entry.time).inHours >= 6;
@@ -446,7 +431,6 @@ class _NotifTileState extends State<_NotifTile>
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Icon bubble
                     Container(
                       width: 42,
                       height: 42,
@@ -466,7 +450,6 @@ class _NotifTileState extends State<_NotifTile>
                       child: Icon(_typeIcon, color: _typeColor, size: 20),
                     ),
                     const SizedBox(width: 14),
-                    // Content
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -493,7 +476,6 @@ class _NotifTileState extends State<_NotifTile>
                                   ),
                                 ),
                               ),
-                              // Overdue badge for stale task reminders
                               if (_isOverdue) ...[
                                 const SizedBox(width: 6),
                                 Container(
@@ -553,7 +535,6 @@ class _NotifTileState extends State<_NotifTile>
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          // Fired-at time chip
                           const SizedBox(height: 8),
                           Row(
                             children: [

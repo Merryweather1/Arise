@@ -10,7 +10,6 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/settings_service.dart';
 
-// ─── SETTINGS & THEME ──────────────────────────────────────────────────────
 final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
   throw UnimplementedError('Initialize SharedPreferences Provider in main.dart');
 });
@@ -47,14 +46,12 @@ final colorThemeProvider = StateNotifierProvider<ColorThemeNotifier, AppColorThe
   return ColorThemeNotifier(ref.watch(settingsServiceProvider));
 });
 
-// ─── AUTH ──────────────────────────────────────────────────────────────────
 final authStateProvider = StreamProvider<User?>((ref) =>
     FirebaseAuth.instance.authStateChanges());
 
 final currentUidProvider = Provider<String?>((ref) =>
 ref.watch(authStateProvider).valueOrNull?.uid);
 
-// ─── XP EVENT SYSTEM ───────────────────────────────────────────────────────
 class XpEvent {
   final XpSphere sphere;
   final int amount;
@@ -71,7 +68,6 @@ class XpEvent {
 
 final xpEventProvider = StateProvider<XpEvent?>((ref) => null);
 
-// ─── USER PROFILE ──────────────────────────────────────────────────────────
 final userProfileProvider = StreamProvider<UserProfile?>((ref) {
   final uid = ref.watch(currentUidProvider);
   if (uid == null) return Stream.value(null);
@@ -90,7 +86,6 @@ class UserNotifier extends AsyncNotifier<void> {
 
 final userActionsProvider = AsyncNotifierProvider<UserNotifier, void>(UserNotifier.new);
 
-// ─── GLOBAL CATEGORIES ───────────────────────────────────────────────────
 final allCategoriesProvider = Provider<List<String>>((ref) {
   final base = {'Personal', 'Work', 'Health', 'Finance', 'Errands', 'Social', 'Mind', 'Fitness', 'Career', 'Learning'};
 
@@ -119,14 +114,12 @@ final allCategoriesProvider = Provider<List<String>>((ref) {
   return sorted;
 });
 
-// ─── TASKS ─────────────────────────────────────────────────────────────────
 final tasksProvider = StreamProvider<List<TaskModel>>((ref) {
   final uid = ref.watch(currentUidProvider);
   if (uid == null) return Stream.value([]);
   return TaskRepository.stream(uid);
 });
 
-// Derived: today's tasks
 final todayTasksProvider = Provider<List<TaskModel>>((ref) {
   final tasks = ref.watch(tasksProvider).valueOrNull ?? [];
   final today = DateTime.now();
@@ -138,7 +131,6 @@ final todayTasksProvider = Provider<List<TaskModel>>((ref) {
   ).toList();
 });
 
-// Derived: upcoming tasks
 final upcomingTasksProvider = Provider<List<TaskModel>>((ref) {
   final tasks = ref.watch(tasksProvider).valueOrNull ?? [];
   final today = DateTime.now();
@@ -151,26 +143,23 @@ final upcomingTasksProvider = Provider<List<TaskModel>>((ref) {
   ).toList();
 });
 
-// ─── HABITS ────────────────────────────────────────────────────────────────
 final habitsProvider = StreamProvider<List<HabitModel>>((ref) {
   final uid = ref.watch(currentUidProvider);
   if (uid == null) return Stream.value([]);
   return HabitRepository.stream(uid);
 });
 
-// Derived: today's habits (non-archived, scheduled for today)
 final todayHabitsProvider = Provider<List<HabitModel>>((ref) {
   final habits = ref.watch(habitsProvider).valueOrNull ?? [];
-  final weekday = DateTime.now().weekday; // 1=Mon..7=Sun
+  final weekday = DateTime.now().weekday;
   return habits.where((h) {
     if (h.archived) return false;
-    if (h.isExpired) return false; // duration-limited habit has ended
-    if (h.scheduleDays.isEmpty) return true; // daily
+    if (h.isExpired) return false;
+    if (h.scheduleDays.isEmpty) return true;
     return h.scheduleDays.contains(weekday);
   }).toList();
 });
 
-// Derived: today completion rate
 final todayHabitRateProvider = Provider<double>((ref) {
   final habits = ref.watch(todayHabitsProvider);
   if (habits.isEmpty) return 0.0;
@@ -178,7 +167,6 @@ final todayHabitRateProvider = Provider<double>((ref) {
   return done / habits.length;
 });
 
-// ─── GOALS ─────────────────────────────────────────────────────────────────
 final goalsProvider = StreamProvider<List<GoalModel>>((ref) {
   final uid = ref.watch(currentUidProvider);
   if (uid == null) return Stream.value([]);
@@ -193,14 +181,12 @@ final completedGoalsProvider = Provider<List<GoalModel>>((ref) =>
     (ref.watch(goalsProvider).valueOrNull ?? [])
         .where((g) => g.isComplete).toList());
 
-// ─── POMODORO ──────────────────────────────────────────────────────────────
 final pomodoroSessionsProvider = StreamProvider<List<PomodoroSession>>((ref) {
   final uid = ref.watch(currentUidProvider);
   if (uid == null) return Stream.value([]);
   return PomodoroRepository.streamRecent(uid);
 });
 
-// Derived: today's focus minutes
 final todayFocusMinutesProvider = Provider<int>((ref) {
   final sessions = ref.watch(pomodoroSessionsProvider).valueOrNull ?? [];
   final today = DateTime.now();
@@ -212,11 +198,9 @@ final todayFocusMinutesProvider = Provider<int>((ref) {
       .fold(0, (sum, s) => sum + s.durationMinutes);
 });
 
-// Derived: this week's focus minutes per day [M..S]
 final weekFocusMinutesProvider = Provider<List<int>>((ref) {
   final sessions = ref.watch(pomodoroSessionsProvider).valueOrNull ?? [];
   final now = DateTime.now();
-  // Find this week's Monday
   final monday = now.subtract(Duration(days: now.weekday - 1));
   return List.generate(7, (i) {
     final day = monday.add(Duration(days: i));
@@ -229,7 +213,6 @@ final weekFocusMinutesProvider = Provider<List<int>>((ref) {
   });
 });
 
-// ─── LIFE BALANCE ──────────────────────────────────────────────────────────
 final lifeBalanceProvider = StreamProvider<List<LifeBalanceSnapshot>>((ref) {
   final uid = ref.watch(currentUidProvider);
   if (uid == null) return Stream.value([]);
@@ -239,11 +222,9 @@ final lifeBalanceProvider = StreamProvider<List<LifeBalanceSnapshot>>((ref) {
 final latestBalanceProvider = Provider<LifeBalanceSnapshot?>((ref) {
   final snaps = ref.watch(lifeBalanceProvider).valueOrNull ?? [];
   if (snaps.isEmpty) return null;
-  // Explicitly pick newest by date — don't rely on stream sort order
   return snaps.reduce((a, b) => a.date.isAfter(b.date) ? a : b);
 });
 
-// ─── TASK ACTIONS ──────────────────────────────────────────────────────────
 class TaskNotifier extends AsyncNotifier<void> {
   @override Future<void> build() async {}
 
@@ -261,26 +242,22 @@ class TaskNotifier extends AsyncNotifier<void> {
       xpSphere: task.xpSphere,
       xpReward: task.xpReward,
     );
-    // Schedule reminder if set
     await NotificationService.instance.scheduleTaskReminder(task);
   }
 
   Future<void> save(TaskModel task) async {
     await TaskRepository.update(_uid, task);
-    // Re-schedule in case time/days changed
     await NotificationService.instance.scheduleTaskReminder(task);
   }
 
   Future<void> delete(String id) async {
     await TaskRepository.delete(_uid, id);
     await NotificationService.instance.cancelTask(id);
-    // Remove from notification center too
     await ref.read(notificationLogProvider.notifier).remove('task-$id');
   }
 
   Future<void> setDone(TaskModel task, bool done) async {
     if (done) {
-      // Completing: award XP only if not already awarded for this task
       await TaskRepository.setDone(_uid, task.id, true, xpAwarded: true);
       await NotificationService.instance.cancelTask(task.id);
       await ref.read(notificationLogProvider.notifier).remove('task-${task.id}');
@@ -299,7 +276,6 @@ class TaskNotifier extends AsyncNotifier<void> {
         );
       }
     } else {
-      // Undoing: clear done + xpAwarded, and deduct XP if it was previously awarded
       await TaskRepository.setDone(_uid, task.id, false, xpAwarded: false);
       await NotificationService.instance.scheduleTaskReminder(task);
 
@@ -312,7 +288,6 @@ class TaskNotifier extends AsyncNotifier<void> {
 
 final taskActionsProvider = AsyncNotifierProvider<TaskNotifier, void>(TaskNotifier.new);
 
-// ─── HABIT ACTIONS ─────────────────────────────────────────────────────────
 class HabitNotifier extends AsyncNotifier<void> {
   @override
   Future<void> build() async {}
@@ -369,7 +344,6 @@ class HabitNotifier extends AsyncNotifier<void> {
     final todayKey = _todayKey();
 
     if (!wasComplete && nowComplete) {
-      // Only award XP if we haven't already awarded it today.
       if (habit.xpAwardedDate != todayKey) {
         await HabitRepository.setXpAwardedDate(_uid, habit.id, todayKey);
         await ref.read(notificationLogProvider.notifier).remove('habit-${habit.id}');
@@ -385,11 +359,9 @@ class HabitNotifier extends AsyncNotifier<void> {
           newLevel: levelAfter,
         );
       } else {
-        // XP already awarded today (re-toggle after un-toggle): just remove log entry.
         await ref.read(notificationLogProvider.notifier).remove('habit-${habit.id}');
       }
     } else if (wasComplete && !nowComplete) {
-      // Only deduct XP if it was originally awarded today.
       if (habit.xpAwardedDate == todayKey) {
         await UserRepository.subtractXp(_uid, habit.xpSphere, habit.xpReward);
         await HabitRepository.setXpAwardedDate(_uid, habit.id, null);
@@ -406,7 +378,6 @@ class HabitNotifier extends AsyncNotifier<void> {
 final habitActionsProvider =
 AsyncNotifierProvider<HabitNotifier, void>(HabitNotifier.new);
 
-// ─── GOAL ACTIONS ──────────────────────────────────────────────────────────
 class GoalNotifier extends AsyncNotifier<void> {
   @override Future<void> build() async {}
 
@@ -450,8 +421,6 @@ class GoalNotifier extends AsyncNotifier<void> {
     );
   }
 
-  /// Add a check-in journal entry. If delta is provided and the goal is measurable,
-  /// also advances measureCurrent. Returns true if this check-in completed the goal.
   Future<bool> addCheckIn(GoalModel goal, String note, double? delta) async {
     final checkIn = GoalCheckInModel(
       id: const Uuid().v4(),
@@ -471,7 +440,6 @@ class GoalNotifier extends AsyncNotifier<void> {
     );
     await GoalRepository.update(_uid, updated);
 
-    // Auto-complete if measurable goal just hit 100%
     if (!goal.isComplete && updated.isComplete) {
       await markComplete(updated);
       return true;
@@ -479,7 +447,6 @@ class GoalNotifier extends AsyncNotifier<void> {
     return false;
   }
 
-  /// Directly set measureCurrent value (e.g., absolute entry mode).
   Future<bool> logMeasureProgress(GoalModel goal, double newValue) async {
     final updated = goal.copyWith(measureCurrent: newValue.clamp(0.0, double.infinity));
     await GoalRepository.update(_uid, updated);
@@ -494,7 +461,6 @@ class GoalNotifier extends AsyncNotifier<void> {
 final goalActionsProvider = AsyncNotifierProvider<GoalNotifier, void>(GoalNotifier.new);
 
 
-// ─── POMODORO ACTIONS ──────────────────────────────────────────────────────
 class PomodoroNotifier extends AsyncNotifier<void> {
   @override Future<void> build() async {}
 
@@ -509,7 +475,6 @@ class PomodoroNotifier extends AsyncNotifier<void> {
         durationMinutes: durationMinutes,
         linkedTaskId: linkedTaskId,
         linkedTaskTitle: linkedTaskTitle);
-    // Pomodoro gives Willpower XP: minutes ÷ 5 (min 1 XP)
     final xpAmount = (durationMinutes ~/ 5).clamp(1, 999);
     final profileBefore = ref.read(userProfileProvider).valueOrNull;
     final levelBefore = profileBefore?.levelForSphere(XpSphere.willpower) ?? 1;
@@ -529,7 +494,6 @@ class PomodoroNotifier extends AsyncNotifier<void> {
 
 final pomodoroActionsProvider = AsyncNotifierProvider<PomodoroNotifier, void>(PomodoroNotifier.new);
 
-// ─── LIFE BALANCE ACTIONS ──────────────────────────────────────────────────
 class LifeBalanceNotifier extends AsyncNotifier<void> {
   @override Future<void> build() async {}
 
@@ -540,20 +504,13 @@ class LifeBalanceNotifier extends AsyncNotifier<void> {
 final lifeBalanceActionsProvider =
 AsyncNotifierProvider<LifeBalanceNotifier, void>(LifeBalanceNotifier.new);
 
-// ─── NOTIFICATION BOOT PROVIDER ────────────────────────────────────────────
-// Watches tasks/habits/goals and re-registers all notifications ONCE on cold
-// start (when all 3 streams first emit data). Subsequent Firestore writes do
-// NOT trigger a full reschedule — individual actions handle their own alarms.
 final notificationBootProvider = Provider<void>((ref) {
   final tasks  = ref.watch(tasksProvider).valueOrNull;
   final habits = ref.watch(habitsProvider).valueOrNull;
   final goals  = ref.watch(goalsProvider).valueOrNull;
 
-  // Only reschedule once all 3 streams have data for the first time.
   if (tasks == null || habits == null || goals == null) return;
 
-  // Guard: only call rescheduleAll once per app-lifecycle using a flag stored
-  // on the ProviderContainer. Subsequent stream updates are ignored.
   final flag = ref.read(_notificationBootDoneProvider);
   if (flag) return;
   ref.read(_notificationBootDoneProvider.notifier).state = true;
@@ -565,5 +522,4 @@ final notificationBootProvider = Provider<void>((ref) {
   );
 });
 
-/// Internal flag so [notificationBootProvider] only fires once.
 final _notificationBootDoneProvider = StateProvider<bool>((_) => false);

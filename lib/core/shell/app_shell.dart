@@ -94,12 +94,9 @@ class _AppShellState extends ConsumerState<AppShell> {
     final location = GoRouterState.of(context).matchedLocation;
     final currentIndex = _currentIndex(location);
 
-    // Watch theme providers so shell rebuilds immediately when theme changes.
     ref.watch(themeModeProvider);
     ref.watch(colorThemeProvider);
 
-    // Activate the startup re-schedule provider (watches tasks/habits/goals
-    // and re-registers all notifications once data loads from Firestore).
     ref.watch(notificationBootProvider);
 
     return PopScope(
@@ -125,7 +122,6 @@ class _AppShellState extends ConsumerState<AppShell> {
   }
 }
 
-// ─── FLOATING GLASS PILL NAV BAR ─────────────────────────────────────────
 class _GlassPillNavBar extends StatefulWidget {
   final int currentIndex;
   final List<IconData> icons;
@@ -209,7 +205,6 @@ class _GlassPillNavBarState extends State<_GlassPillNavBar>
                   builder: (_, __) => Stack(
                     alignment: Alignment.center,
                     children: [
-                      // ── Sliding glowing pill indicator ──
                       Positioned(
                         left: _position.value * slotWidth + pad,
                         child: Container(
@@ -235,7 +230,6 @@ class _GlassPillNavBarState extends State<_GlassPillNavBar>
                           ),
                         ),
                       ),
-                      // ── Icons sitting on top in equal slots ──
                       Row(
                         children: List.generate(count, (i) {
                           final selected = i == widget.currentIndex;
@@ -280,7 +274,6 @@ class _GlassPillNavBarState extends State<_GlassPillNavBar>
   }
 }
 
-// ─── XP PILL OVERLAY ─────────────────────────────────────────────────────
 class _XpPillOverlay extends StatefulWidget {
   final XpEvent event;
   final VoidCallback onDone;
@@ -379,7 +372,6 @@ class _XpPillOverlayState extends State<_XpPillOverlay>
   }
 }
 
-// ─── LEVEL-UP SHEET ──────────────────────────────────────────────────────
 class _LevelUpSheet extends StatefulWidget {
   final XpEvent event;
   const _LevelUpSheet({required this.event});
@@ -443,7 +435,6 @@ class _LevelUpSheetState extends State<_LevelUpSheet>
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Accent dot
           Container(
             width: 6,
             height: 6,
@@ -452,7 +443,6 @@ class _LevelUpSheetState extends State<_LevelUpSheet>
           ),
           const SizedBox(height: 20),
 
-          // Big sphere emoji with scale-in animation
           AnimatedBuilder(
             animation: _scaleIn,
             builder: (context, child) => Transform.scale(
@@ -462,7 +452,6 @@ class _LevelUpSheetState extends State<_LevelUpSheet>
           ),
           const SizedBox(height: 16),
 
-          // LEVEL UP badge
           Container(
             padding:
             const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
@@ -500,7 +489,6 @@ class _LevelUpSheetState extends State<_LevelUpSheet>
           ),
           const SizedBox(height: 24),
 
-          // Animated XP bar filling up
           ClipRRect(
             borderRadius: BorderRadius.circular(100),
             child: AnimatedBuilder(
@@ -524,7 +512,6 @@ class _LevelUpSheetState extends State<_LevelUpSheet>
           ),
           const SizedBox(height: 28),
 
-          // Dismiss button
           GestureDetector(
             onTap: () {
               HapticFeedback.lightImpact();

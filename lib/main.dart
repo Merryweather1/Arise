@@ -71,7 +71,6 @@ class _AriseAppState extends ConsumerState<AriseApp> with WidgetsBindingObserver
 
   @override
   void didChangePlatformBrightness() {
-    // If we're in system mode, a brightness change should trigger a rebuild
     final mode = ref.read(themeModeProvider);
     if (mode == AppThemeMode.system) {
       setState(() {});
@@ -83,7 +82,6 @@ class _AriseAppState extends ConsumerState<AriseApp> with WidgetsBindingObserver
     final mode = ref.watch(themeModeProvider);
     final colorTheme = ref.watch(colorThemeProvider);
 
-    // Apply dynamic colors
     final settings = ref.read(settingsServiceProvider);
     AColors.applyTheme(mode, settings.getPrimaryColorFor(colorTheme));
 
@@ -97,7 +95,7 @@ class _AriseAppState extends ConsumerState<AriseApp> with WidgetsBindingObserver
     return MaterialApp.router(
       title: 'Arise',
       debugShowCheckedModeBanner: false,
-      theme: ATheme.themeData, // We'll rename dark to themeData
+      theme: ATheme.themeData,
       routerConfig: appRouter,
     );
   }

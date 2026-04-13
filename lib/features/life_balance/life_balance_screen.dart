@@ -13,7 +13,7 @@ class LifeSphere {
   final String id, name;
   final IconData iconData;
   final Color color;
-  double score; // 0..10
+  double score;
 
   LifeSphere({
     required this.id,
@@ -35,7 +35,6 @@ class _LifeBalanceScreenState extends ConsumerState<LifeBalanceScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabCtrl;
 
-  // Neutral defaults (NOT fake success data). Real values come from Firestore snapshots.
   final List<LifeSphere> _spheres = [
     LifeSphere(id: 'health', name: 'Health', iconData: Icons.fitness_center_rounded, color: const Color(0xFF00C97B), score: 5.0),
     LifeSphere(id: 'career', name: 'Career', iconData: Icons.work_outline_rounded, color: const Color(0xFF4D9FFF), score: 5.0),
@@ -108,7 +107,6 @@ class _LifeBalanceScreenState extends ConsumerState<LifeBalanceScreen>
 
   @override
   Widget build(BuildContext context) {
-    // Watch theme providers so this screen rebuilds immediately on theme change.
     ref.watch(themeModeProvider);
     ref.watch(colorThemeProvider);
 

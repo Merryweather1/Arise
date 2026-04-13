@@ -1,14 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-// ─── USER PROFILE ─────────────────────────────────────────────────────────
 class UserProfile {
   final String uid;
   final String name;
   final String email;
   final String? photoUrl;
 
-  // 3-sphere XP
   final int willpowerXp;
   final int intellectXp;
   final int healthXp;
@@ -40,7 +38,6 @@ class UserProfile {
   int get intellectLevelXp  => _levelStartXp(intellectLevel);
   int get healthLevelXp     => _levelStartXp(healthLevel);
 
-  // ─── COMBINED LEVEL MATH ───
   int get totalXp => willpowerXp + intellectXp + healthXp;
 
   int get combinedLevel {
@@ -127,14 +124,12 @@ class UserProfile {
     return next == 0 ? 0 : ((healthXp - start) / next).clamp(0.0, 1.0);
   }
 
-  // Helper: get the level for any sphere
   int levelForSphere(XpSphere sphere) => switch (sphere) {
     XpSphere.willpower => willpowerLevel,
     XpSphere.intellect => intellectLevel,
     XpSphere.health    => healthLevel,
   };
 
-  // Helper: get the XP for any sphere
   int xpForSphere(XpSphere sphere) => switch (sphere) {
     XpSphere.willpower => willpowerXp,
     XpSphere.intellect => intellectXp,
@@ -182,7 +177,6 @@ class UserProfile {
   );
 }
 
-// ─── XP SPHERE ────────────────────────────────────────────────────────────
 enum XpSphere { willpower, intellect, health }
 
 extension XpSphereExt on XpSphere {
@@ -202,7 +196,6 @@ extension XpSphereExt on XpSphere {
     XpSphere.health    => const Color(0xFF00C97B),
   };
 
-  /// Auto-route a category string to the appropriate sphere.
   static XpSphere sphereForCategory(String category) {
     switch (category.toLowerCase().trim()) {
       case 'learning':
@@ -222,7 +215,6 @@ extension XpSphereExt on XpSphere {
     }
   }
 
-  /// XP reward for a task based on its priority (1–10).
   static int xpForPriority(int priority) {
     if (priority >= 9) return 20;
     if (priority >= 7) return 15;
@@ -231,7 +223,6 @@ extension XpSphereExt on XpSphere {
   }
 }
 
-// ─── TASK ─────────────────────────────────────────────────────────────────
 class SubTaskModel {
   final String id;
   final String title;
@@ -255,7 +246,7 @@ class TaskModel {
   final String? note;
   final bool done;
   final bool pending;
-  final int priority;       // 1–10
+  final int priority;
   final String category;
   final DateTime? dueDate;
   final TimeOfDay? reminderTime;
@@ -263,7 +254,6 @@ class TaskModel {
   final List<SubTaskModel> subtasks;
   final XpSphere xpSphere;
   final int xpReward;
-  /// True once XP has been awarded for this task — prevents double-award on undo+redo.
   final bool xpAwarded;
   final DateTime createdAt;
 
@@ -355,7 +345,6 @@ class TaskModel {
   );
 }
 
-// ─── HABIT ────────────────────────────────────────────────────────────────
 class HabitModel {
   final String id;
   final String uid;
@@ -365,17 +354,16 @@ class HabitModel {
   final int colorValue;
   final int streak;
   final int bestStreak;
-  final List<int> scheduleDays; // 1=Mon..7=Sun, empty=daily
+  final List<int> scheduleDays;
   final TimeOfDay? reminderTime;
   final String? note;
-  final List<String> completionDates; // "yyyy-MM-dd"
+  final List<String> completionDates;
   final XpSphere xpSphere;
   final int xpReward;
   final bool archived;
   final bool isUnlimited;
-  final int? durationDays; // null if unlimited
+  final int? durationDays;
   final DateTime createdAt;
-  /// yyyy-MM-dd string of the day XP was last awarded. Null if never awarded.
   final String? xpAwardedDate;
 
   const HabitModel({
@@ -527,17 +515,13 @@ class HabitModel {
       );
 }
 
-// Sentinel for optional nullable overrides in copyWith.
 const Object _sentinel = Object();
 
-// ─── GOAL ─────────────────────────────────────────────────────────────────
 
-/// A timestamped note the user writes to record effort toward a goal.
 class GoalCheckInModel {
   final String id;
   final String note;
   final DateTime date;
-  /// For measurable goals: how much progress was added in this check-in.
   final double? progressDelta;
 
   const GoalCheckInModel({
@@ -564,12 +548,10 @@ class GoalCheckInModel {
   };
 }
 
-/// A milestone toward a goal, with an effort weight (1 = small, 2 = medium, 3 = large).
 class GoalStepModel {
   final String id;
   final String title;
   final bool done;
-  /// Effort weight: 1 (small), 2 (medium), 3 (large). Defaults to 1.
   final int weight;
 
   const GoalStepModel({
@@ -621,7 +603,6 @@ class GoalModel {
   final double measureCurrent;
   final XpSphere xpSphere;
   final DateTime createdAt;
-  /// Journal entries — timestamped notes of effort logged by the user.
   final List<GoalCheckInModel> checkIns;
 
   const GoalModel({
@@ -646,7 +627,6 @@ class GoalModel {
     this.checkIns = const [],
   });
 
-  /// Weighted progress: done milestone weights / total milestone weights.
   double get progress {
     if (manuallyComplete) return 1.0;
     if (measureTarget != null && measureTarget! > 0) {
@@ -659,17 +639,10 @@ class GoalModel {
     return (doneWeight / totalWeight).clamp(0.0, 1.0);
   }
 
-  /// Number of done milestones (for display).
   int get doneMilestones => steps.where((s) => s.done).length;
 
   bool get isComplete => manuallyComplete || progress >= 1.0;
 
-  /// Compute XP reward at completion based on effort.
-  /// - Base: 50 XP
-  /// - Measurable goal: +25 XP
-  /// - Total milestone weight (sum of all weights): +5 XP per weight unit
-  /// - Had deadline and met it: +30 XP
-  /// - Check-in bonus: +2 XP per check-in (up to 50 extra max)
   int get computedXpReward {
     int xp = 50;
     if (measureTarget != null) xp += 25;
@@ -681,7 +654,7 @@ class GoalModel {
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
       final dl = DateTime(deadline!.year, deadline!.month, deadline!.day);
-      if (!today.isAfter(dl)) xp += 30; // completed on time
+      if (!today.isAfter(dl)) xp += 30;
     }
     return xp;
   }
@@ -745,7 +718,6 @@ class GoalModel {
   );
 }
 
-// ─── POMODORO SESSION ─────────────────────────────────────────────────────
 class PomodoroSession {
   final String id;
   final String uid;
@@ -784,12 +756,11 @@ class PomodoroSession {
   };
 }
 
-// ─── LIFE BALANCE SNAPSHOT ────────────────────────────────────────────────
 class LifeBalanceSnapshot {
   final String id;
   final String uid;
   final DateTime date;
-  final Map<String, double> scores; // sphere name → score 0–10
+  final Map<String, double> scores;
 
   const LifeBalanceSnapshot({
     required this.id, required this.uid,

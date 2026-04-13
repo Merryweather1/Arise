@@ -125,14 +125,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Watch theme providers so this screen rebuilds immediately on theme change.
     ref.watch(themeModeProvider);
     ref.watch(colorThemeProvider);
 
     final tasksAsync = ref.watch(tasksProvider);
     final habitsAsync = ref.watch(habitsProvider);
 
-    // NEW: real data for focus/statistics/life-balance cards
     final pomodoroAsync = ref.watch(pomodoroSessionsProvider);
     final lifeBalanceAsync = ref.watch(lifeBalanceProvider);
     final latestBalance = ref.watch(latestBalanceProvider);
@@ -140,7 +138,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final tasks = tasksAsync.valueOrNull ?? [];
     final habits = habitsAsync.valueOrNull ?? [];
 
-    // NEW
     final pomodoroSessions = pomodoroAsync.valueOrNull ?? [];
     final lifeSnapshots = lifeBalanceAsync.valueOrNull ?? [];
 
@@ -169,13 +166,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         .map((h) => h.bestStreak)
         .reduce((a, b) => a > b ? a : b);
 
-    // NEW: real focus for top stat card
     final today = DateTime.now();
     final todayFocusMinutes = pomodoroSessions
         .where((s) => _isSameDay(s.date, today))
         .fold<int>(0, (sum, s) => sum + s.durationMinutes);
 
-    // NEW: Life Balance summary
     final hasLifeData = lifeSnapshots.isNotEmpty && latestBalance != null;
     final latestLifeAverage = hasLifeData
         ? (latestBalance.scores.isEmpty
@@ -184,7 +179,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         latestBalance.scores.length)
         : 0.0;
 
-    // NEW: Statistics summary
     final completedTasksTotal = tasks.where((t) => t.done).length;
     final totalFocusMinutes = pomodoroSessions.fold<int>(
       0,
@@ -208,7 +202,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       backgroundColor: AColors.bg,
       body: Stack(
         children: [
-          // Ethereal Top Glow
           Positioned(
             top: -150,
             left: -100,
@@ -444,7 +437,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
-// ─── HEADER ───────────────────────────────────────────────────────────────
 class _Header extends ConsumerWidget {
   final String greeting;
   final String tagline;
@@ -466,7 +458,6 @@ class _Header extends ConsumerWidget {
                 children: [
                   Text(greeting, style: AText.bodyMedium),
                   const SizedBox(height: 2),
-                  // Daily-rotating tagline with a soft fade-in
                   TweenAnimationBuilder<double>(
                     tween: Tween(begin: 0.0, end: 1.0),
                     duration: const Duration(milliseconds: 600),
@@ -479,7 +470,6 @@ class _Header extends ConsumerWidget {
               ),
             ),
 
-            // ── Bell button with live badge ────────────────────────────
             GestureDetector(
               onTap: () {
                 HapticFeedback.lightImpact();
@@ -568,7 +558,6 @@ class _Header extends ConsumerWidget {
   }
 }
 
-// ─── XP CARD ──────────────────────────────────────────────────────────────
 class _XpCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -603,7 +592,6 @@ class _XpCard extends ConsumerWidget {
         borderRadius: ARadius.xl,
         child: Stack(
           children: [
-            // Subtle top-left glow orb
             Positioned(
               top: -40,
               left: -30,
@@ -626,11 +614,9 @@ class _XpCard extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Top row: rank label + XP counter
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      // Level pill
                       Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 4),
@@ -667,7 +653,6 @@ class _XpCard extends ConsumerWidget {
 
                   const SizedBox(height: 14),
 
-                  // Rank title (no emoji)
                   Text(
                     rankTitle,
                     style:       TextStyle(
@@ -690,7 +675,6 @@ class _XpCard extends ConsumerWidget {
 
                   const SizedBox(height: 16),
 
-                  // Main progress bar
                   Stack(
                     children: [
                       Container(
@@ -732,7 +716,6 @@ class _XpCard extends ConsumerWidget {
 
                   const SizedBox(height: 16),
 
-                  // Divider
                   Container(
                     height: 1,
                     color: AColors.border.withValues(alpha: 0.5),
@@ -740,7 +723,6 @@ class _XpCard extends ConsumerWidget {
 
                   const SizedBox(height: 16),
 
-                  // 3 sphere pips
                   Row(children: [
                     _SpherePip(
                       sphere: XpSphere.willpower,
@@ -794,7 +776,6 @@ class _SpherePip extends StatelessWidget {
     required this.progress,
   });
 
-  // Minimal icon per sphere — no emoji
   IconData get _icon => switch (sphere) {
     XpSphere.willpower => Icons.bolt_rounded,
     XpSphere.intellect => Icons.auto_awesome_rounded,
@@ -883,7 +864,6 @@ class _SpherePip extends StatelessWidget {
   );
 }
 
-// ─── FEATURE CARD ─────────────────────────────────────────────────────────
 class _FeatureCard extends StatelessWidget {
   final VoidCallback onTap;
   final LinearGradient gradient;
@@ -1006,7 +986,6 @@ class _FeaturePlaceholder extends StatelessWidget {
   }
 }
 
-// NEW: live info chip for feature cards
 class _FeatureLiveStat extends StatelessWidget {
   final String text;
   const _FeatureLiveStat({required this.text});
@@ -1033,7 +1012,6 @@ class _FeatureLiveStat extends StatelessWidget {
   }
 }
 
-// ─── HELPERS ──────────────────────────────────────────────────────────────
 class _StatCard extends StatelessWidget {
   final IconData icon;
   final String label, value;

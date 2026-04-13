@@ -14,11 +14,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "204547887344-s3ibgo83l72n2f23v81n5m29jdod0c0o.apps.googleusercontent.com",
+          "client_id": "204547887344-bvpv77ib13vrho25tcufp14rngrfk3cl.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "app.arise.merryweather",
-            "certificate_hash": "737834aa5fd0d6195ef3120370c733f76dada84e"
+            "certificate_hash": "9eed401a1b55eb2ee92b2bab36e2544fbae9b54b"
           }
         },
         {

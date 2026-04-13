@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 
-/// Maps legacy emoji strings to modern, clean Material Icons.
-/// Used across habit / goal editors & display cards.
 class AIconMapper {
   AIconMapper._();
 
-  // ─── HABITS ────────────────────────────────────────────────────────────
   static const habitIcons = <String, IconData>{
     '🧘': Icons.self_improvement_rounded,
     '📚': Icons.menu_book_rounded,
@@ -24,7 +21,6 @@ class AIconMapper {
     '🍵': Icons.local_cafe_rounded,
   };
 
-  // ─── GOALS ─────────────────────────────────────────────────────────────
   static const goalIcons = <String, IconData>{
     '🎯': Icons.track_changes_rounded,
     '📱': Icons.phone_iphone_rounded,
@@ -43,11 +39,9 @@ class AIconMapper {
     '❤️': Icons.favorite_rounded,
   };
 
-  /// Resolve an emoji to an IconData without falling back to text.
   static IconData? resolve(String emoji) =>
       habitIcons[emoji] ?? goalIcons[emoji];
 
-  /// Get an Icon widget with current-selection styling.
   static Widget iconWidget(
       String emoji, {
         double size = 22,
@@ -57,7 +51,6 @@ class AIconMapper {
     if (icon != null) {
       return Icon(icon, size: size, color: color ?? Colors.white);
     }
-    // Fallback: render raw string for any unknown emoji
     return Text(emoji, style: TextStyle(fontSize: size * 0.9));
   }
 }

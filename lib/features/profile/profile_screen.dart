@@ -213,7 +213,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         ),
         child: Stack(
           children: [
-            // Ethereal Top Glow
             Positioned(
               top: -150,
               left: -100,

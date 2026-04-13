@@ -21,14 +21,10 @@ class _SignInScreenState extends State<SignInScreen> {
     try {
       final googleSignIn = GoogleSignIn();
 
-      // Always clear the cached Google session first so the account
-      // chooser is shown — even if the user just signed out of a
-      // different account.
       await googleSignIn.signOut();
 
       final googleUser = await googleSignIn.signIn();
       if (googleUser == null) {
-        // User dismissed the picker
         if (mounted) setState(() => _loading = false);
         return;
       }
@@ -67,7 +63,6 @@ class _SignInScreenState extends State<SignInScreen> {
         : null;
 
     if (existing != null) {
-      // Silently upgrade a stale 'Warrior' default with the real Google name
       if (existing.name == 'Warrior' && realName != null) {
         await UserRepository.update(user.uid, {'name': realName});
       }

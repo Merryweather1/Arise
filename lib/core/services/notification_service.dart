@@ -8,12 +8,6 @@ import 'package:timezone/timezone.dart' as tz;
 import '../models/app_models.dart';
 import '../providers/notification_log_provider.dart';
 
-// в”Ђв”Ђв”Ђ NOTIFICATION SERVICE в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
-// ID allocation:
-//   Tasks (one-shot):  abs(taskId.hashCode) % 100000          (0вЂ“99999)
-//   Tasks (recurring, per weekday slot 0вЂ“6): base + weekday
-//   Habits (per weekday slot 0вЂ“6): abs(habitId.hashCode) % 100000 + 100000
-//   Goals (one-shot):  abs(goalId.hashCode) % 100000 + 200000
 
 class NotificationService {
   NotificationService._();
@@ -23,7 +17,6 @@ class NotificationService {
   bool _initialized = false;
   ProviderContainer? _container;
 
-  // в”Ђв”Ђ Init в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
   Future<void> initialize({ProviderContainer? container}) async {
     if (_initialized) return;
     _initialized = true;
@@ -55,12 +48,10 @@ class NotificationService {
         ?.requestNotificationsPermission();
   }
 
-  // в”Ђв”Ђ ID helpers в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
   int _taskBaseId(String id) => id.hashCode.abs() % 100000;
   int _habitBaseId(String id) => id.hashCode.abs() % 100000 + 100000;
   int _goalId(String id)      => id.hashCode.abs() % 100000 + 200000;
 
-  // в”Ђв”Ђ Notification details в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
   static const _notifDetails = NotificationDetails(
     android: AndroidNotificationDetails(
       'arise_reminders',
@@ -72,9 +63,7 @@ class NotificationService {
     ),
   );
 
-  // в”Ђв”Ђ Helpers в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 
-  /// Next occurrence of a specific [weekday] at [time] (used for habits only).
   tz.TZDateTime _nextWeekday(int weekday, TimeOfDay time) {
     final now = tz.TZDateTime.now(tz.local);
     var dt = tz.TZDateTime(tz.local, now.year, now.month, now.day,
@@ -85,7 +74,6 @@ class NotificationService {
     return dt;
   }
 
-  /// Next occurrence of [time] today (or tomorrow if time has already passed).
   tz.TZDateTime _nextOccurrenceOfTime(TimeOfDay time) {
     final now = tz.TZDateTime.now(tz.local);
     var dt = tz.TZDateTime(
@@ -94,13 +82,6 @@ class NotificationService {
     return dt;
   }
 
-  // в”Ђв”Ђ TASK REMINDERS в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
-  //
-  // Tasks are NOT repeating by default. A task reminder fires:
-  //   вЂў Once, at [reminderTime] on the due date  (if dueDate is set)
-  //   вЂў Once, at the next occurrence of [reminderTime]  (if no dueDate and no reminderDays)
-  //   вЂў Repeating weekly on [reminderDays] at [reminderTime]  (if reminderDays is set вЂ” rare)
-  //
   Future<void> scheduleTaskReminder(TaskModel task) async {
     await cancelTask(task.id);
     if (task.done || task.reminderTime == null) return;
@@ -109,10 +90,9 @@ class NotificationService {
     task.note?.isNotEmpty == true ? task.note! : 'Tap to open your task';
 
     if (task.reminderDays.isNotEmpty) {
-      // в”Ђв”Ђ Recurring task: fire every selected weekday в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
       tz.TZDateTime? earliest;
       for (final weekday in task.reminderDays) {
-        final id = _taskBaseId(task.id) + weekday; // weekday 1вЂ“7 в†’ id + 1вЂ“7
+        final id = _taskBaseId(task.id) + weekday;
         final when = _nextWeekday(weekday, task.reminderTime!);
         await _plugin.zonedSchedule(
           id,
@@ -128,7 +108,6 @@ class NotificationService {
         );
         if (earliest == null || when.isBefore(earliest)) earliest = when;
       }
-      // Log only the SOONEST upcoming fire time
       if (earliest != null) {
         _log(
           id: 'task-${task.id}',
@@ -139,13 +118,11 @@ class NotificationService {
         );
       }
     } else {
-      // в”Ђв”Ђ One-shot task: fire once on the due date (or next occurrence) в”Ђ
       tz.TZDateTime when;
       if (task.dueDate != null) {
         final d = task.dueDate!;
         when = tz.TZDateTime(tz.local, d.year, d.month, d.day,
             task.reminderTime!.hour, task.reminderTime!.minute);
-        // If due date/time already passed, don't schedule (task is overdue)
         if (when.isBefore(tz.TZDateTime.now(tz.local))) return;
       } else {
         when = _nextOccurrenceOfTime(task.reminderTime!);
@@ -160,7 +137,6 @@ class NotificationService {
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         uiLocalNotificationDateInterpretation:
         UILocalNotificationDateInterpretation.absoluteTime,
-        // No matchDateTimeComponents = fires once, no repeat
         payload: 'task:${task.id}',
       );
       _log(
@@ -173,22 +149,14 @@ class NotificationService {
     }
   }
 
-  /// Cancels all slots for a task.
   Future<void> cancelTask(String taskId) async {
     final base = _taskBaseId(taskId);
-    await _plugin.cancel(base); // one-shot id
+    await _plugin.cancel(base);
     for (var d = 1; d <= 7; d++) {
-      await _plugin.cancel(base + d); // recurring per-weekday ids
+      await _plugin.cancel(base + d);
     }
   }
 
-  // в”Ђв”Ђ HABIT REMINDERS в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
-  //
-  // Habits ARE repeating. A habit reminder fires:
-  //   вЂў Every day at [reminderTime]  (if scheduleDays is empty)
-  //   вЂў Every week on [scheduleDays] at [reminderTime]  (if scheduleDays set)
-  // We log ONE entry per habit (the soonest upcoming fire time).
-  //
   Future<void> scheduleHabitReminder(HabitModel habit) async {
     await cancelHabit(habit.id);
     if (habit.archived || habit.reminderTime == null) return;
@@ -216,7 +184,6 @@ class NotificationService {
       if (earliest == null || when.isBefore(earliest)) earliest = when;
     }
 
-    // Log only the SOONEST upcoming fire time (one entry per habit)
     if (earliest != null) {
       _log(
         id: 'habit-${habit.id}',
@@ -228,7 +195,6 @@ class NotificationService {
     }
   }
 
-  /// Cancels all weekday slots for a habit.
   Future<void> cancelHabit(String habitId) async {
     final base = _habitBaseId(habitId);
     for (var i = 0; i < 7; i++) {
@@ -236,8 +202,6 @@ class NotificationService {
     }
   }
 
-  // в”Ђв”Ђ GOAL DEADLINE REMINDERS в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
-  /// One-shot at 9 AM the morning before the deadline.
   Future<void> scheduleGoalDeadline(GoalModel goal) async {
     await cancelGoal(goal.id);
     if (goal.isComplete || goal.archived || goal.deadline == null) return;
@@ -268,14 +232,10 @@ class NotificationService {
     );
   }
 
-  /// Cancels the goal deadline notification.
   Future<void> cancelGoal(String goalId) async {
     await _plugin.cancel(_goalId(goalId));
   }
 
-  // в”Ђв”Ђ RESCHEDULE ALL (boot restore) в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
-  /// Re-registers all OS alarms from Firestore data.
-  /// Does NOT re-log entries (avoids flooding the notification center).
   Future<void> rescheduleAll({
     required List<TaskModel> tasks,
     required List<HabitModel> habits,
@@ -293,7 +253,6 @@ class NotificationService {
     }
   }
 
-  // в”Ђв”Ђ Private: schedule without logging (used by rescheduleAll) в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
   Future<void> _scheduleOnlyTask(TaskModel task) async {
     if (task.done || task.reminderTime == null) return;
     final body =
@@ -373,7 +332,6 @@ class NotificationService {
     );
   }
 
-  // в”Ђв”Ђ Logging helper в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
   void _log({
     required String id,
     required NotifType type,

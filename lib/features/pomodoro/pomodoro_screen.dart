@@ -11,9 +11,6 @@ import '../../core/services/firestore_service.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
-// ─── PERSISTENT TIMER SETTINGS ────────────────────────────────────────────
-// Each setting is stored in SharedPreferences so restarts remember the user's
-// chosen durations.
 
 class _PomodoroIntSetting extends Notifier<int> {
   final String _key;
@@ -37,11 +34,9 @@ class _PomodoroIntSetting extends Notifier<int> {
   @override
   set state(int value) {
     super.state = value;
-    // Persist asynchronously — fire-and-forget is fine here
     SharedPreferences.getInstance().then((p) => p.setInt(_key, value));
   }
 
-  /// Ensure load finishes before the settings sheet reads the value.
   Future<void> get ready => _ready;
 }
 
@@ -58,10 +53,8 @@ final pomodoroSessionsUntilLongProvider =
 NotifierProvider<_PomodoroIntSetting, int>(
         () => _PomodoroIntSetting('pomo_sessions', 4));
 
-// ─── MODELS ───────────────────────────────────────────────────────────────
 enum PomodoroPhase { focus, shortBreak, longBreak }
 
-// ─── SCREEN ───────────────────────────────────────────────────────────────
 class PomodoroScreen extends ConsumerStatefulWidget {
   const PomodoroScreen({super.key});
 
@@ -71,7 +64,6 @@ class PomodoroScreen extends ConsumerStatefulWidget {
 
 class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
     with TickerProviderStateMixin {
-// ─── STATE ────────────────────────────────────────────────────────────────
   PomodoroPhase _phase = PomodoroPhase.focus;
   bool _running = false;
   bool _handlingCompletion = false;
@@ -81,7 +73,6 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
 
   Timer? _timer;
 
-  // Animations
   late AnimationController _pulseCtrl;
   late Animation<double> _pulseAnim;
 
@@ -284,8 +275,6 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
       return;
     }
 
-    // Await the dialog so _handlingCompletion stays true until the user
-    // dismisses it, preventing the timer from firing again mid-dialog.
     await _showCompletionDialog(
       completedPhase: completedPhase,
       nextPhase: nextPhase,
@@ -442,7 +431,6 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
             'What are you working on?',
             style: AText.titleMedium,
           ),
-          // SingleChildScrollView prevents the 232-px keyboard overflow
           content: SingleChildScrollView(
             child: TextField(
               controller: ctrl,
@@ -483,7 +471,6 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
 
   @override
   Widget build(BuildContext context) {
-    // Watch theme providers so this screen rebuilds immediately on theme change.
     ref.watch(themeModeProvider);
     ref.watch(colorThemeProvider);
 
@@ -637,7 +624,7 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
                                     ),
                                     AnimatedBuilder(
                                       animation: Listenable.merge([
-                                        _pulseCtrl, // if we want the stroke to throb
+                                        _pulseCtrl,
                                       ]),
                                       builder: (_, __) => CustomPaint(
                                         size: Size(size, size),
@@ -744,7 +731,6 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
   }
 }
 
-// ─── PHASE SELECTOR ───────────────────────────────────────────────────────
 class _PhaseSelector extends StatelessWidget {
   final PomodoroPhase current;
   final bool enabled;
@@ -811,7 +797,6 @@ class _PhaseSelector extends StatelessWidget {
   }
 }
 
-// ─── SESSION DOTS ─────────────────────────────────────────────────────────
 class _SessionDots extends StatelessWidget {
   final int completed;
   final int total;
@@ -854,7 +839,6 @@ class _SessionDots extends StatelessWidget {
   }
 }
 
-// ─── STATS BAR ────────────────────────────────────────────────────────────
 class _StatsBar extends StatelessWidget {
   final int sessionsToday;
   final int focusMinutes;
@@ -927,7 +911,6 @@ class _Divider extends StatelessWidget {
   );
 }
 
-// ─── SETTINGS SHEET ───────────────────────────────────────────────────────
 class _SettingsSheet extends ConsumerWidget {
   final VoidCallback onSettingsChanged;
 
@@ -1158,7 +1141,7 @@ class _TimerRow extends StatelessWidget {
 class _PomodoroRingPainter extends CustomPainter {
   final double progress;
   final Color color;
-  final double glowIntensity; // 0.0 to ~0.04
+  final double glowIntensity;
 
   _PomodoroRingPainter({
     required this.progress,
@@ -1169,9 +1152,8 @@ class _PomodoroRingPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = (size.width - 24) / 2; // Inset slightly
+    final radius = (size.width - 24) / 2;
 
-    // Background track
     final bgPaint = Paint()
       ..color = AColors.bgElevated
       ..style = PaintingStyle.stroke
@@ -1182,7 +1164,6 @@ class _PomodoroRingPainter extends CustomPainter {
 
     if (progress <= 0) return;
 
-    // Glowing shadow
     if (glowIntensity > 0) {
       final glowPaint = Paint()
         ..color = color.withValues(alpha: 0.3 + (glowIntensity * 5))
@@ -1193,14 +1174,13 @@ class _PomodoroRingPainter extends CustomPainter {
 
       canvas.drawArc(
         Rect.fromCircle(center: center, radius: radius),
-        -90 * (3.1415927 / 180), // Start at top
+        -90 * (3.1415927 / 180),
         progress * 360 * (3.1415927 / 180),
         false,
         glowPaint,
       );
     }
 
-    // Foreground track
     final fgPaint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
@@ -1224,7 +1204,6 @@ class _PomodoroRingPainter extends CustomPainter {
   }
 }
 
-// ─── HELPERS ──────────────────────────────────────────────────────────────
 class _CircleBtn extends StatelessWidget {
   final IconData icon;
   final double size;

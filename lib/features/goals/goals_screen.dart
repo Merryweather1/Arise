@@ -11,7 +11,6 @@ import '../../core/services/firestore_service.dart';
 import '../../core/utils/icon_mapper.dart';
 import '../../core/widgets/app_toast.dart';
 
-// в”Ђв”Ђв”Ђ SCREEN в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 class GoalsScreen extends ConsumerStatefulWidget {
   const GoalsScreen({super.key});
 
@@ -70,7 +69,6 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen>
 
   Color _goalColor(GoalModel g) => Color(g.colorValue);
 
-  // Just delegate to the model's own copyWith — keeps checkIns/measureCurrent intact
   GoalModel _copyGoal(GoalModel g, {List<GoalStepModel>? steps, bool? manuallyComplete}) =>
       g.copyWith(steps: steps, manuallyComplete: manuallyComplete);
 
@@ -230,7 +228,6 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen>
 
   @override
   Widget build(BuildContext context) {
-    // Watch theme providers so this screen rebuilds immediately on theme change.
     ref.watch(themeModeProvider);
     ref.watch(colorThemeProvider);
 
@@ -290,10 +287,10 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen>
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Goals', style: AText.displayLarge), // Larger text
+                              Text('Goals', style: AText.displayLarge),
                               SizedBox(height: 4),
                               Text(
-                                'Define targets. Measure progress.', // More serious copy
+                                'Define targets. Measure progress.',
                                 style: AText.bodyLarge,
                               ),
                             ],
@@ -401,7 +398,6 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen>
             ),
           ),
         ),
-        // ── Confetti overlay ──
         Align(
           alignment: Alignment.topCenter,
           child: ConfettiWidget(
@@ -422,7 +418,6 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen>
 }
 
 
-// в”Ђв”Ђв”Ђ OVERALL PROGRESS в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 class _OverallProgress extends StatelessWidget {
   final List<GoalModel> goals;
   final bool Function(GoalModel) isComplete;
@@ -528,7 +523,6 @@ class _OverallProgress extends StatelessWidget {
   }
 }
 
-// в”Ђв”Ђв”Ђ GOAL LIST в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 class _GoalList extends StatelessWidget {
   final List<GoalModel> goals;
   final Function(GoalModel) onTap;
@@ -602,7 +596,6 @@ class _GoalList extends StatelessWidget {
   }
 }
 
-// ─── GOAL CARD ────────────────────────────────────────────────────────────────
 class _GoalCard extends StatefulWidget {
   final GoalModel goal;
   final VoidCallback onTap;
@@ -753,7 +746,6 @@ class _GoalCardState extends State<_GoalCard> {
 
                     const SizedBox(height: 14),
 
-                    // Only show progress bar when there is something to track
                     if (hasSteps || hasMeasure) Row(children: [
                       Expanded(
                         child: TweenAnimationBuilder<double>(
@@ -891,8 +883,8 @@ class _GoalCardState extends State<_GoalCard> {
       context: context,
       useRootNavigator: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => Container(
-        decoration:       BoxDecoration(
+      builder: (sheetCtx) => Container(
+        decoration: BoxDecoration(
           color: AColors.bgElevated,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
@@ -904,20 +896,20 @@ class _GoalCardState extends State<_GoalCard> {
           ListTile(
             leading: Icon(Icons.edit_rounded, color: AColors.primary),
             title: Text('Edit goal', style: AText.bodyLarge),
-            onTap: () { Navigator.pop(context); widget.onTap(); },
+            onTap: () { Navigator.pop(sheetCtx); widget.onTap(); },
           ),
           if (!widget.isComplete(widget.goal))
             ListTile(
               leading: Icon(Icons.check_circle_rounded, color: AColors.primary),
               title: Text('Mark as Complete', style: AText.bodyLarge),
-              subtitle:       Text('Override progress and finish the goal',
+              subtitle: Text('Override progress and finish the goal',
                   style: AText.bodySmall),
-              onTap: () { Navigator.pop(context); widget.onMarkComplete(); },
+              onTap: () { Navigator.pop(sheetCtx); widget.onMarkComplete(); },
             ),
           ListTile(
             leading: Icon(Icons.delete_rounded, color: AColors.error),
             title: Text('Delete goal', style: AText.bodyLarge),
-            onTap: () { Navigator.pop(context); widget.onDelete(); },
+            onTap: () { Navigator.pop(sheetCtx); widget.onDelete(); },
           ),
         ]),
       ),
@@ -925,7 +917,6 @@ class _GoalCardState extends State<_GoalCard> {
   }
 }
 
-// в”Ђв”Ђв”Ђ STEP ROW в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 class _StepRow extends StatelessWidget {
   final GoalStepModel step;
   final Color color;
@@ -977,7 +968,6 @@ class _StepRow extends StatelessWidget {
   );
 }
 
-// ─── CHECK-IN TIMELINE ────────────────────────────────────────────────────────
 class _CheckInTimeline extends StatelessWidget {
   final GoalModel goal;
   final Color color;
@@ -1037,7 +1027,6 @@ class _CheckInTimeline extends StatelessWidget {
   }
 }
 
-// ─── CHECK-IN SHEET ───────────────────────────────────────────────────────────
 class _CheckInSheet extends ConsumerStatefulWidget {
   final GoalModel goal;
   final String uid;
@@ -1187,7 +1176,6 @@ class _CheckInSheetState extends ConsumerState<_CheckInSheet> {
 
 
 
-// в”Ђв”Ђв”Ђ GOAL EDITOR в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 class _GoalEditorSheet extends StatefulWidget {
   final String uid;
   final GoalModel? existing;
@@ -1223,7 +1211,7 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
       _xpSphereOverride ?? XpSphereExt.sphereForCategory(_category ?? '');
 
   final List<GoalStepModel> _steps = [];
-  int _pendingWeight = 1; // 1=Small, 2=Medium, 3=Large
+  int _pendingWeight = 1;
 
   static const List<String> _allEmojis = [
     '🎯', '📱', '🏃', '💰', '📚',
@@ -1331,8 +1319,6 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
 
     final e = widget.existing;
 
-    // When editing, preserve check-in history and measurable progress
-    // so that editing a goal never wipes runtime data
     return GoalModel(
       id: e?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
       uid: widget.uid,
@@ -1355,7 +1341,6 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
       archived: e?.archived ?? false,
       manuallyComplete: e?.manuallyComplete ?? false,
       createdAt: e?.createdAt ?? DateTime.now(),
-      // ↓ Always carry over runtime data that the editor doesn't touch
       checkIns: e?.checkIns ?? const [],
       measureCurrent: e?.measureCurrent ?? 0,
     );
@@ -1412,7 +1397,6 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
                   children: [
 
-                    // в”Ѓв”Ѓ CARD 1: Title + Appearance в”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓ
                     _card(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       Row(children: [
                         Container(
@@ -1477,7 +1461,6 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
 
                     const SizedBox(height: 10),
 
-                    // в”Ѓв”Ѓ CARD 2: Category + XP в”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓ
                     _card(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       _label('CATEGORY'),
                       const SizedBox(height: 8),
@@ -1533,7 +1516,6 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
 
                     const SizedBox(height: 10),
 
-                    // в”Ѓв”Ѓ CARD 3: Deadline + Measure + Reward в”Ѓв”Ѓв”Ѓв”Ѓв”Ѓ
                     _card(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       GestureDetector(onTap: _pickDeadline, child: Row(children: [
                         Icon(Icons.calendar_today_rounded, size: 18, color: _deadline != null ? _color : AColors.textMuted),
@@ -1576,7 +1558,6 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
 
                     const SizedBox(height: 10),
 
-                    // Milestones card
                     _card(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       _label('MILESTONES'),
                       const SizedBox(height: 4),
@@ -1597,7 +1578,6 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
                           Expanded(child: Text(e.value.title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500,
                               color: e.value.done ? AColors.textMuted : AColors.textSecondary,
                               decoration: e.value.done ? TextDecoration.lineThrough : null))),
-                          // Weight badge — tap to cycle S -> M -> L -> S
                           GestureDetector(
                             onTap: () {
                               setState(() {
@@ -1625,7 +1605,6 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
                         ]),
                       )),
                       const SizedBox(height: 8),
-                      // Weight selector for NEW step
                       Row(children: [
                         Text('Weight:', style: TextStyle(fontSize: 12, color: AColors.textMuted)),
                         const SizedBox(width: 8),
@@ -1668,7 +1647,6 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
 
                     const SizedBox(height: 10),
 
-                    // в”Ѓв”Ѓ CARD 5: Note в”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓ
                     _card(child: TextField(controller: _noteCtrl,
                       style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AColors.textSecondary),
                       maxLines: 3, minLines: 1,
@@ -1700,7 +1678,6 @@ class _GoalEditorSheetState extends State<_GoalEditorSheet> {
       style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1.1, color: AColors.textMuted.withValues(alpha: 0.55)));
 }
 
-// ─── HELPERS ──────────────────────────────────────────────────────────────
 class _InputBox extends StatelessWidget {
   final TextEditingController ctrl;
   final String hint;

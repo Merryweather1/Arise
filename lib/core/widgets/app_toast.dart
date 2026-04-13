@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
-/// A minimal, floating pill-shaped toast notification.
 class AToast {
   AToast._();
 
   static OverlayEntry? _current;
 
-  /// Show a premium floating toast.
   static void show(
       BuildContext context,
       String message, {

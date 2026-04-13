@@ -10,11 +10,9 @@ import '../../core/providers/app_providers.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_toast.dart';
 
-// ─── SORT OPTIONS ─────────────────────────────────────────────────────────
 enum SortMode { date, priority }
 enum DisplayMode { cards, calendar }
 
-// ─── PERSISTENT SETTINGS NOTIFIERS ────────────────────────────────────────
 class _SortModeNotifier extends Notifier<SortMode> {
   static const _key = 'tasks_sort_mode';
 
@@ -107,7 +105,6 @@ NotifierProvider<_HideCompletedNotifier, bool>(
   _HideCompletedNotifier.new,
 );
 
-// ─── SCREEN ───────────────────────────────────────────────────────────────
 class TasksScreen extends ConsumerStatefulWidget {
   const TasksScreen({super.key});
 
@@ -305,9 +302,8 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
       context: context,
       useRootNavigator: true,
       backgroundColor: Colors.transparent,
-      builder:
-          (_) => Container(
-        decoration:       BoxDecoration(
+      builder: (sheetCtx) => Container(
+        decoration: BoxDecoration(
           color: AColors.bgElevated,
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
@@ -336,16 +332,16 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
             const SizedBox(height: 20),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              leading:       Icon(
+              leading: Icon(
                 Icons.edit_rounded,
                 color: AColors.primary,
               ),
-              title:       Text(
+              title: Text(
                 'Edit task',
                 style: AText.bodyLarge,
               ),
               onTap: () {
-                Navigator.pop(context);
+                Navigator.pop(sheetCtx);
                 _openTask(existing: task);
               },
             ),
@@ -355,15 +351,10 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
                 task.pending
                     ? Icons.check_circle_outline_rounded
                     : Icons.hourglass_empty_rounded,
-                color:
-                task.pending
-                    ? AColors.primary
-                    : AColors.warning,
+                color: task.pending ? AColors.primary : AColors.warning,
               ),
               title: Text(
-                task.pending
-                    ? 'Unmark Pending'
-                    : 'Mark as Pending',
+                task.pending ? 'Unmark Pending' : 'Mark as Pending',
                 style: AText.bodyLarge,
               ),
               subtitle: Text(
@@ -373,25 +364,23 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
                 style: AText.bodySmall,
               ),
               onTap: () async {
-                Navigator.pop(context);
-                final updated = task.copyWith(
-                  pending: !task.pending,
-                );
+                Navigator.pop(sheetCtx);
+                final updated = task.copyWith(pending: !task.pending);
                 await ref.read(taskActionsProvider.notifier).save(updated);
               },
             ),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              leading:       Icon(
+              leading: Icon(
                 Icons.delete_rounded,
                 color: AColors.error,
               ),
-              title:       Text(
+              title: Text(
                 'Delete task',
                 style: AText.bodyLarge,
               ),
               onTap: () async {
-                Navigator.pop(context);
+                Navigator.pop(sheetCtx);
                 await _delete(task);
               },
             ),
@@ -403,7 +392,6 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Watch theme providers so this screen rebuilds immediately on theme change.
     ref.watch(themeModeProvider);
     ref.watch(colorThemeProvider);
 
@@ -545,7 +533,6 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
   }
 }
 
-// ─── CALENDAR STRIP ───────────────────────────────────────────────────────
 class _CalendarStrip extends StatefulWidget {
   final DateTime selected;
   final Function(DateTime) onSelect;
@@ -663,7 +650,6 @@ class _CalendarStripState extends State<_CalendarStrip> {
   }
 }
 
-// ─── TASK LIST ─────────────────────────────────────────────────────────────
 class _TaskList extends StatefulWidget {
   final List<TaskModel> tasks;
   final Future<void> Function(TaskModel) onComplete;
@@ -688,7 +674,6 @@ class _TaskList extends StatefulWidget {
 class _TaskListState extends State<_TaskList> {
   late List<TaskModel> _visible;
 
-  /// taskId -> locally rendered done state
   final Map<String, bool> _localDone = {};
 
   @override
@@ -825,7 +810,6 @@ class _TaskListState extends State<_TaskList> {
   }
 }
 
-// ─── SWIPEABLE TASK TILE ─────────────────────────────────────────────────
 class _SwipeableTaskTile extends StatefulWidget {
   final TaskModel task;
   final bool optimisticDone;
@@ -1290,7 +1274,6 @@ class _SwipeableTaskTileState extends State<_SwipeableTaskTile>
   }
 }
 
-// ─── SUBTASK ROW ──────────────────────────────────────────────────────────
 class _SubtaskRow extends StatelessWidget {
   final SubTaskModel subtask;
   final VoidCallback onToggle;
@@ -1355,7 +1338,6 @@ class _SubtaskRow extends StatelessWidget {
   }
 }
 
-// ─── SETTINGS SHEET ───────────────────────────────────────────────────────
 class _SettingsSheet extends ConsumerWidget {
   const _SettingsSheet();
 
@@ -1563,7 +1545,6 @@ class _SettingChip extends StatelessWidget {
   }
 }
 
-// ─── TASK EDITOR SHEET ────────────────────────────────────────────────────
 class _TaskEditorSheet extends StatefulWidget {
   final TaskModel? existing;
   final List<String> categories;
@@ -2624,7 +2605,6 @@ Color _pColor(int p) {
   return AColors.priority4;
 }
 
-// ─── HELPERS ──────────────────────────────────────────────────────────────
 class _Sec extends StatelessWidget {
   final String label;
   final IconData icon;

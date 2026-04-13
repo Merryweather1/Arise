@@ -42,7 +42,6 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen>
 
   @override
   Widget build(BuildContext context) {
-    // Watch theme providers so this screen rebuilds immediately on theme change.
     ref.watch(themeModeProvider);
     ref.watch(colorThemeProvider);
 
@@ -144,9 +143,9 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen>
 class _ComputedStats {
   final List<String> labels;
   final List<int> tasksData;
-  final List<double> habitsData; // 0..1
-  final List<int> focusData; // minutes
-  final List<int> pomodoroData; // sessions
+  final List<double> habitsData;
+  final List<int> focusData;
+  final List<int> pomodoroData;
   final Map<String, int> categoryData;
 
   final int totalTasks;
@@ -230,11 +229,9 @@ _ComputedStats _buildWeekStats(
 
     final scheduled = habits.where((h) {
       if (h.archived) return false;
-      // Habit must have already started by this day
       final habitStart = DateTime(h.createdAt.year, h.createdAt.month, h.createdAt.day);
       final dayOnly = DateTime(day.year, day.month, day.day);
       if (dayOnly.isBefore(habitStart)) return false;
-      // Habit must not have expired by this day
       if (!h.isUnlimited && h.durationDays != null && h.durationDays! > 0) {
         final endInclusive = habitStart.add(Duration(days: h.durationDays! - 1));
         if (dayOnly.isAfter(endInclusive)) return false;
@@ -525,7 +522,6 @@ class _StatisticsEmptyState extends StatelessWidget {
   }
 }
 
-// ----------------- OVERVIEW TAB -----------------
 
 class _OverviewTab extends StatelessWidget {
   final int totalTasks, totalFocus, totalPomodoro, bestDay;
@@ -633,7 +629,6 @@ class _OverviewTab extends StatelessWidget {
   }
 }
 
-// ----------------- TASKS TAB -----------------
 
 class _TasksTab extends StatelessWidget {
   final List<int> data;
@@ -766,10 +761,9 @@ class _TasksTab extends StatelessWidget {
   }
 }
 
-// ----------------- HABITS TAB -----------------
 
 class _HabitsTab extends StatelessWidget {
-  final List<double> data; // 0..1
+  final List<double> data;
   final List<String> days;
   final List<int> pomodoroData;
   final double avgRate;
@@ -859,7 +853,6 @@ class _HabitsTab extends StatelessWidget {
   }
 }
 
-// ----------------- WIDGETS -----------------
 
 class _BarChart extends StatelessWidget {
   final List<double> data;
@@ -1023,7 +1016,7 @@ class _DonutChart extends StatelessWidget {
 class _DonutPainter extends CustomPainter {
   final List<double> data;
   final List<Color> colors;
-  final double progress; // 0.0 to 1.0
+  final double progress;
 
   _DonutPainter({
     required this.data,
@@ -1041,7 +1034,7 @@ class _DonutPainter extends CustomPainter {
     double start = -math.pi / 2;
 
     for (int i = 0; i < data.length; i++) {
-      final sweep = 2 * math.pi * data[i] / total * progress; // Animate draw
+      final sweep = 2 * math.pi * data[i] / total * progress;
       if (sweep <= 0) continue;
       canvas.drawArc(
         Rect.fromCircle(center: center, radius: radius - 4),
@@ -1159,7 +1152,7 @@ class _ChartCard extends StatelessWidget {
                 color: AColors.bgCard,
                 borderRadius: ARadius.lg,
                 border: Border.all(
-                  color: AColors.primary.withValues(alpha: 0.2), // Subtle accent border
+                  color: AColors.primary.withValues(alpha: 0.2),
                 ),
                 boxShadow: [
                   BoxShadow(

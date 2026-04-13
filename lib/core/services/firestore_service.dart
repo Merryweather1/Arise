@@ -6,11 +6,9 @@ import 'package:flutter/material.dart';
 final _db = FirebaseFirestore.instance;
 const _uuid = Uuid();
 
-// ─── HELPERS ──────────────────────────────────────────────────────────────
 CollectionReference _userCol(String uid, String col) =>
     _db.collection('users').doc(uid).collection(col);
 
-// ─── USER PROFILE ─────────────────────────────────────────────────────────
 class UserRepository {
   static Future<UserProfile?> get(String uid) async {
     final doc = await _db.collection('users').doc(uid).get();
@@ -39,7 +37,6 @@ class UserRepository {
     });
   }
 
-  /// Deduct XP — floors at 0 using a Firestore transaction so XP can never go negative.
   static Future<void> subtractXp(String uid, XpSphere sphere, int xp) async {
     final field = switch (sphere) {
       XpSphere.willpower => 'willpowerXp',
@@ -72,7 +69,6 @@ class UserRepository {
   }
 }
 
-// ─── TASKS ────────────────────────────────────────────────────────────────
 class TaskRepository {
   static CollectionReference _col(String uid) => _userCol(uid, 'tasks');
 
@@ -90,8 +86,8 @@ class TaskRepository {
     List<int> reminderDays = const [],
     List<SubTaskModel> subtasks = const [],
     bool pending = false,
-    XpSphere? xpSphere,      // null = auto-route from category
-    int? xpReward,           // null = auto-compute from priority
+    XpSphere? xpSphere,
+    int? xpReward,
   }) async {
     final id = _uuid.v4();
     final resolvedSphere = xpSphere ?? XpSphereExt.sphereForCategory(category);
@@ -118,13 +114,10 @@ class TaskRepository {
       _col(uid).doc(taskId).update({
         'done': done,
         'xpAwarded': xpAwarded,
-        // Clear pending flag when task is marked done
         if (done) 'pending': false,
       });
 }
 
-// ─── HABITS ───────────────────────────────────────────────────────────────
-// ─── HABITS ───────────────────────────────────────────────────────────────
 class HabitRepository {
   static CollectionReference _col(String uid) => _userCol(uid, 'habits');
 
@@ -140,7 +133,7 @@ class HabitRepository {
         String category = 'Personal',
         int colorValue = 0xFF00C97B,
         List<int> scheduleDays = const [],
-        XpSphere? xpSphere,   // null = auto-route from category
+        XpSphere? xpSphere,
         int xpReward = 15,
         String? note,
         TimeOfDay? reminderTime,
@@ -177,7 +170,6 @@ class HabitRepository {
   static Future<void> delete(String uid, String habitId) =>
       _col(uid).doc(habitId).delete();
 
-  /// Toggle completion for today — recalculates streak
   static Future<HabitModel> toggleToday(String uid, HabitModel habit) async {
     final today = _dateKey(DateTime.now());
     final dates = List<String>.from(habit.completionDates);
@@ -201,9 +193,6 @@ class HabitRepository {
     return updated;
   }
 
-  /// Calculates the current streak, honouring [scheduleDays] so that only
-  /// scheduled days are counted as "required". If [scheduleDays] is empty the
-  /// habit is considered daily and every calendar day is required.
   static int _calcStreak(List<String> dates, List<int> scheduleDays) {
     if (dates.isEmpty) return 0;
     final dateSet = dates.toSet();
@@ -211,12 +200,9 @@ class HabitRepository {
     DateTime check = DateTime.now();
 
     while (true) {
-      // Determine whether today/check is a scheduled day.
-      // DateTime.weekday: 1=Mon … 7=Sun, which matches scheduleDays encoding.
       final isScheduled = scheduleDays.isEmpty || scheduleDays.contains(check.weekday);
 
       if (!isScheduled) {
-        // Skip non-scheduled days without breaking the streak.
         check = check.subtract(const Duration(days: 1));
         continue;
       }
@@ -235,13 +221,10 @@ class HabitRepository {
   static String _dateKey(DateTime d) =>
       '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
-  /// Persist the date on which XP was last awarded for this habit.
-  /// Pass [null] to clear the date (e.g. after deducting XP on un-toggle).
   static Future<void> setXpAwardedDate(String uid, String habitId, String? date) =>
       _userCol(uid, 'habits').doc(habitId).update({'xpAwardedDate': date});
 }
 
-// ─── GOALS ────────────────────────────────────────────────────────────────
 class GoalRepository {
   static CollectionReference _col(String uid) => _userCol(uid, 'goals');
 
@@ -257,7 +240,7 @@ class GoalRepository {
     String? note,
     DateTime? deadline,
     List<GoalStepModel> steps = const [],
-    XpSphere? xpSphere,   // null = auto-route from category
+    XpSphere? xpSphere,
     int xpReward = 50,
     String? customReward,
     double? measureTarget,
@@ -284,7 +267,6 @@ class GoalRepository {
       _col(uid).doc(goalId).delete();
 }
 
-// ─── POMODORO ─────────────────────────────────────────────────────────────
 class PomodoroRepository {
   static CollectionReference _col(String uid) =>
       _userCol(uid, 'pomodoro_sessions');
@@ -324,7 +306,6 @@ class PomodoroRepository {
   }
 }
 
-// ─── LIFE BALANCE ─────────────────────────────────────────────────────────
 class LifeBalanceRepository {
   static CollectionReference _col(String uid) => _userCol(uid, 'life_balance');
 
@@ -334,7 +315,6 @@ class LifeBalanceRepository {
 
   static Future<void> saveSnapshot(String uid, Map<String, double> scores) async {
     final now = DateTime.now();
-    // Use date as document ID so saving today always overwrites — one entry per day max
     final id = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
     final snap = LifeBalanceSnapshot(
         id: id, uid: uid, date: now, scores: scores);

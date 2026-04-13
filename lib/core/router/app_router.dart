@@ -44,7 +44,6 @@ class GoRouterRefreshStream extends ChangeNotifier {
 final _routerRefresh =
 GoRouterRefreshStream(FirebaseAuth.instance.authStateChanges());
 
-/// Smooth fade + subtle upward slide — Apple-style tab transition.
 CustomTransitionPage<void> _fadePage(GoRouterState state, Widget child) {
   return CustomTransitionPage<void>(
     key: state.pageKey,
@@ -121,7 +120,6 @@ final appRouter = GoRouter(
         ),
       ],
     ),
-    // Full-screen profile — outside shell so nav bar is hidden
     GoRoute(
       path: ARoutes.profile,
       pageBuilder: (_, __) => const MaterialPage(child: ProfileScreen()),
